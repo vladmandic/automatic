@@ -355,7 +355,6 @@ class VDMScheduler(SchedulerMixin, ConfigMixin):
             )
 
         # 3. Clip or threshold "predicted x_0"
-        # print({ 'timestep': timestep.item(), 'min': pred_original_sample.min().item(), 'max': pred_original_sample.max().item(), 'alpha': alpha.item(), 'sigma': sigma.item() })
         if self.config.thresholding:
             pred_original_sample = self._threshold_sample(pred_original_sample)
         elif self.config.clip_sample:

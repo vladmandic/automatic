@@ -91,7 +91,7 @@ def make_meta(fn, maxrank, rank_ratio):
         "model_spec.sai_model_spec": "1.0.0",
         "model_spec.title": os.path.splitext(os.path.basename(fn))[0],
         "model_spec.author": "SD.Next",
-        "model_spec.implementation": "https://github.com/vladmandic/automatic",
+        "model_spec.implementation": "https://github.com/vladmandic/sdnext",
         "model_spec.date": datetime.datetime.now().astimezone().replace(microsecond=0).isoformat(),
         "model_spec.base_model": shared.opts.sd_model_checkpoint,
         "model_spec.dtype": str(devices.dtype),
@@ -265,7 +265,7 @@ def create_ui():
 
         auto_rank.change(fn=lambda x: gr_show(x), inputs=[auto_rank], outputs=[rank_ratio])
         extract.click(
-            fn=wrap_gradio_gpu_call(make_lora, extra_outputs=[]),
+            fn=wrap_gradio_gpu_call(make_lora, extra_outputs=[], name='LoRA'),
             inputs=[filename, rank, auto_rank, rank_ratio, modules, overwrite],
             outputs=[status]
         )

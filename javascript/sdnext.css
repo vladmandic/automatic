@@ -1,4 +1,4 @@
-@font-face { font-family: 'NotoSans'; font-display: swap; font-style: normal; font-weight: 100; src: local('NotoSans'), url('notosans-nerdfont-regular.ttf') }
+@font-face { font-family: 'NotoSans'; font-display: swap; font-style: normal; font-weight: 100; src: local('NotoSansNerd'), url('notosans-nerdfont-regular.ttf') }
 :root {
   --left-column: 530px;
   --color-trace: #666666;
@@ -35,12 +35,6 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { margin-left
 /*
 .gradio-image { min-height: fit-content; }
 .gradio-image img { object-fit: contain; }
-*/
-/*
-.gradio-image { min-height: 200px !important; }
-.image-container { height: unset !important; }
-.control-image { height: unset !important; }
-#img2img_sketch, #img2maskimg, #inpaint_sketch { overflow: overlay !important; resize: auto; background: var(--panel-background-fill); z-index: 5; }
 */
 
 /* color elements */
@@ -117,6 +111,8 @@ button.custom-button { border-radius: var(--button-large-radius); padding: var(-
 #txt2img_prompt, #txt2img_neg_prompt, #img2img_prompt, #img2img_neg_prompt, #control_prompt, #control_neg_prompt { display: contents; }
 #txt2img_actions_column, #img2img_actions_column, #control_actions { flex-flow: wrap; justify-content: space-between; }
 
+.interrogate { position: absolute; right: 2.8em; top: 0.2em; max-width: fit-content; background: none !important; z-index: 50; font-size: 1.5em !important; }
+.interrogate:hover { background: var(--button-primary-background-fill-hover) !important; }
 .interrogate-clip { position: absolute; right: 6em; top: 8px; max-width: fit-content; background: none !important; z-index: 50; }
 .interrogate-blip { position: absolute; right: 4em; top: 8px; max-width: fit-content; background: none !important; z-index: 50; }
 .interrogate-col { min-width: 0 !important; max-width: fit-content; margin-right: var(--spacing-xxl); }
@@ -213,7 +209,7 @@ table.settings-value-table td { padding: 0.4em; border: 1px solid #ccc; max-widt
 #extensions .info { margin: 0; }
 #extensions .date { opacity: 0.85; font-size: var(--text-sm); }
 
-/* extra networks */
+/* networks */
 .extra_networks_root { width: 0; position: absolute; height: auto; right: 0; top: 13em; z-index: 100; } /* default is sidebar view */
 .extra-networks { background: var(--background-color); padding: var(--block-label-padding); }
 .extra-networks > div { margin: 0; border-bottom: none !important; gap: 0.3em 0; }
@@ -275,11 +271,14 @@ table.settings-value-table td { padding: 0.4em; border: 1px solid #ccc; max-widt
 .ar-dropdown div { margin: 0; background: var(--background-color)}
 #txt2img_sampler_timesteps, #img2img_sampler_timesteps { max-width: calc(var(--left-column) - 50px); }
 
-/* extras */
+/* models */
 .extras { gap: 0.2em 1em !important }
 #extras_generate, #extras_interrupt, #extras_skip { display: block !important; position: relative; height: 36px; }
 #extras_upscale { margin-top: 10px }
 #pnginfo_html_info .gradio-html > div { margin: 0.5em; }
+#models_image, #models_image > div { min-height: 0; }
+#models_error { font-family: monospace; color: var(--body-text-color-subdued) }
+
 
 /* log monitor */
 .log-monitor { display: none; justify-content: unset !important; overflow: hidden; padding: 0; margin-top: auto; font-family: monospace; font-size: var(--text-xxs); }
@@ -346,7 +345,7 @@ div:has(>#tab-gallery-folders) { flex-grow: 0 !important; background-color: var(
 /* loader */
 .splash { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1000; display: block; text-align: center; }
 .motd { margin-top: 2em; color: var(--body-text-color-subdued); font-family: monospace; font-variant: all-petite-caps; }
-.splash-img { margin: 10% auto 0 auto; width: 512px; background-repeat: no-repeat; height: 512px; animation: color 10s infinite alternate; }
+.splash-img { margin: 10% auto 0 auto; width: 512px; background-repeat: no-repeat; height: 512px; animation: color 10s infinite alternate; max-width: 80vw; background-size: contain; }
 .loading { color: white; position: absolute; top: 20%; left: 50%; transform: translateX(-50%); }
 .loader { width: 300px; height: 300px; border: var(--spacing-md) solid transparent; border-radius: 50%; border-top: var(--spacing-md) solid var(--primary-600); animation: spin 4s linear infinite; position: relative; }
 .loader::before, .loader::after { content: ""; position: absolute; top: 6px; bottom: 6px; left: 6px; right: 6px; border-radius: 50%; border: var(--spacing-md) solid transparent; }

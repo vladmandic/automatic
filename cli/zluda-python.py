@@ -27,10 +27,9 @@ if __name__ == '__main__':
     sys.path.append(os.getcwd())
 
     from modules import zluda_installer
-    zluda_path = zluda_installer.get_path()
-    zluda_installer.install(zluda_path)
-    zluda_installer.make_copy(zluda_path)
-    zluda_installer.load(zluda_path)
+    zluda_installer.install()
+    zluda_installer.make_copy()
+    zluda_installer.load()
 
     import torch
     interpreter = Interpreter({

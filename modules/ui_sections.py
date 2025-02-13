@@ -1,6 +1,7 @@
 import gradio as gr
 from modules import shared, modelloader, ui_symbols, ui_common, sd_samplers
 from modules.ui_components import ToolButton
+from modules.interrogate import interrogate
 
 
 def create_toprow(is_img2img: bool = False, id_part: str = None):
@@ -63,21 +64,6 @@ def create_toprow(is_img2img: bool = False, id_part: str = None):
 
 
 def ar_change(ar, width, height):
-    """
-    if ar == 'AR':
-        return gr.update(interactive=True), gr.update(interactive=True)
-    try:
-        (w, h) = [float(x) for x in ar.split(':')]
-    except Exception as e:
-        shared.log.warning(f"Invalid aspect ratio: {ar} {e}")
-        return gr.update(interactive=True), gr.update(interactive=True)
-    if w > h:
-        return gr.update(interactive=True, value=width), gr.update(interactive=False, value=int(width * h / w))
-    elif w < h:
-        return gr.update(interactive=False, value=int(height * w / h)), gr.update(interactive=True, value=height)
-    else:
-        return gr.update(interactive=True, value=width), gr.update(interactive=False, value=width)
-    """
     if ar == 'AR':
         return gr.update(), gr.update()
     try:
@@ -105,7 +91,14 @@ def create_resolution_inputs(tab):
     return width, height
 
 
-def create_interrogate_buttons(tab):
+def create_interrogate_button(tab: str, inputs: list = None, outputs: str = None):
+    button_interrogate = gr.Button(ui_symbols.interrogate, elem_id=f"{tab}_interrogate", elem_classes=['interrogate'])
+    if inputs is not None and outputs is not None:
+        button_interrogate.click(fn=interrogate.interrogate, inputs=inputs, outputs=[outputs])
+    return button_interrogate
+
+
+def create_interrogate_buttons(tab): # legacy function
     button_interrogate = gr.Button(ui_symbols.int_clip, elem_id=f"{tab}_interrogate", elem_classes=['interrogate-clip'])
     button_deepbooru = gr.Button(ui_symbols.int_blip, elem_id=f"{tab}_deepbooru", elem_classes=['interrogate-blip'])
     return button_interrogate, button_deepbooru
@@ -144,6 +137,26 @@ def create_seed_inputs(tab, reuse_visible=True):
         random_seed.click(fn=lambda: -1, show_progress=False, inputs=[], outputs=[seed])
         random_subseed.click(fn=lambda: -1, show_progress=False, inputs=[], outputs=[subseed])
     return seed, reuse_seed, subseed, reuse_subseed, subseed_strength, seed_resize_from_h, seed_resize_from_w
+
+
+def create_video_inputs(tab:str):
+    def video_type_change(video_type):
+        return [
+            gr.update(visible=video_type != 'None'),
+            gr.update(visible=video_type in ['GIF', 'PNG']),
+            gr.update(visible=video_type not in ['None', 'GIF', 'PNG']),
+            gr.update(visible=video_type not in ['None', 'GIF', 'PNG']),
+        ]
+    with gr.Column():
+        video_codecs = ['None', 'GIF', 'PNG', 'MP4/MP4V', 'MP4/AVC1', 'MP4/JVT3', 'MKV/H264', 'AVI/DIVX', 'AVI/RGBA', 'MJPEG/MJPG', 'MPG/MPG1', 'AVR/AVR1']
+        video_type = gr.Dropdown(label='Video type', choices=video_codecs, value='None', elem_id=f"{tab}_video_type")
+    with gr.Column():
+        video_duration = gr.Slider(label='Duration', minimum=0.25, maximum=300, step=0.25, value=2, visible=False, elem_id=f"{tab}_video_duration")
+        video_loop = gr.Checkbox(label='Loop', value=True, visible=False, elem_id=f"{tab}_video_loop")
+        video_pad = gr.Slider(label='Pad frames', minimum=0, maximum=24, step=1, value=1, visible=False, elem_id=f"{tab}_video_pad")
+        video_interpolate = gr.Slider(label='Interpolate frames', minimum=0, maximum=24, step=1, value=0, visible=False, elem_id=f"{tab}_video_interpolate")
+    video_type.change(fn=video_type_change, inputs=[video_type], outputs=[video_duration, video_loop, video_pad, video_interpolate])
+    return video_type, video_duration, video_loop, video_pad, video_interpolate
 
 
 def create_cfg_inputs(tab):
@@ -318,14 +331,6 @@ def create_hires_inputs(tab):
         with gr.Group():
             with gr.Row(elem_id=f"{tab}_hires_row1"):
                 enable_hr = gr.Checkbox(label='Enable refine pass', value=False, elem_id=f"{tab}_enable_hr")
-            """
-            with gr.Row(elem_id=f"{tab}_hires_fix_row1", variant="compact"):
-                hr_upscaler = gr.Dropdown(label="Upscaler", elem_id=f"{tab}_hr_upscaler", choices=[*shared.latent_upscale_modes, *[x.name for x in shared.sd_upscalers]], value=shared.latent_upscale_default_mode)
-                hr_scale = gr.Slider(minimum=0.1, maximum=8.0, step=0.05, label="Rescale by", value=2.0, elem_id=f"{tab}_hr_scale")
-            with gr.Row(elem_id=f"{tab}_hires_fix_row3", variant="compact"):
-                hr_resize_x = gr.Slider(minimum=0, maximum=4096, step=8, label="Width resize", value=0, elem_id=f"{tab}_hr_resize_x")
-                hr_resize_y = gr.Slider(minimum=0, maximum=4096, step=8, label="Height resize", value=0, elem_id=f"{tab}_hr_resize_y")
-            """
             hr_resize_mode, hr_upscaler, hr_resize_context, hr_resize_x, hr_resize_y, hr_scale, _selected_scale_tab = create_resize_inputs(tab, None, accordion=False, latent=True, non_zero=False)
             with gr.Row(elem_id=f"{tab}_hires_fix_row2", variant="compact"):
                 hr_force = gr.Checkbox(label='Force HiRes', value=False, elem_id=f"{tab}_hr_force")
@@ -350,8 +355,11 @@ def create_resize_inputs(tab, images, accordion=True, latent=False, non_zero=Tru
         prefix = f' {prefix}'
     with gr.Accordion(open=False, label="Resize", elem_classes=["small-accordion"], elem_id=f"{tab}_resize_group") if accordion else gr.Group():
         with gr.Row():
+            available_upscalers = [x.name for x in shared.sd_upscalers]
+            if not latent:
+                available_upscalers = [x for x in available_upscalers if not x.lower().startswith('latent')]
             resize_mode = gr.Dropdown(label=f"Mode{prefix}" if non_zero else "Resize mode", elem_id=f"{tab}_resize_mode", choices=shared.resize_modes, type="index", value='Fixed')
-            resize_name = gr.Dropdown(label=f"Method{prefix}", elem_id=f"{tab}_resize_name", choices=([] if not latent else list(shared.latent_upscale_modes)) + [x.name for x in shared.sd_upscalers], value=shared.latent_upscale_default_mode, visible=True)
+            resize_name = gr.Dropdown(label=f"Method{prefix}", elem_id=f"{tab}_resize_name", choices=available_upscalers, value=available_upscalers[0], visible=True)
             resize_context_choices = ["Add with forward", "Remove with forward", "Add with backward", "Remove with backward"]
             resize_context = gr.Dropdown(label=f"Context{prefix}", elem_id=f"{tab}_resize_context", choices=resize_context_choices, value=resize_context_choices[0], visible=False)
             ui_common.create_refresh_button(resize_name, modelloader.load_upscalers, lambda: {"choices": modelloader.load_upscalers()}, 'refresh_upscalers')

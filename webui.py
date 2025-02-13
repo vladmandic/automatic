@@ -1,6 +1,7 @@
 import io
 import os
 import sys
+import time
 import glob
 import signal
 import asyncio
@@ -8,15 +9,11 @@ import logging
 import importlib
 import contextlib
 from threading import Thread
-import modules.hashes
 import modules.loader
-import torch # pylint: disable=wrong-import-order
-from modules import timer, errors, paths # pylint: disable=unused-import
+import modules.hashes
+
 from installer import log, git_commit, custom_excepthook
-# import ldm.modules.encoders.modules # pylint: disable=unused-import, wrong-import-order
-from modules import shared, extensions, gr_tempdir, modelloader # pylint: disable=ungrouped-imports
-from modules import extra_networks, ui_extra_networks # pylint: disable=ungrouped-imports
-from modules.paths import create_paths
+from modules import timer, paths, shared, extensions, gr_tempdir, modelloader
 from modules.call_queue import queue_lock, wrap_queued_call, wrap_gradio_gpu_call # pylint: disable=unused-import
 import modules.devices
 import modules.sd_checkpoint
@@ -32,23 +29,29 @@ import modules.ui
 import modules.txt2img
 import modules.img2img
 import modules.upscaler
+import modules.upscaler_simple
+import modules.extra_networks
+import modules.ui_extra_networks
 import modules.textual_inversion.textual_inversion
 import modules.hypernetworks.hypernetwork
 import modules.script_callbacks
-from modules.api.middleware import setup_middleware
-from modules.shared import cmd_opts, opts # pylint: disable=unused-import
+import modules.api.middleware
+
+if not modules.loader.initialized:
+    timer.startup.record("libraries")
+    import modules.sd_hijack # runs conditional load of ldm if not shared.native
+    timer.startup.record("ldm")
+modules.loader.initialized = True
 
 
 sys.excepthook = custom_excepthook
 local_url = None
 state = shared.state
 backend = shared.backend
-if not modules.loader.initialized:
-    timer.startup.record("libraries")
-if cmd_opts.server_name:
-    server_name = cmd_opts.server_name
+if shared.cmd_opts.server_name:
+    server_name = shared.cmd_opts.server_name
 else:
-    server_name = "0.0.0.0" if cmd_opts.listen else None
+    server_name = "0.0.0.0" if shared.cmd_opts.listen else None
 fastapi_args = {
     "version": f'0.0.{git_commit}',
     "title": "SD.Next",
@@ -59,30 +62,12 @@ fastapi_args = {
     # "redoc_url": "/redocs" if cmd_opts.docs else None,
 }
 
-import modules.sd_hijack
-timer.startup.record("ldm")
-modules.loader.initialized = True
-
-
-def check_rollback_vae():
-    if shared.cmd_opts.rollback_vae:
-        if not torch.cuda.is_available():
-            log.error("Rollback VAE functionality requires compatible GPU")
-            shared.cmd_opts.rollback_vae = False
-        elif torch.__version__.startswith('1.') or torch.__version__.startswith('2.0'):
-            log.error("Rollback VAE functionality requires Torch 2.1 or higher")
-            shared.cmd_opts.rollback_vae = False
-        elif 0 < torch.cuda.get_device_capability()[0] < 8:
-            log.error('Rollback VAE functionality device capabilities not met')
-            shared.cmd_opts.rollback_vae = False
-
 
 def initialize():
     log.debug('Initializing')
 
     modules.sd_checkpoint.init_metadata()
     modules.hashes.init_cache()
-    check_rollback_vae()
 
     log.debug(f'Huggingface cache: path="{shared.opts.hfcache_dir}"')
 
@@ -135,20 +120,20 @@ def initialize():
         shared.reload_hypernetworks()
         timer.startup.record("hypernetworks")
 
-    ui_extra_networks.initialize()
-    ui_extra_networks.register_pages()
-    extra_networks.initialize()
-    extra_networks.register_default_extra_networks()
+    modules.ui_extra_networks.initialize()
+    modules.ui_extra_networks.register_pages()
+    modules.extra_networks.initialize()
+    modules.extra_networks.register_default_extra_networks()
     timer.startup.record("networks")
 
-    if cmd_opts.tls_keyfile is not None and cmd_opts.tls_certfile is not None:
+    if shared.cmd_opts.tls_keyfile is not None and shared.cmd_opts.tls_certfile is not None:
         try:
-            if not os.path.exists(cmd_opts.tls_keyfile):
+            if not os.path.exists(shared.cmd_opts.tls_keyfile):
                 log.error("Invalid path to TLS keyfile given")
-            if not os.path.exists(cmd_opts.tls_certfile):
-                log.error(f"Invalid path to TLS certfile: '{cmd_opts.tls_certfile}'")
+            if not os.path.exists(shared.cmd_opts.tls_certfile):
+                log.error(f"Invalid path to TLS certfile: '{shared.cmd_opts.tls_certfile}'")
         except TypeError:
-            cmd_opts.tls_keyfile = cmd_opts.tls_certfile = None
+            shared.cmd_opts.tls_keyfile = shared.cmd_opts.tls_certfile = None
             log.error("TLS setup invalid, running webui without TLS")
         else:
             log.info("Running with TLS")
@@ -156,6 +141,7 @@ def initialize():
 
     # make the program just exit at ctrl+c without waiting for anything
     def sigint_handler(_sig, _frame):
+        log.trace(f'State history: uptime={round(time.time() - shared.state.server_start)} jobs={len(shared.state.job_history)} tasks={len(shared.state.task_history)} latents={shared.state.latent_history} images={shared.state.image_history}')
         log.info('Exiting')
         try:
             for f in glob.glob("*.lock"):
@@ -169,16 +155,16 @@ def initialize():
 
 def load_model():
     if not shared.opts.sd_checkpoint_autoload and shared.cmd_opts.ckpt is None:
-        log.debug('Model auto load disabled')
+        log.info('Model auto load disabled')
     else:
         shared.state.begin('Load')
         thread_model = Thread(target=lambda: shared.sd_model)
         thread_model.start()
         thread_refiner = Thread(target=lambda: shared.sd_refiner)
         thread_refiner.start()
-        shared.state.end()
         thread_model.join()
         thread_refiner.join()
+        shared.state.end()
     timer.startup.record("checkpoint")
     shared.opts.onchange("sd_model_checkpoint", wrap_queued_call(lambda: modules.sd_models.reload_model_weights(op='model')), call=False)
     shared.opts.onchange("sd_model_refiner", wrap_queued_call(lambda: modules.sd_models.reload_model_weights(op='refiner')), call=False)
@@ -223,13 +209,34 @@ def async_policy():
     asyncio.set_event_loop_policy(AnyThreadEventLoopPolicy())
 
 
+def get_external_ip():
+    import socket
+    try:
+        ip_address = socket.gethostbyname(socket.gethostname())
+        if ip_address.startswith('127.'):
+            return None
+        return ip_address
+    except Exception:
+        return None
+
+
+def get_remote_ip():
+    import requests
+    try:
+        response = requests.get('https://api.ipify.org?format=json', timeout=2)
+        ip_address = response.json()['ip']
+        return ip_address
+    except Exception:
+        return None
+
+
 def start_common():
     log.debug('Entering start sequence')
     if shared.cmd_opts.data_dir is not None and len(shared.cmd_opts.data_dir) > 0:
-        log.info(f'Using data path: {shared.cmd_opts.data_dir}')
+        log.info(f'Base path: data="{shared.cmd_opts.data_dir}"')
     if shared.cmd_opts.models_dir is not None and len(shared.cmd_opts.models_dir) > 0 and shared.cmd_opts.models_dir != 'models':
-        log.info(f'Models path: {shared.cmd_opts.models_dir}')
-    create_paths(shared.opts)
+        log.info(f'Base path: models="{shared.cmd_opts.models_dir}"')
+    paths.create_paths(shared.opts)
     async_policy()
     initialize()
     try:
@@ -249,20 +256,20 @@ def start_ui():
     timer.startup.record("before-ui")
     shared.demo = modules.ui.create_ui(timer.startup)
     timer.startup.record("ui")
-    if cmd_opts.disable_queue:
+    if shared.cmd_opts.disable_queue:
         log.info('Server queues disabled')
         shared.demo.progress_tracking = False
     else:
         shared.demo.queue(concurrency_count=64)
 
     gradio_auth_creds = []
-    if cmd_opts.auth:
-        gradio_auth_creds += [x.strip() for x in cmd_opts.auth.strip('"').replace('\n', '').split(',') if x.strip()]
-    if cmd_opts.auth_file:
-        if not os.path.exists(cmd_opts.auth_file):
-            log.error(f"Invalid path to auth file: '{cmd_opts.auth_file}'")
+    if shared.cmd_opts.auth:
+        gradio_auth_creds += [x.strip() for x in shared.cmd_opts.auth.strip('"').replace('\n', '').split(',') if x.strip()]
+    if shared.cmd_opts.auth_file:
+        if not os.path.exists(shared.cmd_opts.auth_file):
+            log.error(f"Invalid path to auth file: '{shared.cmd_opts.auth_file}'")
         else:
-            with open(cmd_opts.auth_file, 'r', encoding="utf8") as file:
+            with open(shared.cmd_opts.auth_file, 'r', encoding="utf8") as file:
                 for line in file.readlines():
                     gradio_auth_creds += [x.strip() for x in line.split(',') if x.strip()]
     if len(gradio_auth_creds) > 0:
@@ -271,19 +278,19 @@ def start_ui():
     global local_url # pylint: disable=global-statement
     stdout = io.StringIO()
     allowed_paths = [os.path.dirname(__file__)]
-    if cmd_opts.data_dir is not None and os.path.isdir(cmd_opts.data_dir):
-        allowed_paths.append(cmd_opts.data_dir)
-    if cmd_opts.allowed_paths is not None:
-        allowed_paths += [p for p in cmd_opts.allowed_paths if os.path.isdir(p)]
+    if shared.cmd_opts.data_dir is not None and os.path.isdir(shared.cmd_opts.data_dir):
+        allowed_paths.append(shared.cmd_opts.data_dir)
+    if shared.cmd_opts.allowed_paths is not None:
+        allowed_paths += [p for p in shared.cmd_opts.allowed_paths if os.path.isdir(p)]
     shared.log.debug(f'Root paths: {allowed_paths}')
     with contextlib.redirect_stdout(stdout):
         app, local_url, share_url = shared.demo.launch( # app is FastAPI(Starlette) instance
-            share=cmd_opts.share,
+            share=shared.cmd_opts.share,
             server_name=server_name,
-            server_port=cmd_opts.port if cmd_opts.port != 7860 else None,
-            ssl_keyfile=cmd_opts.tls_keyfile,
-            ssl_certfile=cmd_opts.tls_certfile,
-            ssl_verify=not cmd_opts.tls_selfsign,
+            server_port=shared.cmd_opts.port if shared.cmd_opts.port != 7860 else None,
+            ssl_keyfile=shared.cmd_opts.tls_keyfile,
+            ssl_certfile=shared.cmd_opts.tls_certfile,
+            ssl_verify=not shared.cmd_opts.tls_selfsign,
             debug=False,
             auth=[tuple(cred.split(':')) for cred in gradio_auth_creds] if gradio_auth_creds else None,
             prevent_thread_lock=True,
@@ -293,24 +300,34 @@ def start_ui():
             favicon_path='html/favicon.svg',
             allowed_paths=allowed_paths,
             app_kwargs=fastapi_args,
-            _frontend=True and cmd_opts.share,
+            _frontend=True and shared.cmd_opts.share,
         )
-    if cmd_opts.data_dir is not None:
-        gr_tempdir.register_tmp_file(shared.demo, os.path.join(cmd_opts.data_dir, 'x'))
+    if shared.cmd_opts.data_dir is not None:
+        gr_tempdir.register_tmp_file(shared.demo, os.path.join(shared.cmd_opts.data_dir, 'x'))
     shared.log.info(f'Local URL: {local_url}')
-    if cmd_opts.docs:
+    if shared.cmd_opts.listen:
+        if not gradio_auth_creds:
+            shared.log.warning('Public interface enabled without authentication')
+        proto = 'https' if shared.cmd_opts.tls_keyfile is not None else 'http'
+        external_ip = get_external_ip()
+        if external_ip is not None:
+            shared.log.info(f'External URL: {proto}://{external_ip}:{shared.cmd_opts.port}')
+        public_ip = get_remote_ip()
+        if public_ip is not None:
+            shared.log.info(f'Public URL: {proto}://{public_ip}:{shared.cmd_opts.port}')
+    if shared.cmd_opts.docs:
         shared.log.info(f'API Docs: {local_url[:-1]}/docs') # pylint: disable=unsubscriptable-object
         shared.log.info(f'API ReDocs: {local_url[:-1]}/redocs') # pylint: disable=unsubscriptable-object
     if share_url is not None:
         shared.log.info(f'Share URL: {share_url}')
     # shared.log.debug(f'Gradio functions: registered={len(shared.demo.fns)}')
     shared.demo.server.wants_restart = False
-    setup_middleware(app, cmd_opts)
+    modules.api.middleware.setup_middleware(app, shared.cmd_opts)
 
-    if cmd_opts.subpath:
+    if shared.cmd_opts.subpath:
         import gradio
-        gradio.mount_gradio_app(app, shared.demo, path=f"/{cmd_opts.subpath}")
-        shared.log.info(f'Redirector mounted: /{cmd_opts.subpath}')
+        gradio.mount_gradio_app(app, shared.demo, path=f"/{shared.cmd_opts.subpath}")
+        shared.log.info(f'Redirector mounted: /{shared.cmd_opts.subpath}')
 
     timer.startup.record("launch")
 
@@ -318,7 +335,7 @@ def start_ui():
     shared.api = create_api(app)
     timer.startup.record("api")
 
-    ui_extra_networks.init_api(app)
+    modules.ui_extra_networks.init_api(app)
 
     modules.script_callbacks.app_started_callback(shared.demo, app)
     timer.startup.record("app-started")
@@ -343,7 +360,7 @@ def webui(restart=False):
     modules.sd_models.write_metadata()
     load_model()
     shared.opts.save(shared.config_filename)
-    if cmd_opts.profile:
+    if shared.cmd_opts.profile:
         for k, v in modules.script_callbacks.callback_map.items():
             shared.log.debug(f'Registered callbacks: {k}={len(v)} {[c.script for c in v]}')
     debug = log.trace if os.environ.get('SD_SCRIPT_DEBUG', None) is not None else lambda *args, **kwargs: None
@@ -354,7 +371,15 @@ def webui(restart=False):
     for m in modules.scripts.postprocessing_scripts_data:
         debug(f'  {m}')
     modules.script_callbacks.print_timers()
-    log.info(f"Startup time: {timer.startup.summary()}")
+
+    if shared.cmd_opts.profile:
+        log.info(f"Launch time: {timer.launch.summary(min_time=0)}")
+        log.info(f"Installer time: {timer.init.summary(min_time=0)}")
+        log.info(f"Startup time: {timer.startup.summary(min_time=0)}")
+    else:
+        timer.startup.add('launch', timer.launch.get_total())
+        timer.startup.add('installer', timer.launch.get_total())
+        log.info(f"Startup time: {timer.startup.summary()}")
     timer.startup.reset()
 
     if not restart:
@@ -364,8 +389,8 @@ def webui(restart=False):
                 continue
             logger.handlers = log.handlers
         # autolaunch only on initial start
-        if (shared.opts.autolaunch or cmd_opts.autolaunch) and local_url is not None:
-            cmd_opts.autolaunch = False
+        if (shared.opts.autolaunch or shared.cmd_opts.autolaunch) and local_url is not None:
+            shared.cmd_opts.autolaunch = False
             shared.log.info('Launching browser')
             import webbrowser
             webbrowser.open(local_url, new=2, autoraise=True)
@@ -380,7 +405,7 @@ def api_only():
     start_common()
     from fastapi import FastAPI
     app = FastAPI(**fastapi_args)
-    setup_middleware(app, cmd_opts)
+    modules.api.middleware.setup_middleware(app, shared.cmd_opts)
     shared.api = create_api(app)
     shared.api.wants_restart = False
     modules.script_callbacks.app_started_callback(None, app)
@@ -391,7 +416,7 @@ def api_only():
 
 
 if __name__ == "__main__":
-    if cmd_opts.api_only:
+    if shared.cmd_opts.api_only:
         api_only()
     else:
         webui()

@@ -16,32 +16,19 @@ class Script(scripts.Script):
         return not is_img2img if shared.native else False
 
     # return signature is array of gradio components
-    def ui(self, _is_img2img):
-        def video_type_change(video_type):
-            return [
-                gr.update(visible=video_type != 'None'),
-                gr.update(visible=video_type == 'GIF' or video_type == 'PNG'),
-                gr.update(visible=video_type == 'MP4'),
-                gr.update(visible=video_type == 'MP4'),
-            ]
-
+    def ui(self, is_img2img):
         with gr.Row():
             gr.HTML('<a href="https://huggingface.co/genmo/mochi-1-preview">&nbsp Mochi.1 Video</a><br>')
         with gr.Row():
             num_frames = gr.Slider(label='Frames', minimum=9, maximum=257, step=1, value=45)
         with gr.Row():
-            video_type = gr.Dropdown(label='Video file', choices=['None', 'GIF', 'PNG', 'MP4'], value='None')
-            duration = gr.Slider(label='Duration', minimum=0.25, maximum=10, step=0.25, value=2, visible=False)
-        with gr.Row():
-            gif_loop = gr.Checkbox(label='Loop', value=True, visible=False)
-            mp4_pad = gr.Slider(label='Pad frames', minimum=0, maximum=24, step=1, value=1, visible=False)
-            mp4_interpolate = gr.Slider(label='Interpolate frames', minimum=0, maximum=24, step=1, value=0, visible=False)
-        video_type.change(fn=video_type_change, inputs=[video_type], outputs=[duration, gif_loop, mp4_pad, mp4_interpolate])
+            from modules.ui_sections import create_video_inputs
+            video_type, duration, gif_loop, mp4_pad, mp4_interpolate = create_video_inputs(tab='img2img' if is_img2img else 'txt2img')
         return [num_frames, video_type, duration, gif_loop, mp4_pad, mp4_interpolate]
 
     def run(self, p: processing.StableDiffusionProcessing, num_frames, video_type, duration, gif_loop, mp4_pad, mp4_interpolate): # pylint: disable=arguments-differ, unused-argument
         # set params
-        num_frames = int(num_frames // 8)
+        num_frames = int(num_frames)
         p.width = 32 * int(p.width // 32)
         p.height = 32 * int(p.height // 32)
         p.task_args['output_type'] = 'pil'

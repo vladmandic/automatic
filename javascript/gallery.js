@@ -46,7 +46,7 @@ class GalleryFolder extends HTMLElement {
         else folder.shadow.children[1].classList.remove('gallery-folder-selected');
       }
     });
-    div.addEventListener('click', fetchFiles); // eslint-disable-line no-use-before-define
+    div.addEventListener('click', fetchFilesWS); // eslint-disable-line no-use-before-define
     this.shadow.appendChild(div);
   }
 }
@@ -224,7 +224,7 @@ async function getHash(str, algo = 'SHA-256') {
   }
 }
 
-async function wsConnect(socket, timeout = 2000) {
+async function wsConnect(socket, timeout = 5000) {
   const intrasleep = 100;
   const ttl = timeout / intrasleep;
   const isOpened = () => (socket.readyState === WebSocket.OPEN);
@@ -327,17 +327,57 @@ async function gallerySort(btn) {
   el.status.innerText = `Sort | ${arr.length.toLocaleString()} images | ${Math.floor(t1 - t0).toLocaleString()}ms`;
 }
 
-async function fetchFiles(evt) { // fetch file-by-file list over websockets
+async function fetchFilesHT(evt) {
+  el.status.innerText = `Folder | ${evt.target.name}`;
+  const t0 = performance.now();
+  const fragment = document.createDocumentFragment();
+  el.status.innerText = `Folder | ${evt.target.name} | in-progress`;
+  let numFiles = 0;
+
+  const res = await fetch(`/sdapi/v1/browser/files?folder=${encodeURI(evt.target.name)}`);
+  if (!res || res.status !== 200) {
+    el.status.innerText = `Folder | ${evt.target.name} | failed: ${res?.statusText}`;
+    return;
+  }
+  const jsonData = await res.json();
+  for (const line of jsonData) {
+    const data = decodeURI(line).split('##F##');
+    numFiles++;
+    const f = new GalleryFile(data[0], data[1]);
+    fragment.appendChild(f);
+  }
+
+  el.files.appendChild(fragment);
+
+  const t1 = performance.now();
+  log(`gallery: folder=${evt.target.name} num=${numFiles} time=${Math.floor(t1 - t0)}ms`);
+  el.status.innerText = `Folder | ${evt.target.name} | ${numFiles.toLocaleString()} images | ${Math.floor(t1 - t0).toLocaleString()}ms`;
+  addSeparators();
+}
+
+async function fetchFilesWS(evt) { // fetch file-by-file list over websockets
   el.files.innerHTML = '';
   if (!url) return;
   if (ws && ws.readyState === WebSocket.OPEN) ws.close(); // abort previous request
-  ws = new WebSocket(`${url}/sdapi/v1/browser/files`);
-  await wsConnect(ws);
+  let wsConnected = false;
+  try {
+    ws = new WebSocket(`${url}/sdapi/v1/browser/files`);
+    wsConnected = await wsConnect(ws);
+  } catch (err) {
+    log('gallery: ws connect error', err);
+    return;
+  }
+  log(`gallery: connected=${wsConnected} state=${ws?.readyState} url=${ws?.url}`);
+  if (!wsConnected) {
+    await fetchFilesHT(evt); // fallback to http
+    return;
+  }
   el.status.innerText = `Folder | ${evt.target.name}`;
   const t0 = performance.now();
   let numFiles = 0;
   let t1 = performance.now();
   let fragment = document.createDocumentFragment();
+
   ws.onmessage = (event) => {
     numFiles++;
     t1 = performance.now();

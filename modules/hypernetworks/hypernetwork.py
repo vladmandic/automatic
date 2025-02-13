@@ -9,6 +9,8 @@ from einops import rearrange, repeat
 from modules import devices, shared, hashes, errors, files_cache
 
 
+loaded_hypernetworks = []
+
 class HypernetworkModule(torch.nn.Module):
     activation_dict = {
         "linear": torch.nn.Identity,
@@ -280,10 +282,10 @@ def load_hypernetwork(name):
 
 def load_hypernetworks(names, multipliers=None):
     already_loaded = {}
-    for hypernetwork in shared.loaded_hypernetworks:
-        if hypernetwork.name in names:
-            already_loaded[hypernetwork.name] = hypernetwork
-    shared.loaded_hypernetworks.clear()
+    for hn in loaded_hypernetworks:
+        if hn.name in names:
+            already_loaded[hn.name] = hn
+    loaded_hypernetworks.clear()
     for i, name in enumerate(names):
         hypernetwork = already_loaded.get(name, None)
         if hypernetwork is None:
@@ -291,7 +293,7 @@ def load_hypernetworks(names, multipliers=None):
         if hypernetwork is None:
             continue
         hypernetwork.set_multiplier(multipliers[i] if multipliers else 1.0)
-        shared.loaded_hypernetworks.append(hypernetwork)
+        loaded_hypernetworks.append(hypernetwork)
 
 
 def find_closest_hypernetwork_name(search: str):
@@ -330,7 +332,7 @@ def attention_CrossAttention_forward(self, x, context=None, mask=None):
     h = self.heads
     q = self.to_q(x)
     context = default(context, x)
-    context_k, context_v = apply_hypernetworks(shared.loaded_hypernetworks, context, self)
+    context_k, context_v = apply_hypernetworks(loaded_hypernetworks, context, self)
     k = self.to_k(context_k)
     v = self.to_v(context_v)
     q, k, v = (rearrange(t, 'b n (h d) -> (b h) n d', h=h) for t in (q, k, v))

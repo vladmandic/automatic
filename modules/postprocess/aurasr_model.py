@@ -3,7 +3,7 @@ import diffusers
 from PIL import Image
 from modules import shared, devices
 from modules.upscaler import Upscaler, UpscalerData
-from installer import install
+
 
 class UpscalerAuraSR(Upscaler):
     def __init__(self, dirname): # pylint: disable=super-init-not-called

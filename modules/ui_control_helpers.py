@@ -6,8 +6,8 @@ from modules import shared, scripts, masking # pylint: disable=ungrouped-imports
 
 gr_height = None
 max_units = shared.opts.control_max_units
-debug = shared.log.trace if os.environ.get('SD_CONTROL_DEBUG', None) is not None else lambda *args, **kwargs: None
-debug('Trace: CONTROL')
+debug = os.environ.get('SD_CONTROL_DEBUG', None) is not None
+debug_log = shared.log.trace if debug else lambda *args, **kwargs: None
 
 # state variables
 busy = False # used to synchronize select_input and generate_click
@@ -24,13 +24,13 @@ def initialize():
     from modules.control.units import xs # vislearn ControlNet-XS
     from modules.control.units import lite # vislearn ControlNet-XS
     from modules.control.units import t2iadapter # TencentARC T2I-Adapter
-    shared.log.debug(f'UI initialize: control models={shared.opts.control_dir}')
+    shared.log.debug(f'UI initialize: control models="{shared.opts.control_dir}"')
     controlnet.cache_dir = os.path.join(shared.opts.control_dir, 'controlnet')
     xs.cache_dir = os.path.join(shared.opts.control_dir, 'xs')
     lite.cache_dir = os.path.join(shared.opts.control_dir, 'lite')
     t2iadapter.cache_dir = os.path.join(shared.opts.control_dir, 'adapter')
     processors.cache_dir = os.path.join(shared.opts.control_dir, 'processor')
-    masking.cache_dir   = os.path.join(shared.opts.control_dir, 'segment')
+    masking.cache_dir = os.path.join(shared.opts.control_dir, 'segment')
     unit.default_device = devices.device
     unit.default_dtype = devices.dtype
     try:
@@ -47,19 +47,30 @@ def initialize():
     scripts.scripts_control.initialize_scripts(is_img2img=False, is_control=True)
 
 
-def interrogate_clip():
+def interrogate():
     prompt = None
     try:
-        prompt = shared.interrogator.interrogate(input_source[0])
+        from modules.interrogate.interrogate import interrogate as interrogate_fn
+        prompt = interrogate_fn(input_source[0])
+    except Exception:
+        pass
+    return prompt
+
+
+def interrogate_clip(): # legacy function
+    prompt = None
+    try:
+        from modules.interrogate import openclip
+        prompt = openclip.interrogator.interrogate(input_source[0])
     except Exception:
         pass
     return gr.update() if prompt is None else prompt
 
 
-def interrogate_booru():
+def interrogate_booru(): # legacy function
     prompt = None
     try:
-        from modules import deepbooru
+        from modules.interrogate import deepbooru
         prompt = deepbooru.model.tag(input_source[0])
     except Exception:
         pass
@@ -127,7 +138,7 @@ def select_input(input_mode, input_image, init_image, init_type, input_resize, i
         busy = False
         # debug('Control input: none')
         return [gr.Tabs.update(), None, '']
-    debug(f'Control select input: source={selected_input} init={init_image} type={init_type} mode={input_mode}')
+    debug_log(f'Control select input: source={selected_input} init={init_image} type={init_type} mode={input_mode}')
     input_type = type(selected_input)
     input_mask = None
     status = 'Control input | Unknown'
@@ -168,7 +179,7 @@ def select_input(input_mode, input_image, init_image, init_type, input_resize, i
         res = [gr.Tabs.update(selected='out-gallery'), input_mask, status]
     else: # unknown
         input_source = None
-    shared.log.debug(f'Control input: type={input_type} input={input_source}')
+    debug_log(f'Control input: type={input_type} input={input_source}')
     # init inputs: optional
     if init_type == 0: # Control only
         input_init = None
@@ -176,22 +187,13 @@ def select_input(input_mode, input_image, init_image, init_type, input_resize, i
         input_init = None
     elif init_type == 2: # Separate init image
         input_init = [init_image]
-    debug(f'Control select input: source={input_source} init={input_init} mask={input_mask} mode={input_mode}')
+    debug_log(f'Control select input: source={input_source} init={input_init} mask={input_mask} mode={input_mode}')
     busy = False
     return res
 
 
-def video_type_change(video_type):
-    return [
-        gr.update(visible=video_type != 'None'),
-        gr.update(visible=video_type == 'GIF' or video_type == 'PNG'),
-        gr.update(visible=video_type == 'MP4'),
-        gr.update(visible=video_type == 'MP4'),
-    ]
-
-
 def copy_input(mode_from, mode_to, input_image, input_resize, input_inpaint):
-    debug(f'Control transfter input: from={mode_from} to={mode_to} image={input_image} resize={input_resize} inpaint={input_inpaint}')
+    debug_log(f'Control transfter input: from={mode_from} to={mode_to} image={input_image} resize={input_resize} inpaint={input_inpaint}')
     def getimg(ctrl):
         if ctrl is None:
             return None

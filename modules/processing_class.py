@@ -52,8 +52,13 @@ class StableDiffusionProcessing:
                  # other
                  hidiffusion: bool = False,
                  do_not_reload_embeddings: bool = False,
-                 detailer: bool = False,
                  restore_faces: bool = False,
+                 # detailer
+                detailer_enabled: bool = False,
+                detailer_prompt: str = '',
+                detailer_negative: str = '',
+                detailer_steps: int = 10,
+                detailer_strength: float = 0.3,
                  # hdr corrections
                  hdr_mode: int = 0,
                  hdr_brightness: float = 0,
@@ -167,7 +172,11 @@ class StableDiffusionProcessing:
         self.full_quality = full_quality
         self.hidiffusion = hidiffusion
         self.do_not_reload_embeddings = do_not_reload_embeddings
-        self.detailer = detailer
+        self.detailer_enabled = detailer_enabled
+        self.detailer_prompt = detailer_prompt
+        self.detailer_negative = detailer_negative
+        self.detailer_steps = detailer_steps
+        self.detailer_strength = detailer_strength
         self.restore_faces = restore_faces
         self.init_images = init_images
         self.resize_mode = resize_mode
@@ -345,7 +354,8 @@ class StableDiffusionProcessing:
         raise NotImplementedError
 
     def close(self):
-        self.sampler = None # pylint: disable=attribute-defined-outside-init
+        self.sampler = None
+        self.scripts = None
 
 
 class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
@@ -581,7 +591,7 @@ class StableDiffusionProcessingControl(StableDiffusionProcessingImg2Img):
         else:
             self.hr_upscale_to_x, self.hr_upscale_to_y = self.hr_resize_x, self.hr_resize_y
         # hypertile_set(self, hr=True)
-        shared.state.job_count = 2 * self.n_iter
+        # shared.state.job_count = 2 * self.n_iter
         shared.log.debug(f'Control hires: upscaler="{self.hr_upscaler}" scale={scale} fixed={not use_scale} size={self.hr_upscale_to_x}x{self.hr_upscale_to_y}')
 
 

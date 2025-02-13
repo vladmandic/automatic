@@ -16,7 +16,8 @@ def face_swap(p: processing.StableDiffusionProcessing, app, input_images: List[I
     import insightface.model_zoo
     global swapper # pylint: disable=global-statement
     if swapper is None:
-        model_path = hf.hf_hub_download(repo_id='ezioruan/inswapper_128.onnx', filename='inswapper_128.onnx', cache_dir=shared.opts.diffusers_dir)
+        model_path = hf.hf_hub_download(repo_id='ezioruan/inswapper_128.onnx', filename='inswapper_128.onnx', cache_dir=shared.opts.hfcache_dir)
+        # model_path = hf.hf_hub_download(repo_id='somanchiu/reswapper', filename='reswapper_256-1567500_originalInswapperClassCompatible.onnx', cache_dir=shared.opts.hfcache_dir)
         router: insightface.model_zoo.model_zoo.INSwapper = insightface.model_zoo.model_zoo.ModelRouter(model_path)
         swapper = router.get_model()
 

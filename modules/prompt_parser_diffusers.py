@@ -354,13 +354,28 @@ def get_prompts_with_weights(pipe, prompt: str):
     if shared.opts.prompt_mean_norm:
         texts_and_weights = normalize_prompt(texts_and_weights)
     texts, text_weights = zip(*texts_and_weights)
-    if debug_enabled:
+    avg_weight = 0
+    min_weight = 1
+    max_weight = 0
+    sections = 0
+
+    try:
         all_tokens = 0
-        for text in texts:
+        for text, weight in zip(texts, text_weights):
             tokens = get_tokens(pipe, 'section', text)
             all_tokens += tokens
-        debug(f'Prompt tokenizer: parser={shared.opts.prompt_attention} tokens={all_tokens}')
+            avg_weight += tokens*weight
+            min_weight = min(min_weight, weight)
+            max_weight = max(max_weight, weight)
+            if text != 'BREAK':
+                sections += 1
+        if all_tokens > 0:
+            avg_weight = avg_weight / all_tokens
+            shared.log.debug(f'Prompt tokenizer: parser={shared.opts.prompt_attention} len={len(prompt)} sections={sections} tokens={all_tokens} weights={min_weight:.2f}/{avg_weight:.2f}/{max_weight:.2f}')
+    except Exception:
+        pass
     debug(f'Prompt: weights={texts_and_weights} time={(time.time() - t0):.3f}')
+
     return texts, text_weights
 
 

@@ -1,8 +1,11 @@
+import io
+import base64
 import os
 import re
 import time
 import json
 import collections
+from PIL import Image
 from modules import shared, paths, modelloader, hashes, sd_hijack_accelerate
 
 
@@ -49,7 +52,12 @@ class CheckpointInfo:
         relname, ext = os.path.splitext(relname)
         ext = ext.lower()[1:]
 
-        if os.path.isfile(filename): # ckpt or safetensor
+        if filename.lower() == 'none':
+            self.name = 'none'
+            self.relname = 'none'
+            self.sha256 = None
+            self.type = 'unknown'
+        elif os.path.isfile(filename): # ckpt or safetensor
             self.name = relname
             self.filename = filename
             self.sha256 = hashes.sha256_from_cache(self.filename, f"checkpoint/{relname}")
@@ -170,7 +178,7 @@ def update_model_hashes():
     return txt
 
 
-def get_closet_checkpoint_match(s: str):
+def get_closet_checkpoint_match(s: str) -> CheckpointInfo:
     if s.startswith('https://huggingface.co/'):
         model_name = s.replace('https://huggingface.co/', '')
         checkpoint_info = CheckpointInfo(model_name) # create a virutal model info
@@ -210,6 +218,8 @@ def get_closet_checkpoint_match(s: str):
     if shared.opts.sd_checkpoint_autodownload and s.count('/') == 1:
         modelloader.hf_login()
         found = modelloader.find_diffuser(s, full=True)
+        if found is None:
+            return None
         found = [f for f in found if f == s]
         shared.log.info(f'HF search: model="{s}" results={found}')
         if found is not None and len(found) == 1:
@@ -262,7 +272,7 @@ def select_checkpoint(op='model'):
         shared.log.info(f'Load {op}: select="{checkpoint_info.title if checkpoint_info is not None else None}"')
         return checkpoint_info
     if len(checkpoints_list) == 0:
-        shared.log.warning("Cannot generate without a checkpoint")
+        shared.log.error("No models found")
         shared.log.info("Set system paths to use existing folders")
         shared.log.info("  or use --models-dir <path-to-folder> to specify base folder with all models")
         shared.log.info("  or use --ckpt-dir <path-to-folder> to specify folder with sd models")
@@ -287,6 +297,20 @@ def init_metadata():
         sd_metadata = shared.readfile(sd_metadata_file, lock=True) if os.path.isfile(sd_metadata_file) else {}
 
 
+def extract_thumbnail(filename, data):
+    try:
+        thumbnail = data.split(",")[1]
+        thumbnail = base64.b64decode(thumbnail)
+        thumbnail = io.BytesIO(thumbnail)
+        thumbnail = Image.open(thumbnail)
+        thumbnail = thumbnail.convert("RGB")
+        thumbnail = thumbnail.resize((512, 512), Image.Resampling.HAMMING)
+        fn = os.path.splitext(filename)[0]
+        thumbnail = thumbnail.save(f"{fn}.thumb.jpg", quality=50)
+    except Exception as e:
+        shared.log.error(f"Error extracting thumbnail: {filename} {e}")
+
+
 def read_metadata_from_safetensors(filename):
     global sd_metadata # pylint: disable=global-statement
     if sd_metadata is None:
@@ -307,10 +331,13 @@ def read_metadata_from_safetensors(filename):
             metadata_len = int.from_bytes(metadata_len, "little")
             json_start = file.read(2)
             if metadata_len <= 2 or json_start not in (b'{"', b"{'"):
-                shared.log.error(f'Model metadata invalid: file="{filename}"')
+                shared.log.error(f'Model metadata invalid: file="{filename}" len={metadata_len} start={json_start}')
+                return res
             json_data = json_start + file.read(metadata_len-2)
             json_obj = json.loads(json_data)
             for k, v in json_obj.get("__metadata__", {}).items():
+                if k == 'modelspec.thumbnail' and v.startswith("data:"):
+                    extract_thumbnail(filename, v)
                 if v.startswith("data:"):
                     v = 'data'
                 if k == 'format' and v == 'pt':
@@ -330,6 +357,8 @@ def read_metadata_from_safetensors(filename):
                 res[k] = v
         except Exception as e:
             shared.log.error(f'Model metadata: file="{filename}" {e}')
+            from modules import errors
+            errors.display(e, 'Model metadata')
     sd_metadata[filename] = res
     global sd_metadata_pending # pylint: disable=global-statement
     sd_metadata_pending += 1

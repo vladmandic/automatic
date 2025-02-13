@@ -7,34 +7,28 @@ from modules import shared, errors
 from modules.sd_samplers_common import SamplerData, flow_models
 
 
-debug = shared.log.trace if os.environ.get('SD_SAMPLER_DEBUG', None) is not None else lambda *args, **kwargs: None
-debug('Trace: SAMPLER')
+debug = os.environ.get('SD_SAMPLER_DEBUG', None) is not None
+debug_log = shared.log.trace if debug else lambda *args, **kwargs: None
 
 try:
     from diffusers import (
         CMStochasticIterativeScheduler,
         UniPCMultistepScheduler,
         DDIMScheduler,
-
         EulerDiscreteScheduler,
         EulerAncestralDiscreteScheduler,
         EDMEulerScheduler,
         FlowMatchEulerDiscreteScheduler,
-
         DEISMultistepScheduler,
         SASolverScheduler,
-
         DPMSolverSinglestepScheduler,
         DPMSolverMultistepScheduler,
         EDMDPMSolverMultistepScheduler,
         CosineDPMSolverMultistepScheduler,
         DPMSolverSDEScheduler,
-
         HeunDiscreteScheduler,
         FlowMatchHeunDiscreteScheduler,
-
         LCMScheduler,
-
         PNDMScheduler,
         IPNDMScheduler,
         DDPMScheduler,
@@ -43,18 +37,20 @@ try:
         KDPM2AncestralDiscreteScheduler,
     )
 except Exception as e:
-    shared.log.error(f'Diffusers import error: version={diffusers.__version__} error: {e}')
+    shared.log.error(f'Sampler import: version={diffusers.__version__} error: {e}')
     if os.environ.get('SD_SAMPLER_DEBUG', None) is not None:
         errors.display(e, 'Samplers')
 try:
     from modules.schedulers.scheduler_tcd import TCDScheduler # pylint: disable=ungrouped-imports
+    from modules.schedulers.scheduler_tdd import TDDScheduler # pylint: disable=ungrouped-imports
     from modules.schedulers.scheduler_dc import DCSolverMultistepScheduler # pylint: disable=ungrouped-imports
     from modules.schedulers.scheduler_vdm import VDMScheduler # pylint: disable=ungrouped-imports
     from modules.schedulers.scheduler_dpm_flowmatch import FlowMatchDPMSolverMultistepScheduler # pylint: disable=ungrouped-imports
     from modules.schedulers.scheduler_bdia import BDIA_DDIMScheduler # pylint: disable=ungrouped-imports
     from modules.schedulers.scheduler_ufogen import UFOGenScheduler # pylint: disable=ungrouped-imports
+    from modules.perflow import PeRFlowScheduler # pylint: disable=ungrouped-imports
 except Exception as e:
-    shared.log.error(f'Diffusers import error: version={diffusers.__version__} error: {e}')
+    shared.log.error(f'Sampler import: version={diffusers.__version__} error: {e}')
     if os.environ.get('SD_SAMPLER_DEBUG', None) is not None:
         errors.display(e, 'Samplers')
 
@@ -98,7 +94,9 @@ config = {
     'VDM Solver': { 'clip_sample_range': 2.0, },
     'LCM': { 'beta_start': 0.00085, 'beta_end': 0.012, 'beta_schedule': "scaled_linear", 'set_alpha_to_one': True, 'rescale_betas_zero_snr': False, 'thresholding': False, 'timestep_spacing': 'linspace' },
     'TCD': { 'set_alpha_to_one': True, 'rescale_betas_zero_snr': False, 'beta_schedule': 'scaled_linear' },
-    'UFOGen': {},
+    'TDD': { },
+    'PeRFlow': { 'prediction_type': 'ddim_eps' },
+    'UFOGen': { },
     'BDIA DDIM': { 'clip_sample': False, 'set_alpha_to_one': True, 'steps_offset': 0, 'clip_sample_range': 1.0, 'sample_max_value': 1.0, 'timestep_spacing': 'leading', 'rescale_betas_zero_snr': False, 'thresholding': False, 'gamma': 1.0 },
 
     'PNDM': { 'skip_prk_steps': False, 'set_alpha_to_one': False, 'steps_offset': 0, 'timestep_spacing': 'linspace' },
@@ -157,6 +155,8 @@ samplers_data_diffusers = [
 
     SamplerData('LCM', lambda model: DiffusionSampler('LCM', LCMScheduler, model), [], {}),
     SamplerData('TCD', lambda model: DiffusionSampler('TCD', TCDScheduler, model), [], {}),
+    SamplerData('TDD', lambda model: DiffusionSampler('TDD', TDDScheduler, model), [], {}),
+    SamplerData('PeRFlow', lambda model: DiffusionSampler('PeRFlow', PeRFlowScheduler, model), [], {}),
     SamplerData('UFOGen', lambda model: DiffusionSampler('UFOGen', UFOGenScheduler, model), [], {}),
 
     SamplerData('Same as primary', None, [], {}),
@@ -169,23 +169,26 @@ class DiffusionSampler:
             return
         self.name = name
         self.config = {}
-        if not hasattr(model, 'scheduler'):
-            return
-        if getattr(model, "default_scheduler", None) is None: # sanity check
+        self.sampler = None
+        # if not hasattr(model, 'scheduler'):
+        #    return
+        if getattr(model, "default_scheduler", None) is None and (model is not None): # sanity check
             model.default_scheduler = copy.deepcopy(model.scheduler)
         for key, value in config.get('All', {}).items(): # apply global defaults
             self.config[key] = value
-        debug(f'Sampler: all="{self.config}"')
-        if hasattr(model.default_scheduler, 'scheduler_config'): # find model defaults
+        debug_log(f'Sampler: all="{self.config}"')
+        if model is None:
+            orig_config = {}
+        elif hasattr(model.default_scheduler, 'scheduler_config'): # find model defaults
             orig_config = model.default_scheduler.scheduler_config
         else:
             orig_config = model.default_scheduler.config
-        debug(f'Sampler: diffusers="{self.config}"')
-        debug(f'Sampler: original="{orig_config}"')
+        debug_log(f'Sampler: diffusers="{self.config}"')
+        debug_log(f'Sampler: original="{orig_config}"')
         for key, value in orig_config.items(): # apply model defaults
             if key in self.config:
                 self.config[key] = value
-        debug(f'Sampler: default="{self.config}"')
+        debug_log(f'Sampler: default="{self.config}"')
         for key, value in config.get(name, {}).items(): # apply diffusers per-scheduler defaults
             self.config[key] = value
         for key, value in kwargs.items(): # apply user args, if any
@@ -264,15 +267,22 @@ class DiffusionSampler:
             if key not in possible:
                 # shared.log.warning(f'Sampler: sampler="{name}" config={self.config} invalid={key}')
                 del self.config[key]
-        debug(f'Sampler: name="{name}"')
-        debug(f'Sampler: config={self.config}')
-        debug(f'Sampler: signature={possible}')
-        # shared.log.debug(f'Sampler: sampler="{name}" config={self.config}')
-        sampler = constructor(**self.config)
+        debug_log(f'Sampler: name="{name}"')
+        debug_log(f'Sampler: config={self.config}')
+        debug_log(f'Sampler: signature={possible}')
+        # shared.log.debug_log(f'Sampler: sampler="{name}" config={self.config}')
+        try:
+            sampler = constructor(**self.config)
+        except Exception as e:
+            shared.log.error(f'Sampler: sampler="{name}" {e}')
+            if debug:
+                errors.display(e, 'Samplers')
+            self.sampler = None
+            return
         accept_sigmas = "sigmas" in set(inspect.signature(sampler.set_timesteps).parameters.keys())
         accepts_timesteps = "timesteps" in set(inspect.signature(sampler.set_timesteps).parameters.keys())
         accept_scale_noise = hasattr(sampler, "scale_noise")
-        debug(f'Sampler: sampler="{name}" sigmas={accept_sigmas} timesteps={accepts_timesteps}')
+        debug_log(f'Sampler: sampler="{name}" sigmas={accept_sigmas} timesteps={accepts_timesteps}')
         if ('Flux' in model.__class__.__name__) and (not accept_sigmas):
             shared.log.warning(f'Sampler: sampler="{name}" does not accept sigmas')
             self.sampler = None
@@ -286,5 +296,5 @@ class DiffusionSampler:
             if not hasattr(self.sampler, 'dc_ratios'):
                 pass
                 # self.sampler.dc_ratios = self.sampler.cascade_polynomial_regression(test_CFG=6.0, test_NFE=10, cpr_path='tmp/sd2.1.npy')
-        # shared.log.debug(f'Sampler: class="{self.sampler.__class__.__name__}" config={self.sampler.config}')
+        # shared.log.debug_log(f'Sampler: class="{self.sampler.__class__.__name__}" config={self.sampler.config}')
         self.sampler.name = name

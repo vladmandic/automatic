@@ -1,22 +1,275 @@
 # Change Log for SD.Next
 
-## Update for 2025-01-02
+## Update for 2025-02-05
 
+- refresh dev/master branches
+
+## Update for 2025-02-04
+
+### Highlights for 2025-02-04
+
+Just one week after latest release and what a week it was with over 50 commits!  
+
+*What's New?*  
+- Rehosted core repo to new [home](https://github.com/vladmandic/sdnext)  
+- Switched to using `torch==2.6.0` and added support for `nightly` builds required for **nVidia Blackwell** GPUs  
+- Completely new **interrogate/captioning**, now supporting 150+ **OpenCLiP** models and 20+ built-in **VLMs**  
+- Support for **new VLMs**, New SOTA **background removal**  
+- Other: *torch tunable ops, extra networks search/filter, balanced offload, prompt parser, configurable tracebacks, etc.*  
+- Cumulative fixes...  
+
+### Details for 2025-02-04
+
+- **GitHub**
+  - rename core repo from <https://github.com/vladmandic/automatic> to <https://github.com/vladmandic/sdnext>  
+    old repo url should automatically redirect to new one for seamless transition and in-place upgrades   
+    all internal links have been updated  
+    wiki content and docs site have been updated  
+- **Docs**:
+  - Updated [Debugging guide](https://github.com/vladmandic/automatic/wiki/Debug)  
+- **Torch**:
+  - for **cuda** set default to `torch==2.6.0+cu126`  
+    for **rocm** set default to `torch==2.6.0+rocm6.2.4`  
+    for **ipex** set default to `torch==2.6.0+xpu`  
+    *note*: to avoid disruptions sdnext does not perform torch install during in-place upgrades  
+    to force torch upgrade, either start with new installation or use `--reinstall` flag  
+  - support for torch **nightly** builds and nvidia **blackwell** gpus!  
+    use `--use-nightly` flag to install torch nightly builds  
+    current defaults to `torch==2.7.0+cu128` prerelease  
+    *note*: nightly builds are required for blackwell gpus  
+  - add support for torch **tunable ops**, this can speed up operations by up to *10-30%* on some platforms  
+    set in *settings -> backend settings -> torch options* and *settings -> system paths -> tunable ops cache*  
+  - add support for stream-loading, this can speed up model loading when models are located on network drives  
+    set in *settings -> models & loading -> model load using streams*  
+  - enhanced error logging  
+- **Interrogate/Captioning**  
+  - single interrogate button for every input or output image  
+  - behavior of interrogate configurable in *settings -> interrogate*  
+    with detailed defaults for each model type also configurable  
+  - select between 150+ *OpenCLiP* supported models, 20+ built-in *VLMs*, *DeepDanbooru*  
+  - **VLM**: now that we can use VLMs freely, we've also added support for few more out-of-the-box  
+    [Alibaba Qwen VL2](https://huggingface.co/Qwen/Qwen2-VL-2B), [Huggingface Smol VL2](HuggingFaceTB/SmolVLM-Instruct), [ToriiGate 0.4](Minthy/ToriiGate-v0.4-2B)  
+- **Postprocess**  
+  - new sota remove background model: [BEN2](https://huggingface.co/PramaLLC/BEN2)  
+    select in *process -> remove background* or enable postprocessing for txt2img/img2img operations  
+- **Other**:
+  - **networks**: imporove search/filter and add visual indicators for types  
+  - **balanced offload** new defaults: *lowvram/4gb min threshold: 0, medvram/8gb min threshold: 0, default min threshold 0.25*  
+  - **prompt parser**: log stats with tokens, sections and min/avg/max weights  
+  - **prompt parser**: add setting to ignore line breaks in prompt  
+    set in *settings -> text encoder -> use line breaks*  
+  - **visual query**: add list of predefined system prompts  
+  - **onnx**: allow manually specifying `onnxruntime` package
+    set env variable `ONNXRUNTIME_COMMAND` to override default package installation  
+  - **nvml cli**: run nvidia-management-lib interrogate from cli  
+    already available in ui in generate -> right click -> nvidia  
+    > python modules/api/nvml.py  
+- **Refactor**:
+  - unified trace handler with configurable tracebacks  
+  - refactor interrogate/analyze/vqa code  
+- **Fixes**:  
+  - photomaker with offloading  
+  - photomaker with refine  
+  - detailer with faceid modules  
+  - detailer restore pipeline before run  
+  - fix `python==3.9` compatibility  
+  - improve `python>=3.12.3` compatibility
+  - handle invalid `triton` on Linux  
+  - correct library import order  
+  - update requirements  
+  - calculate dyn atten bmm slice rate  
+  - dwpose update and patch `mmengine` installer  
+  - ipex device wrapper with adetailer  
+  - openvino error handling  
+  - relax python version checks for rocm  
+  - simplify and improve file wildcard matching  
+  - fix `rich` version  
+  - add cn active label
+
+## Update for 2025-01-29
+
+### Highlights for 2025-01-29
+
+Two weeks since last release, time for update!  
+
+*What's New?*  
+- New **Detailer** functionality including ability to use several new  
+  face-restore models: *RestoreFormer, CodeFormer, GFPGan, GPEN-BFR*
+- Support for new models/pipelines:  
+  face-swapper with **Photomaker-v2** and video with **Fast-Hunyuan**  
+- Support for several new optimizations and accelerations:  
+  Many **IPEX** improvements, native *torch fp8* support,  
+  support for **PAB:Pyramid-attention-broadcast**, **ParaAttention** and **PerFlow**  
+- Fully built-in both model **merge weights** as well as model **merge component**  
+  Finally replace that pesky VAE in your favorite model with a fixed one!  
+- Improved remote access control and reliability as well as running inside containers  
+- And of course, hotfixes for all reported issues...  
+
+### Details for 2025-01-29
+
+- **Contributing**:  
+  - if you'd like to contribute, please see updated [contributing](https://github.com/vladmandic/automatic/blob/dev/CONTRIBUTING) guidelines
+- **Model Merge**
+  - replace model components and merge LoRAs  
+    in addition to existing model weights merge support  
+    now also having ability to replace model components and merge LoRAs  
+    you can also test merges in-memory without needing to save to disk at all  
+    and you can also use it to convert diffusers to safetensors if you want  
+    *example*: replace vae in your favorite model with a fixed one? replace text encoder? etc.  
+    *note*: limited to sdxl for now, additional models can be added depending on popularity  
+- **Detailer**:  
+  - in addition as standard behavior of detect & run-generate, it can now also run face-restore models  
+  - included models are: *CodeFormer, RestoreFormer, GFPGan, GPEN-BFR*  
+- **Face**:  
+  - new [PhotoMaker v2](https://huggingface.co/TencentARC/PhotoMaker-V2) and reimplemented [PhotoMaker v1](https://huggingface.co/TencentARC/PhotoMaker)  
+    compatible with sdxl models, generates pretty good results and its faster than most other methods  
+    select under *scripts -> face -> photomaker*  
+  - new [ReSwapper](https://github.com/somanchiu/ReSwapper)  
+    todo: experimental-only and unfinished, only noting in changelog for future reference  
+- **Video**  
+  - **hunyuan video** support for [FastHunyuan](https://huggingface.co/FastVideo/FastHunyuan)  
+    simply select model variant and set appropriate parameters  
+    recommended: sampler-shift=17, steps=6, resolution=720x1280, frames=125, guidance>6.0  
+- [PAB: Pyramid Attention Broadcast](https://oahzxl.github.io/PAB/)  
+  - speed up generation by caching attention results between steps  
+  - enable in *settings -> pipeline modifiers -> pab*  
+  - adjust settings as needed: wider timestep range means more acceleration, but higher accuracy drop  
+  - compatible with most `transformer` based models: e.g. flux.1, hunyuan-video, lyx-video, mochi, etc.
+- [ParaAttention](https://github.com/chengzeyi/ParaAttention)
+  - first-block caching that can significantly speed up generation by dynamically reusing partial outputs between steps  
+  - available for: flux, hunyuan-video, ltx-video, mochi  
+  - enable in *settings -> pipeline modifiers -> para-attention*  
+  - adjust residual diff threshold to balance the speedup and the accuracy:  
+    higher values leads to more cache hits and speedups, but might also lead to a higher accuracy drop  
+- **IPEX**
+  - enable force attention slicing, fp64 emulation, jit cache  
+  - use the us server by default on linux  
+  - use pytorch test branch on windows  
+  - extend the supported python versions  
+  - improve sdpa dynamic attention  
+- **Torch FP8**
+  - uses torch `float8_e4m3fn` or `float8_e5m2` as data storage and performs dynamic upcasting to compute `dtype` as needed  
+  - compatible with most `unet` and `transformer` based models: e.g. *sd15, sdxl, sd35, flux.1, hunyuan-video, ltx-video, etc.*  
+    this is alternative to `bnb`/`quanto`/`torchao` quantization on models/platforms/gpus where those libraries are not available  
+  - enable in *settings -> quantization -> layerwise casting*  
+- [PerFlow](https://github.com/magic-research/piecewise-rectified-flow)  
+  - piecewise rectified flow as model acceleration  
+  - use `perflow` scheduler combined with one of the available pre-trained [models](https://huggingface.co/hansyan)  
+- **Other**:  
+  - **upscale**: new [asymmetric vae](Heasterian/AsymmetricAutoencoderKLUpscaler) upscaling method
+  - **gallery**: add http fallback for slow/unreliable links  
+  - **splash**: add legacy mode indicator on splash screen  
+  - **network**: extract thumbnail from model metadata if present  
+  - **network**: setting value to disable use of reference models  
+- **Refactor**:  
+  - **upscale**: code refactor to unify latent, resize and model based upscalers  
+  - **loader**: ability to run in-memory models  
+  - **schedulers**: ability to create model-less schedulers  
+  - **quantization**: code refactor into dedicated module  
+  - **dynamic attention sdpa**: more correct implementation and new trigger rate control  
+- **Remote access**:  
+  - perform auth check on ui startup  
+  - unified standard and modern-ui authentication method & cleanup auth logging  
+  - detect & report local/external/public ip addresses if using `listen` mode  
+  - detect *docker* enforced limits instead of system limits if running in a container  
+  - warn if using public interface without authentication  
+- **Fixes**:  
+  - non-full vae decode  
+  - send-to image transfer  
+  - sana vae tiling  
+  - increase gallery timeouts  
+  - update ui element ids  
+  - modernui use local font  
+  - unique font family registration  
+  - mochi video number of frames  
+  - mark large models that should offload  
+  - avoid repeated optimum-quanto installation  
+  - avoid reinstalling bnb if not cuda  
+  - image metadata civitai compatibility  
+  - xyz grid handle invalid values  
+  - omnigen pipeline handle float seeds  
+  - correct logging of docker status on logs, thanks @kmscode  
+  - fix omnigen  
+  - fix docker status reporting  
+  - vlm/vqa with moondream2  
+  - rocm do not override triton installation  
+  - port streaming model load to diffusers  
+
+## Update for 2025-01-15
+
+### Highlights for 2025-01-15
+
+Two weeks since last release, time for update!  
+This time a bit shorter highligh reel as this is primarily a service release, but still there is more than few updates  
+*(actually, there are ~60 commits, so its not that tiny)*  
+
+*What's New?"  
+- Large [Wiki](https://github.com/vladmandic/automatic/wiki)/[Docs](https://vladmandic.github.io/sdnext-docs/) updates  
+- New models: **Allegro Video**, new pipelines: **PixelSmith**, updates: **Hunyuan-Video**, **LTX-Video**, **Sana 4k**  
+- New version for **ZLUDA**  
+- New features in **Detailer**, **XYZ grid**, **Sysinfo**, **Logging**, **Schedulers**, **Video save/create**  
+- And a tons of hotfixes...  
+
+### Details for 2025-01-15
+
+- [Wiki/Docs](https://vladmandic.github.io/sdnext-docs/):
+  - updated: Detailer, Install, Update, Debug, Control-HowTo, ZLUDA  
 - [Allegro Video](https://huggingface.co/rhymes-ai/Allegro)  
   - optimizations: full offload and quantization support  
   - *reference values*: width 1280 height 720 frames 88 steps 100 guidance 7.5  
   - *note*: allegro model is really sensitive to input width/height/frames/steps  
     and may result in completely corrupt output if those are not within expected range  
+- [PixelSmith](https://github.com/Thanos-DB/Pixelsmith/)
+  - available for SD-XL in txt2img and img2img workflows
+  - select from *scripts -> pixelsmith*  
+- [Hunyuan Video](https://github.com/Tencent/HunyuanVideo) LoRA support
+  - example: <https://huggingface.co/Cseti/HunyuanVideo-LoRA-Arcane_Jinx-v1>
+- [LTX Video](https://github.com/Lightricks/LTX-Video) framewise decoding  
+  - enabled by default, allows generating longer videos with reduced memory requirements  
+- [Sana 4k](https://huggingface.co/Efficient-Large-Model/Sana_1600M_4Kpx_BF16_diffusers)  
+  - new Sana variation with support of directly generating 4k images  
+  - simply select from *networks -> models -> reference*  
+  - tip: enable vae tiling when generating very large images  
 - **Logging**:
   - reverted enable debug by default  
   - updated [debug wiki](https://github.com/vladmandic/automatic/wiki/debug)  
   - sort logged timers by duration  
   - allow min duration env variable for timers: `SD_MIN_TIMER=0.1` (default)  
   - update installer messages  
+- **Refactor**:
+  - refactored progress monitoring, job updates and live preview  
+  - improved metadata save and restore  
+  - startup tracing and optimizations  
+  - threading load locks on model loads  
+  - refactor native vs legacy model loader  
+  - video save/create
+- **Schedulers**:
+  - [TDD](https://github.com/RedAIGC/Target-Driven-Distillation) new super-fast scheduler that can generate images in 4-8 steps  
+    recommended to use with [TDD LoRA](https://huggingface.co/RED-AIGC/TDD/tree/main)  
 - **Detailer**:
+  - add explicit detailer prompt and negative prompt  
   - add explicit detailer steps setting  
-- **SysInfo**:
-  - update to collected data and benchmarks  
+  - move steps, strength, prompt, negative from settings into ui params  
+  - set/restore detailer metadata  
+  - new [detailer wiki](https://github.com/vladmandic/automatic/wiki/Detailer)
+- **Preview**
+  - since different TAESD versions produce different results and latest is not necessarily greatest  
+    you can choose TAESD version in settings -> live preview  
+    also added is support for another finetuned version of TAESD [Hybrid TinyVAE](https://huggingface.co/cqyan/hybrid-sd-tinyvae-xl)  
+- **Video**  
+  - all video create/save code is now unified  
+  - add support for video formats: GIF, PNG, MP4/MP4V, MP4/AVC1, MP4/JVT3, MKV/H264, AVI/DIVX, AVI/RGBA, MJPEG/MJPG, MPG/MPG1, AVR/AVR1
+  - *note*: video format support is platform dependent and not all formats may be available on all platforms
+  - *note*: avc1 and h264 need custom opencv due to oss licensing issues  
+- **ZLUDA** v3.8.7  
+  - new runtime compiler implementation: complex types, JIT are now available  
+  - fast fourier transformation is implemented  
+  - experimental BLASLt support via nightly build  
+    - set `ZLUDA_NIGHTLY=1` to install nightly ZLUDA: newer torch such as 2.4.x (default) and 2.5.x are now available  
+    - requirements: unofficial hipBLASLt  
+- **Other**
+  - **XYZ Grid**: add prompt search&replace options: *primary, refine, detailer, all*
+  - **SysInfo**: update to collected data and benchmarks  
 - **Fixes**:
   - explict clear caches on model load  
   - lock adetailer commit: `#a89c01d`  
@@ -26,6 +279,21 @@
   - sd35 img2img
   - samplers test for scale noise before using  
   - scheduler api  
+  - sampler create error handling  
+  - controlnet with hires  
+  - controlnet with batch count  
+  - apply settings skip hidden settings  
+  - lora diffusers method apply only once  
+  - lora diffusers method set prompt tags and metadata  
+  - flux support on-the-fly quantization for bnb of unet only  
+  - control restore pipeline before running hires  
+  - restore args after batch run  
+  - flux controlnet  
+  - zluda installer  
+  - control inherit parent pipe settings  
+  - control logging  
+  - hf cache folder settings  
+  - fluxfill should not require base model
 
 ## Update for 2024-12-31
 

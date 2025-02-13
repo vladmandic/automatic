@@ -1,4 +1,11 @@
-from installer import install, log
+try:
+    from installer import install, log
+except Exception:
+    def install(*args, **kwargs): # pylint: disable=unused-argument
+        pass
+    import logging
+    log = logging.getLogger(__name__)
+
 
 nvml_initialized = False
 
@@ -76,3 +83,12 @@ def get_nvml():
     except Exception as e:
         log.error(f'NVML: {e}')
         return []
+
+
+if __name__ == '__main__':
+    nvml_initialized = True
+    import pynvml # pylint: disable=redefined-outer-name
+    pynvml.nvmlInit()
+    from rich import print as rprint
+    for gpu in get_nvml():
+        rprint(gpu)

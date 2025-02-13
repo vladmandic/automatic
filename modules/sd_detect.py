@@ -49,12 +49,6 @@ def detect_pipeline(f: str, op: str = 'model', warning=True, quiet=False):
                 elif (size > 20000 and size < 40000):
                     guess = 'FLUX'
             # guess by name
-            """
-            if 'LCM_' in f.upper() or 'LCM-' in f.upper() or '_LCM' in f.upper() or '-LCM' in f.upper():
-                if shared.backend == shared.Backend.ORIGINAL:
-                    warn(f'Model detected as LCM model, but attempting to load using backend=original: {op}={f} size={size} MB')
-                guess = 'Latent Consistency Model'
-            """
             if 'instaflow' in f.lower():
                 guess = 'InstaFlow'
             if 'segmoe' in f.lower():

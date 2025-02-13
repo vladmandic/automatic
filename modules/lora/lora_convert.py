@@ -205,8 +205,6 @@ def _convert_to_ai_toolkit_cat(sds_sd, ait_sd, sds_key, ait_keys, dims=None):
                     up_weight[i : i + dims[j], k * ait_rank : (k + 1) * ait_rank] == 0
                 )
             i += dims[j]
-        # if is_sparse:
-        #     print(f"weight is sparse: {sds_key}")
 
     # make ai-toolkit weight
     ait_down_keys = [k + ".lora_down.weight" for k in ait_keys]

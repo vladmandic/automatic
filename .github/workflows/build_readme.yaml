@@ -2,8 +2,6 @@ name: update-readme
 
 on:
   workflow_dispatch:
-  schedule:
-  - cron: '0 */4 * * *'
 
 jobs:
   deploy:

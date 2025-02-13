@@ -11,7 +11,7 @@ def create_ui_logs():
 
     with gr.Column():
         get_changelog_btn = gr.Button(value='Get changelog', elem_id="get_changelog")
-        gr.HTML('<a href="https://github.com/vladmandic/automatic/blob/dev/CHANGELOG.md" style="color: #AAA" target="_blank">&nbsp Open GitHub Changelog</a>')
+        gr.HTML('<a href="https://github.com/vladmandic/sdnext/blob/dev/CHANGELOG.md" style="color: #AAA" target="_blank">&nbsp Open GitHub Changelog</a>')
     with gr.Column():
         _changelog_search = gr.Textbox(label="Search Changelog", elem_id="changelog_search")
         _changelog_result = gr.HTML(elem_id="changelog_result")
@@ -36,7 +36,7 @@ def create_ui_wiki():
             soup = BeautifulSoup(html, 'html.parser')
 
             # remove header links
-            tags = soup.find_all(attrs={"data-hovercard-url": "/vladmandic/automatic/hovercard"})
+            tags = soup.find_all(attrs={"data-hovercard-url": "/vladmandic/sdnext/hovercard"})
             for tag in tags:
                 tag.extract()
 
@@ -56,7 +56,7 @@ def create_ui_wiki():
             return f'Error: {res.status_code}'
 
     with gr.Row():
-        gr.HTML('<a href="https://github.com/vladmandic/automatic/wiki" style="color: #AAA" target="_blank">&nbsp Open GitHub Wiki</a>')
+        gr.HTML('<a href="https://github.com/vladmandic/sdnext/wiki" style="color: #AAA" target="_blank">&nbsp Open GitHub Wiki</a>')
     with gr.Row():
         wiki_search = gr.Textbox(label="Search Wiki Pages", elem_id="wiki_search")
         wiki_search_btn = ui_components.ToolButton(value=ui_symbols.search, label="Search", elem_id="wiki_search_btn")

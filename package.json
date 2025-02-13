@@ -1,27 +1,27 @@
 {
-  "name": "@vladmandic/automatic",
+  "name": "@vladmandic/sdnext",
   "version": "dev",
   "description": "SD.Next: Opinionated implementation of Stable Diffusion",
   "author": "Vladimir Mandic <mandic00@live.com>",
   "bugs": {
-    "url": "https://github.com/vladmandic/automatic/issues"
+    "url": "https://github.com/vladmandic/sdnext/issues"
   },
-  "homepage": "https://github.com/vladmandic/automatic",
+  "homepage": "https://github.com/vladmandic/sdnext",
   "license": "Apache-2.0",
   "engines": {
     "node": ">=14.0.0"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/vladmandic/automatic.git"
+    "url": "git+https://github.com/vladmandic/sdnext.git"
   },
   "scripts": {
-    "venv": "source venv/bin/activate",
-    "start": "python launch.py --debug --experimental",
-    "ruff": "ruff check",
+    "venv": ". venv/bin/activate",
+    "start": "npm run venv; python launch.py --debug",
+    "ruff": ". venv/bin/activate && ruff check",
     "eslint": "eslint javascript/ extensions-builtin/sdnext-modernui/javascript/",
-    "pylint": "pylint *.py modules/ extensions-builtin/",
-    "lint": "npm run eslint; npm run ruff; npm run pylint",
+    "pylint": ". venv/bin/activate && pylint *.py modules/ extensions-builtin/ | grep -v '^*'",
+    "lint": "npm run eslint && npm run ruff && npm run pylint",
     "test": "cli/test.sh"
   },
   "devDependencies": {
