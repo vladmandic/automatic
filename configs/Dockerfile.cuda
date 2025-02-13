@@ -29,8 +29,8 @@ WORKDIR /app
 
 # stop pip and uv from caching
 ENV PIP_NO_CACHE_DIR=true
-ENV PIP_ROOT_USER_ACTION=ignore
 ENV UV_NO_CACHE=true
+ENV PIP_ROOT_USER_ACTION=ignore
 # disable model hashing for faster startup
 ENV SD_NOHASHING=true
 # set data directories
