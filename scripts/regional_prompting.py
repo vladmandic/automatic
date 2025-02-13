@@ -1,7 +1,10 @@
+# https://github.com/huggingface/diffusers/blob/main/examples/community/README.md#regional-prompting-pipeline
+# https://github.com/huggingface/diffusers/blob/main/examples/community/regional_prompting_stable_diffusion.py
+
 import gradio as gr
-from PIL import Image, ImageDraw, ImageFont
 from diffusers.pipelines import pipeline_utils
 from modules import shared, devices, scripts, processing, sd_models, prompt_parser_diffusers
+
 
 def hijack_register_modules(self, **kwargs):
     for name, module in kwargs.items():
@@ -17,28 +20,6 @@ def hijack_register_modules(self, **kwargs):
             self.register_to_config(**register_dict)
         setattr(self, name, module)
 
-def generate_layout_template(layout_type, resolution):
-    width, height = resolution if resolution else (512, 512)
-    image = Image.new("RGB", (width, height), "white")
-    draw = ImageDraw.Draw(image)
-    try:
-        font = ImageFont.truetype("arial.ttf", 16)
-    except:
-        font = ImageFont.load_default()
-    
-    if layout_type.lower() == "row":
-        row_height = height // 2
-        draw.rectangle([0, 0, width, row_height], outline="black", width=2)
-        draw.rectangle([0, row_height, width, height], outline="black", width=2)
-        draw.text((width // 2 - 40, row_height // 2), "Row 1", fill="black", font=font)
-        draw.text((width // 2 - 40, row_height + row_height // 2), "Row 2", fill="black", font=font)
-    elif layout_type.lower() == "column":
-        col_width = width // 2
-        draw.rectangle([0, 0, col_width, height], outline="black", width=2)
-        draw.rectangle([col_width, 0, width, height], outline="black", width=2)
-        draw.text((col_width // 2, height // 2), "Col 1", fill="black", font=font)
-        draw.text((col_width + col_width // 2, height // 2), "Col 2", fill="black", font=font)
-    return image
 
 class Script(scripts.Script):
     def title(self):
@@ -55,37 +36,33 @@ class Script(scripts.Script):
             gr.HTML('<a href="https://github.com/huggingface/diffusers/blob/main/examples/community/README.md#regional-prompting-pipeline">&nbsp Regional prompting</a><br>')
         with gr.Row():
             mode = gr.Radio(label='Mode', choices=['None', 'Prompt', 'Prompt EX', 'Columns', 'Rows'], value='None')
-            show_template = gr.Button("Show Template")
         with gr.Row():
             power = gr.Slider(label='Power', minimum=0, maximum=1, value=1.0, step=0.01)
             threshold = gr.Textbox('', label='Prompt thresholds:', default='', visible=False)
             grid = gr.Text('', label='Grid sections:', default='', visible=False)
-            template_output = gr.Image(label="Layout Template")
-        
         mode.change(fn=self.change, inputs=[mode], outputs=[grid, threshold])
-        show_template.click(fn=lambda mode: generate_layout_template(mode, (512, 512)), inputs=[mode], outputs=template_output)
-        
         return mode, grid, power, threshold
 
     def run(self, p: processing.StableDiffusionProcessing, mode, grid, power, threshold): # pylint: disable=arguments-differ
         if mode is None or mode == 'None':
             return
+        # backup pipeline and params
         orig_pipeline = shared.sd_model
         orig_dtype = devices.dtype
         orig_prompt_attention = shared.opts.prompt_attention
+        # create pipeline
         if shared.sd_model_type != 'sd':
             shared.log.error(f'Regional prompting: incorrect base model: {shared.sd_model.__class__.__name__}')
             return
-        
+
         pipeline_utils.DiffusionPipeline.register_modules = hijack_register_modules
-        prompt_parser_diffusers.EmbeddingsProvider._encode_token_ids_to_embeddings = prompt_parser_diffusers.orig_encode_token_ids_to_embeddings
+        prompt_parser_diffusers.EmbeddingsProvider._encode_token_ids_to_embeddings = prompt_parser_diffusers.orig_encode_token_ids_to_embeddings # pylint: disable=protected-access
 
         shared.sd_model = sd_models.switch_pipe('regional_prompting_stable_diffusion', shared.sd_model)
-        if shared.sd_model.__class__.__name__ != 'RegionalPromptingStableDiffusionPipeline':
+        if shared.sd_model.__class__.__name__ != 'RegionalPromptingStableDiffusionPipeline': # switch failed
             shared.log.error(f'Regional prompting: not a tiling pipeline: {shared.sd_model.__class__.__name__}')
             shared.sd_model = orig_pipeline
             return
-        
         sd_models.set_diffuser_options(shared.sd_model)
         shared.opts.data['prompt_attention'] = 'fixed' # this pipeline is not compatible with embeds
         processing.fix_seed(p)
@@ -103,7 +80,7 @@ class Script(scripts.Script):
             'prompt': p.prompt,
             'rp_args': rp_args,
         }
-        
+        # run pipeline
         shared.log.debug(f'Regional: args={p.task_args}')
         p.task_args['prompt'] = p.prompt
         processed: processing.Processed = processing.process_images(p) # runs processing using main loop
@@ -113,5 +90,4 @@ class Script(scripts.Script):
         shared.opts.data['prompt_attention'] = orig_prompt_attention
         shared.sd_model = orig_pipeline
         shared.sd_model.to(orig_dtype)
-        
         return processed

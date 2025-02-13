@@ -75,5 +75,3 @@ dist/
 !/models/VAE-approx/model.pt
 !/models/Reference
 !/models/Reference/**/*
-torch-2.6.0+cu128.nv-cp311-cp311-win_amd64.whl
-torchvision-0.20.0a0+cu128.nv-cp311-cp311-win_amd64.whl
