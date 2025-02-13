@@ -5,6 +5,7 @@ const localeData = {
   data: [],
   timeout: null,
   finished: false,
+  initial: true,
   type: 2,
   hint: null,
   btn: null,
@@ -15,7 +16,7 @@ async function cycleLocale() {
   const index = allLocales.indexOf(localeData.prev);
   localeData.locale = allLocales[(index + 1) % allLocales.length];
   localeData.btn.innerText = localeData.locale;
-  localeData.btn.style.backgroundColor = localeData.locale !== 'en' ? 'var(--primary-500)' : '';
+  // localeData.btn.style.backgroundColor = localeData.locale !== 'en' ? 'var(--primary-500)' : '';
   localeData.finished = false;
   localeData.data = [];
   localeData.prev = localeData.locale;
@@ -29,12 +30,15 @@ async function tooltipCreate() {
   localeData.hint.id = 'tooltip-container';
   localeData.hint.innerText = 'this is a hint';
   gradioApp().appendChild(localeData.hint);
-  localeData.btn = document.createElement('div');
-  localeData.btn.className = 'locale';
-  localeData.btn.id = 'locale-container';
+  localeData.btn = gradioApp().getElementById('locale-container');
+  if (!localeData.btn) {
+    localeData.btn = document.createElement('div');
+    localeData.btn.className = 'locale';
+    localeData.btn.id = 'locale-container';
+    gradioApp().appendChild(localeData.btn);
+  }
   localeData.btn.innerText = localeData.locale;
   localeData.btn.onclick = cycleLocale;
-  gradioApp().appendChild(localeData.btn);
   if (window.opts.tooltips === 'None') localeData.type = 0;
   if (window.opts.tooltips === 'Browser default') localeData.type = 1;
   if (window.opts.tooltips === 'UI tooltips') localeData.type = 2;
@@ -169,7 +173,6 @@ async function setHints(analyze = false) {
   if (!localeData.hint) tooltipCreate();
   let localized = 0;
   let hints = 0;
-  localeData.finished = true;
   const t0 = performance.now();
   for (const el of elements) {
     let found;
@@ -179,6 +182,8 @@ async function setHints(analyze = false) {
       if (!el.dataset.original) el.dataset.original = el.textContent;
       localized++;
       el.textContent = found.localized;
+    } else if (found?.label && !localeData.initial && (localeData.locale === 'en')) { // reset to english
+      el.textContent = found.label;
     }
     // replaceButtonText(el);
     if (found?.hint?.length > 0) {
@@ -194,8 +199,10 @@ async function setHints(analyze = false) {
       }
     }
   }
+  localeData.finished = true;
+  localeData.initial = false;
   const t1 = performance.now();
-  localeData.btn.style.backgroundColor = localeData.locale !== 'en' ? 'var(--primary-500)' : '';
+  // localeData.btn.style.backgroundColor = localeData.locale !== 'en' ? 'var(--primary-500)' : '';
   log('setHints', { type: localeData.type, locale: localeData.locale, elements: elements.length, localized, hints, data: localeData.data.length, override: overrideData.length, time: Math.round(t1 - t0) });
   // sortUIElements();
   if (analyze) {
@@ -210,10 +217,3 @@ const analyzeHints = async () => {
   localeData.data = [];
   await setHints(true);
 };
-
-/*
-onAfterUiUpdate(async () => {
-  if (localeData.timeout) clearTimeout(localeData.timeout);
-  localeData.timeout = setTimeout(setHints, 250);
-});
-*/

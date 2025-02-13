@@ -55,7 +55,7 @@ def create_ui():
                     return img['image'] if isinstance(img, dict) and 'image' in img else img
 
                 def add_copy_image_controls(tab_name, elem):
-                    with gr.Row(variant="compact", elem_id=f"img2img_copy_to_{tab_name}"):
+                    with gr.Row(variant="compact", elem_id=f"img2img_copy_{tab_name}_row"):
                         for title, name in zip(['➠ Image', '➠ Inpaint', '➠ Sketch', '➠ Composite'], ['img2img', 'inpaint', 'sketch', 'composite']):
                             if name == tab_name:
                                 gr.Button(title, elem_id=f'{tab_name}_copy_to_{name}', interactive=False)
