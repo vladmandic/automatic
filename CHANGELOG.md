@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2025-02-12  
+## Update for 2025-02-13  
 
 - **User Interface**  
   - **Hints**  
@@ -74,6 +74,7 @@
   - validate output before hires/refine  
   - scheduler fix sigma index out of bounds  
   - force pydantic version reinstall/reload  
+  - multi-unit when using controlnet-union
 
 ## Update for 2025-02-05
 
