@@ -9,6 +9,7 @@ Automatic Color Inpaint Script for SD.NEXT - SD & SDXL Support
 
 Author: Artheriax
 Credits: SD.NEXT team for script template
+Version: W.I.P
 
 Contributions: A new script to automatically inpaint colors in images using Stable Diffusion or Stable Diffusion XL.
 """
