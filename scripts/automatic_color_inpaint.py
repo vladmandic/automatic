@@ -11,13 +11,13 @@ Author: Artheriax
 Credits: SD.NEXT team for script template
 Version: v1
 
-Contributions: A new script to automatically inpaint colors in images using Stable Diffusion or Stable Diffusion XL.
+Contributions: A new script to automatically inpaint colors in images using Stable Diffusion, Stable Diffusion XL or Flux.
 """
 
 ## Config
 
 # script title
-supported_models = ['sd','sdxl']
+supported_models = ['sd','sdxl', 'flux']
 
 title = 'Automatic Color Inpaint'
 
