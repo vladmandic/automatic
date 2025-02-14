@@ -1248,6 +1248,11 @@
     {"id":"","label":"zero","localized":"","hint":"zero"},
     {"id":"","label":"zoe depth","localized":"","hint":"zoe depth"},
     {"id":"","label":"➠ control","localized":"","hint":"➠ control"},
-    {"id":"","label":"💾","localized":"","hint":"💾"}
+    {"id":"","label":"💾","localized":"","hint":"💾"},
+    {"id":"","label":"ACI: Color to Mask","localized":"","hint":"Pick the color you want to mask and inpaint. Click on the color in the image to automatically select it.\n Advised to use images like green screens to get precise results."},
+    {"id":"","label":"ACI: Color Tolerance","localized":"","hint":"Adjust the tolerance to include similar colors in the mask. Lower values = mask only very similar colors. Higher = values mask a wider range of similar colors."},
+    {"id":"","label":"ACI: Mask Padding","localized":"","hint":"Adjust padding to apply a inside offset to the mask. (Recommended value = 2 to remove leftovers at edges)"},
+    {"id":"","label":"ACI: Mask Blur","localized":"","hint":"Adjust blur to apply a smooth transition between image and inpainted area. (Recommended value = 0 for sharpness)"},
+    {"id":"","label":"ACI: Denoising Strength","localized":"","hint":"Change Denoising Strength to achieve desired inpaint amount."}
 ]
 }
