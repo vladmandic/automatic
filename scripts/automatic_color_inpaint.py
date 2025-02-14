@@ -1,5 +1,4 @@
 import gradio as gr
-from diffusers.pipelines import StableDiffusionPipeline, StableDiffusionXLPipeline  # pylint: disable=unused-import
 from PIL import Image
 import numpy as np
 from modules import shared, scripts, processing
@@ -46,7 +45,7 @@ class Script(scripts.Script):
             color_picker = gr.ColorPicker(
                 label="ACI: Color to Mask",
                 value="#04F404",  # Default to green screen green
-                info="Pick the color you want to mask and inpaint."
+                # info="Pick the color you want to mask and inpaint."
             )
             tolerance_slider = gr.Slider(
                 minimum=0,
@@ -55,13 +54,21 @@ class Script(scripts.Script):
                 value=25,
                 label="ACI: Color Tolerance",
             )
+            denoising_slider = gr.Slider(
+                minimum=0.01,
+                maximum=1,
+                step=0.01,
+                value=1,
+                label="ACI: Denoising Strength",
+            )
+        with gr.Row():
             padding_slider = gr.Slider(
                 minimum=0,
                 maximum=256,
                 step=1,
                 value=2,
                 label="ACI: Mask Padding",
-                info="(Recommended value = 2 to remove leftovers at edges)"
+                # info="(Recommended value = 2 to remove leftovers at edges)"
             )
             blur_slider = gr.Slider(
                 minimum=0,
@@ -69,14 +76,7 @@ class Script(scripts.Script):
                 step=1,
                 value=0,
                 label="ACI: Mask Blur",
-                info="(Recommended value = 0 for sharpness)"
-            )
-            denoising_slider = gr.Slider(
-                minimum=0.01,
-                maximum=1,
-                step=0.01,
-                value=1,
-                label="ACI: Denoising Strength",
+                # info="(Recommended value = 0 for sharpness)"
             )
         return [color_picker, tolerance_slider, padding_slider, blur_slider, denoising_slider]
 
@@ -90,7 +90,7 @@ class Script(scripts.Script):
         # Convert hex color to RGB tuple (0-255)
         color_to_mask_rgb = tuple(int(color_to_mask_hex[i:i+2], 16) for i in (1, 3, 5))
 
-        shared.log.debug(f'{title}: rgb={color_to_mask_rgb} tolerance={mask_tolerance} padding={mask_padding} blur={mask_blur} denoise={inpaint_denoising_strength}')
+        shared.log.debug(f'ACI: rgb={color_to_mask_rgb} tolerance={mask_tolerance} padding={mask_padding} blur={mask_blur} denoise={inpaint_denoising_strength}')
 
         # Create Color Mask using vectorized operations
         init_image = p.init_images[0].convert("RGB")
@@ -98,7 +98,8 @@ class Script(scripts.Script):
 
         # Calculate Euclidean distance for all pixels at once
         diff = np.linalg.norm(image_np.astype(np.int16) - np.array(color_to_mask_rgb, dtype=np.int16), axis=2)
-        mask_np = (diff <= mask_tolerance).astype(np.uint8) * 255
+        calc_tolerance = (diff.max() - diff.min()) * mask_tolerance/100
+        mask_np = (diff <= calc_tolerance).astype(np.uint8) * 255
 
         mask_image = Image.fromarray(mask_np).convert("L")
 
@@ -118,5 +119,5 @@ class Script(scripts.Script):
         p.inpaint_full_res_padding = mask_padding
         p.mask_blur = mask_blur
         p.denoising_strength = inpaint_denoising_strength
-        
+
         return None

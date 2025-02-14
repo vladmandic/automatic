@@ -213,7 +213,12 @@
   {"id":"","label":"Loops","localized":"","hint":"How many times to process an image. Each output is used as the input of the next loop. If set to 1, behavior will be as if this script were not used"},
   {"id":"","label":"Final denoising strength","localized":"","hint":"The denoising strength for the final loop of each image in the batch"},
   {"id":"","label":"Denoising strength curve","localized":"","hint":"The denoising curve controls the rate of denoising strength change each loop. Aggressive: Most of the change will happen towards the start of the loops. Linear: Change will be constant through all loops. Lazy: Most of the change will happen towards the end of the loops"},
-  {"id":"","label":"Tile overlap","localized":"","hint":"For SD upscale, how much overlap in pixels should there be between tiles. Tiles overlap so that when they are merged back into one picture, there is no clearly visible seam"}
+  {"id":"","label":"Tile overlap","localized":"","hint":"For SD upscale, how much overlap in pixels should there be between tiles. Tiles overlap so that when they are merged back into one picture, there is no clearly visible seam"},
+  {"id":"","label":"ACI: Color to Mask","localized":"","hint":"Pick the color you want to mask and inpaint. Click on the color in the image to automatically select it.\n Advised to use images like green screens to get precise results."},
+  {"id":"","label":"ACI: Color Tolerance","localized":"","hint":"Adjust the tolerance to include similar colors in the mask. Lower values = mask only very similar colors. Higher = values mask a wider range of similar colors."},
+  {"id":"","label":"ACI: Mask Padding","localized":"","hint":"Adjust padding to apply a inside offset to the mask. (Recommended value = 2 to remove leftovers at edges)"},
+  {"id":"","label":"ACI: Mask Blur","localized":"","hint":"Adjust blur to apply a smooth transition between image and inpainted area. (Recommended value = 0 for sharpness)"},
+  {"id":"","label":"ACI: Denoising Strength","localized":"","hint":"Change Denoising Strength to achieve desired inpaint amount."}
 ],
 "settings": [
   {"id":"settings_submit","label":"Apply settings","localized":"","hint":"Save current settings, server restart is recommended"},
@@ -1248,11 +1253,6 @@
     {"id":"","label":"zero","localized":"","hint":"zero"},
     {"id":"","label":"zoe depth","localized":"","hint":"zoe depth"},
     {"id":"","label":"➠ control","localized":"","hint":"➠ control"},
-    {"id":"","label":"💾","localized":"","hint":"💾"},
-    {"id":"","label":"ACI: Color to Mask","localized":"","hint":"Pick the color you want to mask and inpaint. Click on the color in the image to automatically select it.\n Advised to use images like green screens to get precise results."},
-    {"id":"","label":"ACI: Color Tolerance","localized":"","hint":"Adjust the tolerance to include similar colors in the mask. Lower values = mask only very similar colors. Higher = values mask a wider range of similar colors."},
-    {"id":"","label":"ACI: Mask Padding","localized":"","hint":"Adjust padding to apply a inside offset to the mask. (Recommended value = 2 to remove leftovers at edges)"},
-    {"id":"","label":"ACI: Mask Blur","localized":"","hint":"Adjust blur to apply a smooth transition between image and inpainted area. (Recommended value = 0 for sharpness)"},
-    {"id":"","label":"ACI: Denoising Strength","localized":"","hint":"Change Denoising Strength to achieve desired inpaint amount."}
+    {"id":"","label":"💾","localized":"","hint":"💾"}
 ]
 }
