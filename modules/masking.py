@@ -408,6 +408,7 @@ def run_mask(input_image: Image.Image, input_mask: Image.Image = None, return_ty
         debug(f'Mask args legacy: blur={mask_blur} padding={mask_padding}')
     if invert is not None:
         opts.invert = invert
+    print('HERE', opts.mask_blur, mask_blur)
     if mask_blur is not None: # compatibility with old img2img values which uses px values
         opts.mask_blur = round(4 * mask_blur / size, 3)
     if mask_padding is not None: # compatibility with old img2img values which uses px values
@@ -421,7 +422,7 @@ def run_mask(input_image: Image.Image, input_mask: Image.Image = None, return_ty
         mask = run_segment(input_image, input_mask)
     mask = cv2.resize(mask, (input_image.width, input_image.height), interpolation=cv2.INTER_LANCZOS4)
 
-    debug(f'Mask shape={mask.shape} opts={opts}')
+    shared.log.trace(f'Mask shape={mask.shape} opts={opts} fn={fn}')
     if opts.mask_erode > 0:
         try:
             kernel = np.ones((int(opts.mask_erode * size / 4) + 1, int(opts.mask_erode * size / 4) + 1), np.uint8)
@@ -445,7 +446,6 @@ def run_mask(input_image: Image.Image, input_mask: Image.Image = None, return_ty
             shared.log.error(f'Mask blur: {e}')
     if opts.invert:
         mask = np.invert(mask)
-
 
     return_type = return_type or opts.preview_type
 

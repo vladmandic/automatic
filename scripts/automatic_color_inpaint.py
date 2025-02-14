@@ -1,7 +1,7 @@
 import gradio as gr
 from PIL import Image
 import numpy as np
-from modules import shared, scripts, processing
+from modules import shared, scripts, processing, masking
 
 """
 Automatic Color Inpaint Script for SD.NEXT - SD & SDXL Support
@@ -51,46 +51,56 @@ class Script(scripts.Script):
                 minimum=0,
                 maximum=100,
                 step=1,
-                value=25,
-                label="ACI: Color Tolerance",
+                value=65,
+                label="ACI: Color tolerance",
             )
             denoising_slider = gr.Slider(
                 minimum=0.01,
                 maximum=1,
                 step=0.01,
-                value=1,
-                label="ACI: Denoising Strength",
+                value=0.9,
+                label="ACI: Denoising strength",
             )
         with gr.Row():
-            padding_slider = gr.Slider(
+            dilate_slider = gr.Slider(
                 minimum=0,
-                maximum=256,
-                step=1,
-                value=2,
-                label="ACI: Mask Padding",
+                maximum=1,
+                step=0.01,
+                value=0.0,
+                label="ACI: Mask dilate",
                 # info="(Recommended value = 2 to remove leftovers at edges)"
+            )
+            erode_slider = gr.Slider(
+                minimum=0,
+                maximum=1,
+                step=0.01,
+                value=0,
+                label="ACI: Mask erode",
+                # info="(Recommended value = 0 for sharpness)"
             )
             blur_slider = gr.Slider(
                 minimum=0,
-                maximum=64,
-                step=1,
-                value=0,
-                label="ACI: Mask Blur",
+                maximum=1,
+                step=0.01,
+                value=0.15,
+                label="ACI: Mask blur",
                 # info="(Recommended value = 0 for sharpness)"
             )
-        return [color_picker, tolerance_slider, padding_slider, blur_slider, denoising_slider]
+        return [color_picker, tolerance_slider, dilate_slider, erode_slider, blur_slider, denoising_slider]
 
     # Run pipeline
     def run(self, p: processing.StableDiffusionProcessing, *args):  # pylint: disable=arguments-differ
         if shared.sd_model_type not in supported_models:
             shared.log.warning(f'MoD: class={shared.sd_model.__class__.__name__} model={shared.sd_model_type} required={supported_models}')
             return None
-        color_to_mask_hex, mask_tolerance, mask_padding, mask_blur, inpaint_denoising_strength = args
+        if not hasattr(p, 'init_images') or p.init_images is None or len(p.init_images) == 0:
+            return None
+        color_to_mask_hex, mask_tolerance, mask_dilate, mask_erode, mask_blur, inpaint_denoising_strength = args
 
         # Convert hex color to RGB tuple (0-255)
         color_to_mask_rgb = tuple(int(color_to_mask_hex[i:i+2], 16) for i in (1, 3, 5))
 
-        shared.log.debug(f'ACI: rgb={color_to_mask_rgb} tolerance={mask_tolerance} padding={mask_padding} blur={mask_blur} denoise={inpaint_denoising_strength}')
+        shared.log.debug(f'ACI: rgb={color_to_mask_rgb} tolerance={mask_tolerance} dilate={mask_dilate} erode={mask_erode} blur={mask_blur} denoise={inpaint_denoising_strength}')
 
         # Create Color Mask using vectorized operations
         init_image = p.init_images[0].convert("RGB")
@@ -115,9 +125,12 @@ class Script(scripts.Script):
             p.image_mask = mask_image
 
         # override inpaint parameters
-        p.inpaint_full_res = True
-        p.inpaint_full_res_padding = mask_padding
-        p.mask_blur = mask_blur
+        p.inpaint_full_res = False # always use full res
         p.denoising_strength = inpaint_denoising_strength
+        p.mask_blur = None # do not use legacy mask blur
+        p.inpaint_full_res_padding = None # do not use legacy mask blur
+        masking.opts.mask_blur = mask_blur # new masking params triggers masking.py:run_mask
+        masking.opts.mask_erode = mask_erode
+        masking.opts.mask_dilate = mask_dilate
 
         return None
