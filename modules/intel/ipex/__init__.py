@@ -189,7 +189,8 @@ def ipex_init(): # pylint: disable=too-many-statements
                 torch._C._XpuDeviceProperties.minor = 1
 
             # Fix functions with ipex:
-            torch.xpu.mem_get_info = lambda device=None: [(torch.xpu.get_device_properties(device).total_memory - torch.xpu.memory_reserved(device)), torch.xpu.get_device_properties(device).total_memory]
+            if not hasattr(torch.xpu, "mem_get_info"):
+                torch.xpu.mem_get_info = lambda device=None: [(torch.xpu.get_device_properties(device).total_memory - torch.xpu.memory_reserved(device)), torch.xpu.get_device_properties(device).total_memory]
             torch.cuda.mem_get_info = torch.xpu.mem_get_info
             torch._utils._get_available_device_type = lambda: "xpu"
             torch.has_cuda = True
