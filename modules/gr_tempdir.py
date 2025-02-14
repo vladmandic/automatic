@@ -71,7 +71,6 @@ def pil_to_temp_file(self, img: Image, dir: str, format="png") -> str: # pylint:
         img.already_saved_as = name
         size = os.path.getsize(name)
         shared.log.debug(f'Save temp: image="{name}" width={img.width} height={img.height} size={size}')
-        shared.state.image_history += 1
     params = ', '.join([f'{k}: {v}' for k, v in img.info.items()])
     params = params[12:] if params.startswith('parameters: ') else params
     with open(os.path.join(paths.data_path, "params.txt"), "w", encoding="utf8") as file:
@@ -94,7 +93,7 @@ def cleanup_tmpdr():
     for root, _dirs, files in os.walk(temp_dir, topdown=False):
         for name in files:
             _, extension = os.path.splitext(name)
-            if extension not in {".png", ".jpg", ".webp", ".jxl"}:
+            if extension != ".png" and extension != ".jpg" and extension != ".webp":
                 continue
             filename = os.path.join(root, name)
             os.remove(filename)

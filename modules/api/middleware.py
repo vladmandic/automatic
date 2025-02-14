@@ -45,7 +45,7 @@ def setup_middleware(app: FastAPI, cmd_opts):
             if (cmd_opts.api_log or cmd_opts.api_only) and endpoint.startswith('/sdapi'):
                 if '/sdapi/v1/log' in endpoint or '/sdapi/v1/browser' in endpoint:
                     return res
-                log.info('API user={user} code={code} {prot}/{ver} {method} {endpoint} {cli} {duration}'.format( # pylint: disable=consider-using-f-string, logging-format-interpolation
+                log.info('API {user} {code} {prot}/{ver} {method} {endpoint} {cli} {duration}'.format( # pylint: disable=consider-using-f-string, logging-format-interpolation
                     user = app.tokens.get(token) if hasattr(app, 'tokens') else None,
                     code = res.status_code,
                     ver = req.scope.get('http_version', '0.0'),
@@ -69,14 +69,10 @@ def setup_middleware(app: FastAPI, cmd_opts):
             "body": vars(e).get('body', ''),
             "errors": str(e),
         }
-        if err['code'] == 401 and 'file=' in req.url.path: # dont spam with unauth
-            return JSONResponse(status_code=err['code'], content=jsonable_encoder(err))
-
         log.error(f"API error: {req.method}: {req.url} {err}")
-
         if not isinstance(e, HTTPException) and err['error'] != 'TypeError': # do not print backtrace on known httpexceptions
             errors.display(e, 'HTTP API', [anyio, fastapi, uvicorn, starlette])
-        elif err['code'] in [404, 401, 400]:
+        elif err['code'] == 404 or err['code'] == 401:
             pass
         else:
             log.debug(e, exc_info=True) # print stack trace

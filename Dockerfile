@@ -1,5 +1,5 @@
 # SD.Next Dockerfile
-# docs: <https://github.com/vladmandic/sdnext/wiki/Docker>
+# docs: <https://github.com/vladmandic/automatic/wiki/Docker>
 
 # base image
 FROM pytorch/pytorch:2.5.1-cuda12.4-cudnn9-runtime
@@ -7,9 +7,9 @@ FROM pytorch/pytorch:2.5.1-cuda12.4-cudnn9-runtime
 # metadata
 LABEL org.opencontainers.image.vendor="SD.Next"
 LABEL org.opencontainers.image.authors="vladmandic"
-LABEL org.opencontainers.image.url="https://github.com/vladmandic/sdnext/"
-LABEL org.opencontainers.image.documentation="https://github.com/vladmandic/sdnext/wiki/Docker"
-LABEL org.opencontainers.image.source="https://github.com/vladmandic/sdnext/"
+LABEL org.opencontainers.image.url="https://github.com/vladmandic/automatic/"
+LABEL org.opencontainers.image.documentation="https://github.com/vladmandic/automatic/wiki/Docker"
+LABEL org.opencontainers.image.source="https://github.com/vladmandic/automatic/"
 LABEL org.opencontainers.image.licenses="AGPL-3.0"
 LABEL org.opencontainers.image.title="SD.Next"
 LABEL org.opencontainers.image.description="SD.Next: Advanced Implementation of Stable Diffusion and other Diffusion-based generative image models"

@@ -1,18 +1,10 @@
 import os
-import sys
 import time
 import datetime
 from modules.errors import log, display
 
 
-debug_output = os.environ.get('SD_STATE_DEBUG', None)
-
-
 class State:
-    job_history = []
-    task_history = []
-    image_history = 0
-    latent_history = 0
     skipped = False
     interrupted = False
     paused = False
@@ -22,7 +14,7 @@ class State:
     frame_count = 0
     total_jobs = 0
     job_timestamp = '0'
-    _sampling_step = 0
+    sampling_step = 0
     sampling_steps = 0
     current_latent = None
     current_noise_pred = None
@@ -40,48 +32,29 @@ class State:
     need_restart = False
     server_start = time.time()
     oom = False
+    debug_output = os.environ.get('SD_STATE_DEBUG', None)
 
     def __str__(self) -> str:
-        status = ' '
-        status += 'skipped ' if self.skipped else ''
-        status += 'interrupted ' if self.interrupted else ''
-        status += 'paused ' if self.paused else ''
-        status += 'restart ' if self.need_restart else ''
-        status += 'oom ' if self.oom else ''
-        status += 'api ' if self.api else ''
-        fn = f'{sys._getframe(3).f_code.co_name}:{sys._getframe(2).f_code.co_name}' # pylint: disable=protected-access
-        return f'State: ts={self.job_timestamp} job={self.job} jobs={self.job_no+1}/{self.job_count}/{self.total_jobs} step={self.sampling_step}/{self.sampling_steps} preview={self.preview_job}/{self.id_live_preview}/{self.current_image_sampling_step} status="{status.strip()}" fn={fn}'
-
-    @property
-    def sampling_step(self):
-        return self._sampling_step
-
-    @sampling_step.setter
-    def sampling_step(self, value):
-        self._sampling_step = value
-        if debug_output:
-            log.trace(f'State step: {self}')
+        return f'State: job={self.job} {self.job_no}/{self.job_count} step={self.sampling_step}/{self.sampling_steps} skipped={self.skipped} interrupted={self.interrupted} paused={self.paused} info={self.textinfo}'
 
     def skip(self):
-        log.debug('State: skip requested')
+        log.debug('Requested skip')
         self.skipped = True
 
     def interrupt(self):
-        log.debug('State: interrupt requested')
+        log.debug('Requested interrupt')
         self.interrupted = True
 
     def pause(self):
         self.paused = not self.paused
-        log.debug(f'State: {"pause" if self.paused else "continue"} requested')
+        log.debug(f'Requested {"pause" if self.paused else "continue"}')
 
     def nextjob(self):
         import modules.devices
         self.do_set_current_image()
         self.job_no += 1
-        # self.sampling_step = 0
+        self.sampling_step = 0
         self.current_image_sampling_step = 0
-        if debug_output:
-            log.trace(f'State next: {self}')
         modules.devices.torch_gc()
 
     def dict(self):
@@ -131,7 +104,6 @@ class State:
 
     def begin(self, title="", api=None):
         import modules.devices
-        self.job_history.append(title)
         self.total_jobs += 1
         self.current_image = None
         self.current_image_sampling_step = 0
@@ -143,20 +115,19 @@ class State:
         self.interrupted = False
         self.preview_job = -1
         self.job = title
-        self.job_count = 0
-        self.frame_count = 0
+        self.job_count = -1
+        self.frame_count = -1
         self.job_no = 0
         self.job_timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
         self.paused = False
-        self._sampling_step = 0
-        self.sampling_steps = 0
+        self.sampling_step = 0
         self.skipped = False
         self.textinfo = None
         self.prediction_type = "epsilon"
         self.api = api or self.api
         self.time_start = time.time()
-        if debug_output:
-            log.trace(f'State begin: {self}')
+        if self.debug_output:
+            log.debug(f'State begin: {self.job}')
         modules.devices.torch_gc()
 
     def end(self, api=None):
@@ -165,8 +136,6 @@ class State:
             # fn = f'{sys._getframe(2).f_code.co_name}:{sys._getframe(1).f_code.co_name}' # pylint: disable=protected-access
             # log.debug(f'Access state.end: {fn}') # pylint: disable=protected-access
             self.time_start = time.time()
-        if debug_output:
-            log.trace(f'State end: {self}')
         self.job = ""
         self.job_count = 0
         self.job_no = 0
@@ -177,24 +146,6 @@ class State:
         self.skipped = False
         self.api = api or self.api
         modules.devices.torch_gc()
-
-    def step(self, step:int=1):
-        self.sampling_step += step
-
-    def update(self, job:str, steps:int=0, jobs:int=0):
-        self.task_history.append(job)
-        # self._sampling_step = 0
-        if job == 'Ignore':
-            return
-        elif job == 'Grid':
-            self.sampling_steps = steps
-            self.job_count = jobs
-        else:
-            self.sampling_steps += steps * jobs
-            self.job_count += jobs
-        self.job = job
-        if debug_output:
-            log.trace(f'State update: {self} steps={steps} jobs={jobs}')
 
     def set_current_image(self):
         if self.job == 'VAE' or self.job == 'Upscale': # avoid generating preview while vae is running

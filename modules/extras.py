@@ -4,12 +4,14 @@ import json
 import time
 import shutil
 
-from PIL import Image
 import torch
+import tqdm
 import gradio as gr
 import safetensors.torch
-from modules.merging import merge, merge_utils, modules_sdxl
-from modules import shared, images, sd_models, sd_vae, sd_samplers, sd_models_config, devices
+from modules.merging.merge import merge_models
+from modules.merging.merge_utils import TRIPLE_METHODS
+
+from modules import shared, images, sd_models, sd_vae, sd_models_config, devices
 
 
 def run_pnginfo(image):
@@ -71,9 +73,9 @@ def run_modelmerger(id_task, **kwargs):  # pylint: disable=unused-argument
     if kwargs.get("secondary_model_name", None) in [None, 'None']:
         return fail("Failed: Merging requires a secondary model.")
     secondary_model_info = sd_models.get_closet_checkpoint_match(kwargs.get("secondary_model_name", None))
-    if kwargs.get("tertiary_model_name", None) in [None, 'None'] and kwargs.get("merge_mode", None) in merge_utils.TRIPLE_METHODS:
+    if kwargs.get("tertiary_model_name", None) in [None, 'None'] and kwargs.get("merge_mode", None) in TRIPLE_METHODS:
         return fail(f"Failed: Interpolation method ({kwargs.get('merge_mode', None)}) requires a tertiary model.")
-    tertiary_model_info = sd_models.get_closet_checkpoint_match(kwargs.get("tertiary_model_name", None)) if kwargs.get("merge_mode", None) in merge_utils.TRIPLE_METHODS else None
+    tertiary_model_info = sd_models.get_closet_checkpoint_match(kwargs.get("tertiary_model_name", None)) if kwargs.get("merge_mode", None) in TRIPLE_METHODS else None
 
     del kwargs["primary_model_name"]
     del kwargs["secondary_model_name"]
@@ -126,7 +128,7 @@ def run_modelmerger(id_task, **kwargs):  # pylint: disable=unused-argument
         sd_models.unload_model_weights()
 
     try:
-        theta_0 = merge.merge_models(**kwargs)
+        theta_0 = merge_models(**kwargs)
     except Exception as e:
         return fail(f"{e}")
 
@@ -203,80 +205,144 @@ def run_modelmerger(id_task, **kwargs):  # pylint: disable=unused-argument
     return [*[gr.Dropdown.update(choices=sd_models.checkpoint_titles()) for _ in range(4)], f"Model saved to {output_modelname}"]
 
 
-def run_model_modules(model_type:str, model_name:str, custom_name:str,
-                      comp_unet:str, comp_vae:str, comp_te1:str, comp_te2:str,
-                      precision:str, comp_scheduler:str, comp_prediction:str,
-                      comp_lora:str, comp_fuse:float,
-                      meta_author:str, meta_version:str, meta_license:str, meta_desc:str, meta_hint:str, meta_thumbnail:Image.Image,
-                      create_diffusers:bool, create_safetensors:bool, debug:bool):
+def run_modelconvert(model, checkpoint_formats, precision, conv_type, custom_name, unet_conv, text_encoder_conv,
+                     vae_conv, others_conv, fix_clip):
+    # position_ids in clip is int64. model_ema.num_updates is int32
+    dtypes_to_fp16 = {torch.float32, torch.float64, torch.bfloat16}
+    dtypes_to_bf16 = {torch.float32, torch.float64, torch.float16}
 
-    status = ''
-    def msg(text, err:bool=False):
-        nonlocal status
-        if err:
-            shared.log.error(f'Modules merge: {text}')
+    def conv_fp16(t: torch.Tensor):
+        return t.half() if t.dtype in dtypes_to_fp16 else t
+
+    def conv_bf16(t: torch.Tensor):
+        return t.bfloat16() if t.dtype in dtypes_to_bf16 else t
+
+    def conv_full(t):
+        return t
+
+    _g_precision_func = {
+        "full": conv_full,
+        "fp32": conv_full,
+        "fp16": conv_fp16,
+        "bf16": conv_bf16,
+    }
+
+    def check_weight_type(k: str) -> str:
+        if k.startswith("model.diffusion_model"):
+            return "unet"
+        elif k.startswith("first_stage_model"):
+            return "vae"
+        elif k.startswith("cond_stage_model"):
+            return "clip"
+        return "other"
+
+    def load_model(path):
+        if path.endswith(".safetensors"):
+            m = safetensors.torch.load_file(path, device="cpu")
         else:
-            shared.log.info(f'Modules merge: {text}')
-        status += text + '<br>'
-        return status
+            m = torch.load(path, map_location="cpu")
+        state_dict = m["state_dict"] if "state_dict" in m else m
+        return state_dict
 
-    if model_type != 'sdxl':
-        yield msg("only SDXL models are supported", err=True)
-        return
-    if len(custom_name) == 0:
-        yield msg("output name is required", err=True)
-        return
-    checkpoint_info = sd_models.get_closet_checkpoint_match(model_name)
-    if checkpoint_info is None:
-        yield msg("input model not found", err=True)
-        return
-    fn = checkpoint_info.filename
-    shared.state.begin('Merge')
-    yield msg("modules merge starting")
-    yield msg("unload current model")
-    sd_models.unload_model_weights(op='model')
+    def fix_model(model, fix_clip=False):
+        # code from model-toolkit
+        nai_keys = {
+            'cond_stage_model.transformer.embeddings.': 'cond_stage_model.transformer.text_model.embeddings.',
+            'cond_stage_model.transformer.encoder.': 'cond_stage_model.transformer.text_model.encoder.',
+            'cond_stage_model.transformer.final_layer_norm.': 'cond_stage_model.transformer.text_model.final_layer_norm.'
+        }
+        for k in list(model.keys()):
+            for r in nai_keys:
+                if type(k) == str and k.startswith(r):
+                    new_key = k.replace(r, nai_keys[r])
+                    model[new_key] = model[k]
+                    del model[k]
+                    shared.log.warning(f"Model convert: fixed NovelAI error key: {k}")
+                    break
+        if fix_clip:
+            i = "cond_stage_model.transformer.text_model.embeddings.position_ids"
+            if i in model:
+                correct = torch.Tensor([list(range(77))]).to(torch.int64)
+                now = model[i].to(torch.int64)
 
-    modules_sdxl.recipe.name = custom_name
-    modules_sdxl.recipe.author = meta_author
-    modules_sdxl.recipe.version = meta_version
-    modules_sdxl.recipe.desc = meta_desc
-    modules_sdxl.recipe.hint = meta_hint
-    modules_sdxl.recipe.license = meta_license
-    modules_sdxl.recipe.thumbnail = meta_thumbnail
-    modules_sdxl.recipe.base = fn
-    modules_sdxl.recipe.unet = comp_unet
-    modules_sdxl.recipe.vae = comp_vae
-    modules_sdxl.recipe.te1 = comp_te1
-    modules_sdxl.recipe.te2 = comp_te2
-    modules_sdxl.recipe.prediction = comp_prediction
-    modules_sdxl.recipe.diffusers = create_diffusers
-    modules_sdxl.recipe.safetensors = create_safetensors
-    modules_sdxl.recipe.fuse = float(comp_fuse)
-    modules_sdxl.recipe.debug = debug
+                broken = correct.ne(now)
+                broken = [i for i in range(77) if broken[0][i]]
+                model[i] = correct
+                if len(broken) != 0:
+                    shared.log.warning(f"Model convert: fixed broken CLiP: {broken}")
 
-    loras = [l.strip() if ':' in l else f'{l.strip()}:1.0' for l in comp_lora.split(',') if len(l.strip()) > 0]
-    for lora, strength in [l.split(':') for l in loras]:
-        modules_sdxl.recipe.lora[lora] = float(strength)
-    scheduler = sd_samplers.create_sampler(comp_scheduler, None)
-    modules_sdxl.recipe.scheduler = scheduler.__class__.__name__ if scheduler is not None else None
-    if precision == 'fp32':
-        modules_sdxl.recipe.precision = torch.float32
-    elif precision == 'bf16':
-        modules_sdxl.recipe.precision = torch.bfloat16
+        return model
+
+    if model == "":
+        return "Error: you must choose a model"
+    if len(checkpoint_formats) == 0:
+        return "Error: at least choose one model save format"
+
+    extra_opt = {
+        "unet": unet_conv,
+        "clip": text_encoder_conv,
+        "vae": vae_conv,
+        "other": others_conv
+    }
+    shared.state.begin('Convert')
+    model_info = sd_models.checkpoints_list[model]
+    shared.state.textinfo = f"Load {model_info.filename}..."
+    shared.log.info(f"Model convert loading: {model_info.filename}")
+    state_dict = load_model(model_info.filename)
+
+    ok = {}  # {"state_dict": {}}
+
+    conv_func = _g_precision_func[precision]
+
+    def _hf(wk: str, t: torch.Tensor):
+        if not isinstance(t, torch.Tensor):
+            return
+        w_t = check_weight_type(wk)
+        conv_t = extra_opt[w_t]
+        if conv_t == "convert":
+            ok[wk] = conv_func(t)
+        elif conv_t == "copy":
+            ok[wk] = t
+        elif conv_t == "delete":
+            return
+
+    shared.log.info("Model convert: running")
+    if conv_type == "ema-only":
+        for k in tqdm.tqdm(state_dict):
+            ema_k = "___"
+            try:
+                ema_k = "model_ema." + k[6:].replace(".", "")
+            except Exception:
+                pass
+            if ema_k in state_dict:
+                _hf(k, state_dict[ema_k])
+            elif not k.startswith("model_ema.") or k in ["model_ema.num_updates", "model_ema.decay"]:
+                _hf(k, state_dict[k])
+    elif conv_type == "no-ema":
+        for k, v in tqdm.tqdm(state_dict.items()):
+            if "model_ema." not in k:
+                _hf(k, v)
     else:
-        modules_sdxl.recipe.precision = torch.float16
+        for k, v in tqdm.tqdm(state_dict.items()):
+            _hf(k, v)
 
-    modules_sdxl.status = status
-    yield from modules_sdxl.merge()
-    status = modules_sdxl.status
-
-    devices.torch_gc(force=True)
-    yield msg("modules merge complete")
-    if modules_sdxl.pipeline is not None:
-        checkpoint_info = sd_models.CheckpointInfo(filename='None')
-        shared.sd_model = modules_sdxl.pipeline
-        sd_models.set_defaults(shared.sd_model, checkpoint_info)
-        sd_models.set_diffuser_options(shared.sd_model, offload=False)
-        sd_models.set_diffuser_offload(shared.sd_model)
-        yield msg("pipeline loaded")
+    ok = fix_model(ok, fix_clip=fix_clip)
+    output = ""
+    ckpt_dir = shared.cmd_opts.ckpt_dir or sd_models.model_path
+    save_name = f"{model_info.model_name}-{precision}"
+    if conv_type != "disabled":
+        save_name += f"-{conv_type}"
+    if custom_name != "":
+        save_name = custom_name
+    for fmt in checkpoint_formats:
+        ext = ".safetensors" if fmt == "safetensors" else ".ckpt"
+        _save_name = save_name + ext
+        save_path = os.path.join(ckpt_dir, _save_name)
+        shared.log.info(f"Model convert saving: {save_path}")
+        if fmt == "safetensors":
+            safetensors.torch.save_file(ok, save_path)
+        else:
+            torch.save({"state_dict": ok}, save_path)
+        output += f"Checkpoint saved to {save_path}<br>"
     shared.state.end()
+    return output

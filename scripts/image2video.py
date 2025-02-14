@@ -20,7 +20,16 @@ class Script(scripts.Script):
         # return False
 
     # return signature is array of gradio components
-    def ui(self, is_img2img):
+    def ui(self, _is_img2img):
+
+        def video_change(video_type):
+            return [
+                gr.update(visible=video_type != 'None'),
+                gr.update(visible=video_type == 'GIF' or video_type == 'PNG'),
+                gr.update(visible=video_type == 'MP4'),
+                gr.update(visible=video_type == 'MP4'),
+            ]
+
         def model_change(model_name):
             model = next(m for m in MODELS if m['name'] == model_name)
             return gr.update(value=model['info']), gr.update(visible=model_name == 'PIA'), gr.update(visible=model_name == 'VGen')
@@ -31,6 +40,9 @@ class Script(scripts.Script):
             model_info = gr.HTML()
         with gr.Row():
             num_frames = gr.Slider(label='Frames', minimum=0, maximum=50, step=1, value=16)
+        with gr.Row():
+            video_type = gr.Dropdown(label='Video file', choices=['None', 'GIF', 'PNG', 'MP4'], value='None')
+            duration = gr.Slider(label='Duration', minimum=0.25, maximum=10, step=0.25, value=2, visible=False)
         with gr.Accordion('FreeInit', open=False, visible=False) as fi_accordion:
             with gr.Row():
                 fi_method = gr.Dropdown(label='Method', choices=['none', 'butterworth', 'ideal', 'gaussian'], value='none')
@@ -46,9 +58,11 @@ class Script(scripts.Script):
                 vg_chunks = gr.Slider(label='Decode chunks', minimum=0.1, maximum=1.0, step=0.1, value=0.5)
                 vg_fps = gr.Slider(label='Change rate', minimum=0.1, maximum=1.0, step=0.1, value=0.5)
         with gr.Row():
-            from modules.ui_sections import create_video_inputs
-            video_type, duration, gif_loop, mp4_pad, mp4_interpolate = create_video_inputs(tab='img2img' if is_img2img else 'txt2img')
+            gif_loop = gr.Checkbox(label='Loop', value=True, visible=False)
+            mp4_pad = gr.Slider(label='Pad frames', minimum=0, maximum=24, step=1, value=1, visible=False)
+            mp4_interpolate = gr.Slider(label='Interpolate frames', minimum=0, maximum=24, step=1, value=0, visible=False)
         model_name.change(fn=model_change, inputs=[model_name], outputs=[model_info, fi_accordion, vgen_accordion])
+        video_type.change(fn=video_change, inputs=[video_type], outputs=[duration, gif_loop, mp4_pad, mp4_interpolate])
         return [model_name, num_frames, video_type, duration, gif_loop, mp4_pad, mp4_interpolate, fi_method, fi_iters, fi_order, fi_spatial, fi_temporal, vg_chunks, vg_fps]
 
     def run(self, p: processing.StableDiffusionProcessing, model_name, num_frames, video_type, duration, gif_loop, mp4_pad, mp4_interpolate, fi_method, fi_iters, fi_order, fi_spatial, fi_temporal, vg_chunks, vg_fps): # pylint: disable=arguments-differ, unused-argument

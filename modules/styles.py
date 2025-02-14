@@ -43,48 +43,37 @@ def apply_styles_to_prompt(prompt, styles):
 
 
 def apply_file_wildcards(prompt, replaced = [], not_found = [], recursion=0, seed=-1):
-    def check_wildcard_files(prompt, wildcard, files, file_only=True):
-        trimmed = wildcard.replace('\\', os.path.sep).strip().lower()
+    def check_files(prompt, wildcard, files):
         for file in files:
-            if file_only:
-                paths = [os.path.splitext(file)[0].lower(), os.path.splitext(os.path.basename(file).lower())[0]] # fullname and basename
-            else:
-                paths = [os.path.splitext(p.lower())[0] for p in os.path.normpath(file).split(os.path.sep)] # every path component
-            if (trimmed in paths) or (os.path.sep in trimmed and trimmed in paths[0]):
-                try:
-                    with open(file, 'r', encoding='utf-8') as f:
-                        lines = f.readlines()
-                        if len(lines) > 0:
-                            choice = random.choice(lines).strip(' \n')
-                            if '|' in choice:
-                                choice = random.choice(choice.split('|')).strip(' []{}\n')
-                            prompt = prompt.replace(f"__{wildcard}__", choice, 1)
-                            shared.log.debug(f'Wildcards apply: wildcard="{wildcard}" choice="{choice}" file="{file}" choices={len(lines)}')
-                            replaced.append(wildcard)
-                            return prompt, True
-                except Exception as e:
-                    shared.log.error(f'Wildcards: wildcard={wildcard} file={file} {e}')
-        if not file_only:
-            return prompt, False
-        return check_wildcard_files(prompt, wildcard, files, file_only=False)
+            if wildcard == os.path.splitext(os.path.basename(file))[0] if os.path.sep not in wildcard else wildcard in file:
+                with open(file, 'r', encoding='utf-8') as f:
+                    lines = f.readlines()
+                    if len(lines) > 0:
+                        choice = random.choice(lines).strip(' \n')
+                        if '|' in choice:
+                            choice = random.choice(choice.split('|')).strip(' []{}\n')
+                        prompt = prompt.replace(f"__{wildcard}__", choice, 1)
+                        shared.log.debug(f'Wildcards apply: wildcard="{wildcard}" choice="{choice}" file="{file}" choices={len(lines)}')
+                        replaced.append(wildcard)
+                return prompt, True
+        return prompt, False
 
     recursion += 1
     if not shared.opts.wildcards_enabled or recursion >= 10:
         return prompt, replaced, not_found
     matches = re.findall(r'__(.*?)__', prompt, re.DOTALL)
     matches = [m for m in matches if m not in not_found]
-    matches = [m for m in matches if m not in replaced]
+    matches = [m.replace('\\', os.path.sep) for m in matches if m not in replaced]
+    matches = [m.replace('/', os.path.sep) for m in matches if m not in replaced]
     if len(matches) == 0:
         return prompt, replaced, not_found
     files = list(files_cache.list_files(shared.opts.wildcards_dir, ext_filter=[".txt"], recursive=True))
-    if len(files) == 0:
-        return prompt, replaced, not_found
-    for wildcard in matches:
-        prompt, found = check_wildcard_files(prompt, wildcard, files)
-        if found and wildcard in not_found:
-            not_found.remove(wildcard)
-        elif not found and wildcard not in not_found:
-            not_found.append(wildcard)
+    for m in matches:
+        prompt, found = check_files(prompt, m, files)
+        if found and m in not_found:
+            not_found.remove(m)
+        elif not found and m not in not_found:
+            not_found.append(m)
     prompt, replaced, not_found = apply_file_wildcards(prompt, replaced, not_found, recursion, seed) # recursive until we get early return
     return prompt, replaced, not_found
 
@@ -146,7 +135,7 @@ def apply_styles_to_extra(p, style: Style):
         'size',
     ]
     reference_style = get_reference_style()
-    extra = infotext.parse(reference_style) if shared.opts.extra_network_reference_values else {}
+    extra = infotext.parse(reference_style) if shared.opts.extra_network_reference else {}
 
     style_extra = apply_wildcards_to_prompt(style.extra, [style.wildcards], silent=True)
     extra.update(infotext.parse(style_extra))
@@ -251,7 +240,7 @@ class StyleDatabase:
                 self.styles = dict(sorted(self.styles.items(), key=lambda style: style[1].filename))
                 if self.built_in:
                     fn = os.path.join('html', 'art-styles.json')
-                    future_items[executor.submit(self.load_style, fn, 'Reference')] = fn
+                    future_items[executor.submit(self.load_style, fn, 'built-in')] = fn
                 for future in concurrent.futures.as_completed(future_items):
                     future.result()
 

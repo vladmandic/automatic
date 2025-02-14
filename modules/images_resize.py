@@ -1,50 +1,45 @@
-from typing import Union
 import sys
 import time
 import numpy as np
-import torch
 from PIL import Image
-from modules import shared, upscaler
+from modules import shared
 
 
-def resize_image(resize_mode: int, im: Union[Image.Image, torch.Tensor], width: int, height: int, upscaler_name: str=None, output_type: str='image', context: str=None):
+def resize_image(resize_mode: int, im: Image.Image, width: int, height: int, upscaler_name: str=None, output_type: str='image', context: str=None):
     upscaler_name = upscaler_name or shared.opts.upscaler_for_img2img
 
-    def latent(im, scale: float, selected_upscaler: upscaler.UpscalerData):
-        if isinstance(im, torch.Tensor):
-            im = selected_upscaler.scaler.upscale(im, scale, selected_upscaler.name)
-            return im
-        else:
-            from modules.processing_vae import vae_encode, vae_decode
-            latents = vae_encode(im, shared.sd_model, full_quality=False) # TODO resize image: enable full VAE mode for resize-latent
-            latents = selected_upscaler.scaler.upscale(latents, scale, selected_upscaler.name)
-            im = vae_decode(latents, shared.sd_model, output_type='pil', full_quality=False)[0]
-            return im
+    def latent(im, w, h, upscaler):
+        from modules.processing_vae import vae_encode, vae_decode
+        import torch
+        latents = vae_encode(im, shared.sd_model, full_quality=False) # TODO resize image: enable full VAE mode for resize-latent
+        latents = torch.nn.functional.interpolate(latents, size=(int(h // 8), int(w // 8)), mode=upscaler["mode"], antialias=upscaler["antialias"])
+        im = vae_decode(latents, shared.sd_model, output_type='pil', full_quality=False)[0]
+        return im
 
-    def resize(im: Union[Image.Image, torch.Tensor], w, h):
-        w, h = int(w), int(h)
-        if upscaler_name is None or upscaler_name == "None" or (hasattr(im, 'mode') and im.mode == 'L'):
+    def resize(im, w, h):
+        w = int(w)
+        h = int(h)
+        if upscaler_name is None or upscaler_name == "None" or im.mode == 'L':
             return im.resize((w, h), resample=Image.Resampling.LANCZOS) # force for mask
-        if isinstance(im, torch.Tensor):
-            scale = max(w // 8 / im.shape[-1] , h // 8 / im.shape[-2])
-        else:
-            scale = max(w / im.width, h / im.height)
+        scale = max(w / im.width, h / im.height)
         if scale > 1.0:
             upscalers = [x for x in shared.sd_upscalers if x.name.lower().replace('-', ' ') == upscaler_name.lower().replace('-', ' ')]
             if len(upscalers) > 0:
-                selected_upscaler: upscaler.UpscalerData = upscalers[0]
-                if selected_upscaler.name.lower().startswith('latent'):
-                    im = latent(im, scale, selected_upscaler)
-                else:
-                    im = selected_upscaler.scaler.upscale(im, scale, selected_upscaler.name)
+                upscaler = upscalers[0]
+                im = upscaler.scaler.upscale(im, scale, upscaler.data_path)
             else:
-                shared.log.warning(f"Resize upscaler: invalid={upscaler_name} fallback={selected_upscaler.name}")
-                shared.log.debug(f"Resize upscaler: available={[u.name for u in shared.sd_upscalers]}")
-        if isinstance(im, Image.Image) and (im.width != w or im.height != h): # probably downsample after upscaler created larger image
+                upscaler = shared.latent_upscale_modes.get(upscaler_name, None)
+                if upscaler is not None:
+                    im = latent(im, w, h, upscaler)
+                else:
+                    upscaler = shared.sd_upscalers[0]
+                    shared.log.warning(f"Resize upscaler: invalid={upscaler_name} fallback={upscaler.name}")
+                    shared.log.debug(f"Resize upscaler: available={[u.name for u in shared.sd_upscalers]}")
+        if im.width != w or im.height != h: # probably downsample after upscaler created larger image
             im = im.resize((w, h), resample=Image.Resampling.LANCZOS)
         return im
 
-    def crop(im: Image.Image):
+    def crop(im):
         ratio = width / height
         src_ratio = im.width / im.height
         src_w = width if ratio > src_ratio else im.width * height // im.height
@@ -54,7 +49,7 @@ def resize_image(resize_mode: int, im: Union[Image.Image, torch.Tensor], width: 
         res.paste(resized, box=(width // 2 - src_w // 2, height // 2 - src_h // 2))
         return res
 
-    def fill(im: Image.Image, color=None):
+    def fill(im, color=None):
         color = color or shared.opts.image_background
         """
         ratio = round(width / height, 1)
@@ -82,8 +77,7 @@ def resize_image(resize_mode: int, im: Union[Image.Image, torch.Tensor], width: 
         res.paste(im, box=((width - im.width)//2, (height - im.height)//2))
         return res
 
-    def context_aware(im: Image.Image, width, height, context):
-        width, height = int(width), int(height)
+    def context_aware(im, width, height, context):
         import seam_carving # https://github.com/li-plus/seam-carving
         if 'forward' in context.lower():
             energy_mode = "forward"
@@ -116,10 +110,7 @@ def resize_image(resize_mode: int, im: Union[Image.Image, torch.Tensor], width: 
     t0 = time.time()
     if resize_mode is None:
         resize_mode = 0
-    if isinstance(im, torch.Tensor): # latent resize only supports fixed mode
-        res = resize(im, width, height)
-        return res
-    elif (resize_mode == 0) or (im.width == width and im.height == height) or (width == 0 and height == 0): # none
+    if resize_mode == 0 or (im.width == width and im.height == height) or (width == 0 and height == 0): # none
         res = im.copy()
     elif resize_mode == 1: # fixed
         res = resize(im, width, height)

@@ -42,11 +42,6 @@ if ".dev" in torch.__version__ or "+git" in torch.__version__:
     torch.__long_version__ = torch.__version__
     torch.__version__ = re.search(r'[\d.]+[\d]', torch.__version__).group(0)
 timer.startup.record("torch")
-try:
-    import bitsandbytes # pylint: disable=W0611,C0411
-except Exception:
-    from diffusers.utils import import_utils
-    import_utils._bitsandbytes_available = False # pylint: disable=protected-access
 
 import transformers # pylint: disable=W0611,C0411
 from transformers import logging as transformers_logging # pylint: disable=W0611,C0411
@@ -57,9 +52,7 @@ import accelerate # pylint: disable=W0611,C0411
 timer.startup.record("accelerate")
 
 import onnxruntime # pylint: disable=W0611,C0411
-onnxruntime.set_default_logger_severity(4)
-onnxruntime.set_default_logger_verbosity(1)
-onnxruntime.disable_telemetry_events()
+onnxruntime.set_default_logger_severity(3)
 timer.startup.record("onnx")
 
 from fastapi import FastAPI # pylint: disable=W0611,C0411
@@ -79,12 +72,6 @@ import huggingface_hub # pylint: disable=W0611,C0411
 logging.getLogger("diffusers.loaders.single_file").setLevel(logging.ERROR)
 timer.startup.record("diffusers")
 
-try:
-    import pillow_jxl # pylint: disable=W0611,C0411
-except Exception:
-    pass
-from PIL import Image # pylint: disable=W0611,C0411
-timer.startup.record("pillow")
 
 # patch different progress bars
 import tqdm as tqdm_lib # pylint: disable=C0411
@@ -93,13 +80,13 @@ diffusers.loaders.single_file.logging.tqdm = partial(tqdm, unit='C')
 
 class _tqdm_cls():
     def __call__(self, *args, **kwargs):
-        bar_format = 'Progress {rate_fmt}{postfix} {bar} {percentage:3.0f}% {n_fmt}/{total_fmt} {elapsed} {remaining} ' + '\x1b[38;5;71m' + '{desc}' + '\x1b[0m'
+        bar_format = 'Diffusers {rate_fmt}{postfix} {bar} {percentage:3.0f}% {n_fmt}/{total_fmt} {elapsed} {remaining} ' + '\x1b[38;5;71m' + '{desc}' + '\x1b[0m'
         return tqdm_lib.tqdm(*args, bar_format=bar_format, ncols=80, colour='#327fba', **kwargs)
 
 class _tqdm_old(tqdm_lib.tqdm):
     def __init__(self, *args, **kwargs):
         kwargs.pop("name", None)
-        kwargs['bar_format'] = 'Progress {rate_fmt}{postfix} {bar} {percentage:3.0f}% {n_fmt}/{total_fmt} {elapsed} {remaining} ' + '\x1b[38;5;71m' + '{desc}' + '\x1b[0m'
+        kwargs['bar_format'] = 'Diffusers {rate_fmt}{postfix} {bar} {percentage:3.0f}% {n_fmt}/{total_fmt} {elapsed} {remaining} ' + '\x1b[38;5;71m' + '{desc}' + '\x1b[0m'
         kwargs['ncols'] = 80
         super().__init__(*args, **kwargs)
 

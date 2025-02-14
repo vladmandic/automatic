@@ -1,14 +1,14 @@
 <div align="center">
-<img src="https://github.com/vladmandic/sdnext/raw/master/html/logo-transparent.png" width=200 alt="SD.Next">
+<img src="https://github.com/vladmandic/automatic/raw/master/html/logo-transparent.png" width=200 alt="SD.Next">
 
 **Image Diffusion implementation with advanced features**
 
-![Last update](https://img.shields.io/github/last-commit/vladmandic/sdnext?svg=true)
-![License](https://img.shields.io/github/license/vladmandic/sdnext?svg=true)
+![Last update](https://img.shields.io/github/last-commit/vladmandic/automatic?svg=true)
+![License](https://img.shields.io/github/license/vladmandic/automatic?svg=true)
 [![Discord](https://img.shields.io/discord/1101998836328697867?logo=Discord&svg=true)](https://discord.gg/VjvR2tabEX)
 [![Sponsors](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86)](https://github.com/sponsors/vladmandic)
 
-[Docs](https://vladmandic.github.io/sdnext-docs/) | [Wiki](https://github.com/vladmandic/sdnext/wiki) | [Discord](https://discord.gg/VjvR2tabEX) | [Changelog](CHANGELOG.md)
+[Docs](https://vladmandic.github.io/sdnext-docs/) | [Wiki](https://github.com/vladmandic/automatic/wiki) | [Discord](https://discord.gg/VjvR2tabEX) | [Changelog](CHANGELOG.md)
 
 </div>
 </br>
@@ -17,7 +17,7 @@
 
 - [Documentation](https://vladmandic.github.io/sdnext-docs/)
 - [SD.Next Features](#sdnext-features)
-- [Model support](#model-support)
+- [Model support](#model-support) and [Specifications]()
 - [Platform support](#platform-support)
 - [Getting started](#getting-started)
 
@@ -32,7 +32,7 @@ All individual features are not listed here, instead check [ChangeLog](CHANGELOG
  ▹ **Windows | Linux | MacOS | nVidia | AMD | IntelArc/IPEX | DirectML | OpenVINO | ONNX+Olive | ZLUDA**
 - Platform specific autodetection and tuning performed on install  
 - Optimized processing with latest `torch` developments with built-in support for model compile, quantize and compress  
-  Compile backends: *Triton | StableFast | DeepCache | OneDiff | TeaCache | etc.*  
+  Compile backends: *Triton | StableFast | DeepCache | OneDiff*  
   Quantization and compression methods: *BitsAndBytes | TorchAO | Optimum-Quanto | NNCF*  
 - Built-in queue management  
 - Built in installer with automatic updates and dependency management  
@@ -82,11 +82,6 @@ SD.Next supports broad range of models: [supported models](https://vladmandic.gi
 > [!WARNING]
 > If you run into issues, check out [troubleshooting](https://vladmandic.github.io/sdnext-docs/Troubleshooting/) and [debugging](https://vladmandic.github.io/sdnext-docs/Debug/) guides  
 
-### Contributing
-
-Please see [Contributing](CONTRIBUTING) for details on how to contribute to this project  
-And for any question, reach out on [Discord](https://discord.gg/VjvR2tabEX) or open an [issue](https://github.com/vladmandic/sdnext/issues) or [discussion](https://github.com/vladmandic/sdnext/discussions)  
-
 ### Credits
 
 - Main credit goes to [Automatic1111 WebUI](https://github.com/AUTOMATIC1111/stable-diffusion-webui) for the original codebase  
@@ -95,18 +90,24 @@ And for any question, reach out on [Discord](https://discord.gg/VjvR2tabEX) or o
 
 ### Evolution
 
-<a href="https://star-history.com/#vladmandic/sdnext&Date">
+<a href="https://star-history.com/#vladmandic/automatic&Date">
   <picture width=640>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=vladmandic/sdnext&type=Date&theme=dark" />
-    <img src="https://api.star-history.com/svg?repos=vladmandic/sdnext&type=Date" alt="starts" width="320">
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=vladmandic/automatic&type=Date&theme=dark" />
+    <img src="https://api.star-history.com/svg?repos=vladmandic/automatic&type=Date" alt="starts" width="320">
   </picture>
 </a>
 
-- [OSS Stats](https://ossinsight.io/analyze/vladmandic/sdnext#overview)
+- [OSS Stats](https://ossinsight.io/analyze/vladmandic/automatic#overview)
 
 ### Docs
 
 If you're unsure how to use a feature, best place to start is [Docs](https://vladmandic.github.io/sdnext-docs/) and if its not there,  
 check [ChangeLog](https://vladmandic.github.io/sdnext-docs/CHANGELOG/) for when feature was first introduced as it will always have a short note on how to use it  
+
+### Sponsors
+
+<div align="center">
+<!-- sponsors --><a href="https://github.com/allangrant"><img src="https://github.com/allangrant.png" width="60px" alt="Allan Grant" /></a><a href="https://github.com/BrentOzar"><img src="https://github.com/BrentOzar.png" width="60px" alt="Brent Ozar" /></a><a href="https://github.com/mantzaris"><img src="https://github.com/mantzaris.png" width="60px" alt="a.v.mantzaris" /></a><a href="https://github.com/CurseWave"><img src="https://github.com/CurseWave.png" width="60px" alt="" /></a><a href="https://github.com/smlbiobot"><img src="https://github.com/smlbiobot.png" width="60px" alt="SML (See-ming Lee)" /></a><!-- sponsors -->
+</div>
 
 <br>

@@ -8,6 +8,7 @@ async function initStartup() {
   initModels();
   getUIDefaults();
   initPromptChecker();
+  initLogMonitor();
   initContextMenu();
   initDragDrop();
   initAccordions();
@@ -24,7 +25,6 @@ async function initStartup() {
   // make sure all of the ui is ready and options are loaded
   while (Object.keys(window.opts).length === 0) await sleep(50);
   executeCallbacks(uiReadyCallbacks);
-  initLogMonitor();
   setupExtraNetworks();
 
   // optinally wait for modern ui

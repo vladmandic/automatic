@@ -65,7 +65,14 @@ class Script(scripts.Script):
         return shared.native
 
     # return signature is array of gradio components
-    def ui(self, is_img2img):
+    def ui(self, _is_img2img):
+        def video_type_change(video_type):
+            return [
+                gr.update(visible=video_type != 'None'),
+                gr.update(visible=video_type == 'GIF' or video_type == 'PNG'),
+                gr.update(visible=video_type == 'MP4'),
+                gr.update(visible=video_type == 'MP4'),
+            ]
         def model_change(model):
             return gr.update(visible=model == 'custom')
 
@@ -83,8 +90,13 @@ class Script(scripts.Script):
         with gr.Row():
             model_custom = gr.Textbox(value='', label='Path to model file', visible=False)
         with gr.Row():
-            from modules.ui_sections import create_video_inputs
-            video_type, duration, gif_loop, mp4_pad, mp4_interpolate = create_video_inputs(tab='img2img' if is_img2img else 'txt2img')
+            video_type = gr.Dropdown(label='Video file', choices=['None', 'GIF', 'PNG', 'MP4'], value='None')
+            duration = gr.Slider(label='Duration', minimum=0.25, maximum=10, step=0.25, value=2, visible=False)
+        with gr.Row():
+            gif_loop = gr.Checkbox(label='Loop', value=True, visible=False)
+            mp4_pad = gr.Slider(label='Pad frames', minimum=0, maximum=24, step=1, value=1, visible=False)
+            mp4_interpolate = gr.Slider(label='Interpolate frames', minimum=0, maximum=24, step=1, value=0, visible=False)
+        video_type.change(fn=video_type_change, inputs=[video_type], outputs=[duration, gif_loop, mp4_pad, mp4_interpolate])
         model.change(fn=model_change, inputs=[model], outputs=[model_custom])
         return [model, model_custom, decode, sampler, num_frames, video_type, duration, gif_loop, mp4_pad, mp4_interpolate, teacache_enable, teacache_threshold]
 
@@ -148,7 +160,6 @@ class Script(scripts.Script):
         shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
         shared.sd_model.vae.enable_slicing()
         shared.sd_model.vae.enable_tiling()
-        shared.sd_model.vae.use_framewise_decoding = True
         devices.torch_gc(force=True)
 
         shared.sd_model.transformer.cnt = 0

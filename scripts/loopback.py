@@ -2,7 +2,7 @@ import math
 
 import gradio as gr
 import modules.scripts as scripts
-from modules import images, processing
+from modules import deepbooru, images, processing, shared
 from modules.processing import Processed
 from modules.shared import opts, state
 
@@ -90,10 +90,8 @@ class Script(scripts.Script):
                 if append_interrogation != "None":
                     p.prompt = f"{original_prompt}, " if original_prompt else ""
                     if append_interrogation == "CLIP":
-                        from modules.interrogate import openclip
-                        p.prompt += openclip.interrogator.interrogate(p.init_images[0])
+                        p.prompt += shared.interrogator.interrogate(p.init_images[0])
                     elif append_interrogation == "DeepBooru":
-                        from modules.interrogate import deepbooru
                         p.prompt += deepbooru.model.tag(p.init_images[0])
 
                 state.job = f"loopback iteration {i+1}/{loops} batch {n+1}/{batch_count}"

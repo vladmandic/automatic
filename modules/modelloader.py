@@ -11,7 +11,7 @@ from PIL import Image
 import rich.progress as p
 import huggingface_hub as hf
 from modules import shared, errors, files_cache
-from modules.upscaler import Upscaler
+from modules.upscaler import Upscaler, UpscalerLanczos, UpscalerNearest, UpscalerNone
 from modules.paths import script_path, models_path
 
 
@@ -575,7 +575,7 @@ def load_upscalers():
                 importlib.import_module(full_model)
             except Exception as e:
                 shared.log.error(f'Error loading upscaler: {model_name} {e}')
-    upscalers = []
+    datas = []
     commandline_options = vars(shared.cmd_opts)
     # some of upscaler classes will not go away after reloading their modules, and we'll end up with two copies of those classes. The newest copy will always be the last in the list, so we go from end to beginning and ignore duplicates
     used_classes = {}
@@ -583,7 +583,7 @@ def load_upscalers():
         classname = str(cls)
         if classname not in used_classes:
             used_classes[classname] = cls
-    upscaler_types = []
+    names = []
     for cls in reversed(used_classes.values()):
         name = cls.__name__
         cmd_name = f"{name.lower().replace('upscaler', '')}_models_path"
@@ -591,9 +591,9 @@ def load_upscalers():
         scaler = cls(commandline_model_path)
         scaler.user_path = commandline_model_path
         scaler.model_download_path = commandline_model_path or scaler.model_path
-        upscalers += scaler.scalers
-        upscaler_types.append(name[8:])
-    shared.sd_upscalers = upscalers
+        datas += scaler.scalers
+        names.append(name[8:])
+    shared.sd_upscalers = sorted(datas, key=lambda x: x.name.lower() if not isinstance(x.scaler, (UpscalerNone, UpscalerLanczos, UpscalerNearest)) else "") # Special case for UpscalerNone keeps it at the beginning of the list.
     t1 = time.time()
-    shared.log.info(f"Available Upscalers: items={len(shared.sd_upscalers)} downloaded={len([x for x in shared.sd_upscalers if x.data_path is not None and os.path.isfile(x.data_path)])} user={len([x for x in shared.sd_upscalers if x.custom])} time={t1-t0:.2f} types={upscaler_types}")
+    shared.log.info(f"Available Upscalers: items={len(shared.sd_upscalers)} downloaded={len([x for x in shared.sd_upscalers if x.data_path is not None and os.path.isfile(x.data_path)])} user={len([x for x in shared.sd_upscalers if x.custom])} time={t1-t0:.2f} types={names}")
     return [x.name for x in shared.sd_upscalers]

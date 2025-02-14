@@ -15,7 +15,6 @@ from modules import sd_samplers, shared, script_callbacks, errors, paths
 from modules.images_grid import image_grid, get_grid_size, split_grid, combine_grid, check_grid_size, get_font, draw_grid_annotations, draw_prompt_matrix, GridAnnotation, Grid # pylint: disable=unused-import
 from modules.images_resize import resize_image # pylint: disable=unused-import
 from modules.images_namegen import FilenameGenerator, get_next_sequence_number # pylint: disable=unused-import
-from modules.video import save_video # pylint: disable=unused-import
 
 
 debug = errors.log.trace if os.environ.get('SD_PATH_DEBUG', None) is not None else lambda *args, **kwargs: None
@@ -30,7 +29,6 @@ def atomically_save_image():
     Image.MAX_IMAGE_PIXELS = None # disable check in Pillow and rely on check below to allow large custom image sizes
     while True:
         image, filename, extension, params, exifinfo, filename_txt = save_queue.get()
-        shared.state.image_history += 1
         with open(os.path.join(paths.data_path, "params.txt"), "w", encoding="utf8") as file:
             file.write(exifinfo)
         fn = filename + extension
@@ -51,7 +49,6 @@ def atomically_save_image():
                 shared.log.info(f'Save: text="{filename_txt}" len={len(exifinfo)}')
             except Exception as e:
                 shared.log.warning(f'Save failed: description={filename_txt} {e}')
-
         # actual save
         if image_format == 'PNG':
             pnginfo_data = PngImagePlugin.PngInfo()
@@ -73,14 +70,6 @@ def atomically_save_image():
             save_args = { 'optimize': True, 'quality': shared.opts.jpeg_quality, 'lossless': shared.opts.webp_lossless }
             if shared.opts.image_metadata:
                 save_args['exif'] = piexif.dump({ "Exif": { piexif.ExifIFD.UserComment: piexif.helper.UserComment.dump(exifinfo, encoding="unicode") } })
-        elif image_format == 'JXL':
-            if image.mode == 'I;16':
-                image = image.point(lambda p: p * 0.0038910505836576).convert("RGB")
-            elif image.mode not in {"RGB", "RGBA"}:
-                image = image.convert("RGBA")
-            save_args = { 'optimize': True, 'quality': shared.opts.jpeg_quality, 'lossless': shared.opts.webp_lossless }
-            if shared.opts.image_metadata:
-                save_args['exif'] = piexif.dump({ "Exif": { piexif.ExifIFD.UserComment: piexif.helper.UserComment.dump(exifinfo, encoding="unicode") } })
         else:
             save_args = { 'quality': shared.opts.jpeg_quality }
         try:
@@ -90,7 +79,6 @@ def atomically_save_image():
             errors.display(e, 'Image save')
         size = os.path.getsize(fn) if os.path.exists(fn) else 0
         shared.log.info(f'Save: image="{fn}" type={image_format} width={image.width} height={image.height} size={size}')
-
         if shared.opts.save_log_fn != '' and len(exifinfo) > 0:
             fn = os.path.join(paths.data_path, shared.opts.save_log_fn)
             if not fn.endswith('.json'):
@@ -189,6 +177,76 @@ def save_image(image,
         params.image.already_saved_as = params.filename
     script_callbacks.image_saved_callback(params)
     return params.filename, filename_txt, exifinfo
+
+
+def save_video_atomic(images, filename, video_type: str = 'none', duration: float = 2.0, loop: bool = False, interpolate: int = 0, scale: float = 1.0, pad: int = 1, change: float = 0.3):
+    try:
+        import cv2
+    except Exception as e:
+        shared.log.error(f'Save video: cv2: {e}')
+        return
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
+    if video_type.lower() == 'mp4':
+        frames = images
+        if interpolate > 0:
+            try:
+                import modules.rife
+                frames = modules.rife.interpolate(images, count=interpolate, scale=scale, pad=pad, change=change)
+            except Exception as e:
+                shared.log.error(f'RIFE interpolation: {e}')
+                errors.display(e, 'RIFE interpolation')
+        video_frames = [np.array(frame) for frame in frames]
+        fourcc = "mp4v"
+        h, w, _c = video_frames[0].shape
+        video_writer = cv2.VideoWriter(filename, fourcc=cv2.VideoWriter_fourcc(*fourcc), fps=len(frames)/duration, frameSize=(w, h))
+        for i in range(len(video_frames)):
+            img = cv2.cvtColor(video_frames[i], cv2.COLOR_RGB2BGR)
+            video_writer.write(img)
+        size = os.path.getsize(filename)
+        shared.log.info(f'Save video: file="{filename}" frames={len(frames)} duration={duration} fourcc={fourcc} size={size}')
+    if video_type.lower() == 'gif' or video_type.lower() == 'png':
+        append = images.copy()
+        image = append.pop(0)
+        if loop:
+            append += append[::-1]
+        frames=len(append) + 1
+        image.save(
+            filename,
+            save_all = True,
+            append_images = append,
+            optimize = False,
+            duration = 1000.0 * duration / frames,
+            loop = 0 if loop else 1,
+        )
+        size = os.path.getsize(filename)
+        shared.log.info(f'Save video: file="{filename}" frames={len(append) + 1} duration={duration} loop={loop} size={size}')
+
+
+def save_video(p, images, filename = None, video_type: str = 'none', duration: float = 2.0, loop: bool = False, interpolate: int = 0, scale: float = 1.0, pad: int = 1, change: float = 0.3, sync: bool = False):
+    if images is None or len(images) < 2 or video_type is None or video_type.lower() == 'none':
+        return None
+    image = images[0]
+    if p is not None:
+        seed = p.all_seeds[0] if getattr(p, 'all_seeds', None) is not None else p.seed
+        prompt = p.all_prompts[0] if getattr(p, 'all_prompts', None) is not None else p.prompt
+        namegen = FilenameGenerator(p, seed=seed, prompt=prompt, image=image)
+    else:
+        namegen = FilenameGenerator(None, seed=0, prompt='', image=image)
+    if filename is None and p is not None:
+        filename = namegen.apply(shared.opts.samples_filename_pattern if shared.opts.samples_filename_pattern and len(shared.opts.samples_filename_pattern) > 0 else "[seq]-[prompt_words]")
+        filename = os.path.join(shared.opts.outdir_video, filename)
+        filename = namegen.sequence(filename, shared.opts.outdir_video, '')
+    else:
+        if os.pathsep not in filename:
+            filename = os.path.join(shared.opts.outdir_video, filename)
+    if not filename.lower().endswith(video_type.lower()):
+        filename += f'.{video_type.lower()}'
+    filename = namegen.sanitize(filename)
+    if not sync:
+        threading.Thread(target=save_video_atomic, args=(images, filename, video_type, duration, loop, interpolate, scale, pad, change)).start()
+    else:
+        save_video_atomic(images, filename, video_type, duration, loop, interpolate, scale, pad, change)
+    return filename
 
 
 def safe_decode_string(s: bytes):

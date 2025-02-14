@@ -5,13 +5,12 @@ from modules.call_queue import wrap_gradio_gpu_call, wrap_queued_call
 from modules import timer, shared, ui_common, ui_sections, generation_parameters_copypaste, processing_vae
 
 
-def process_interrogate(mode, ii_input_files, ii_input_dir, ii_output_dir, *ii_singles):
-    from modules.interrogate.interrogate import interrogate
+def process_interrogate(interrogation_function, mode, ii_input_files, ii_input_dir, ii_output_dir, *ii_singles):
     mode = int(mode)
     if mode in {0, 1, 3, 4}:
-        return [interrogate(ii_singles[mode]), None]
+        return [interrogation_function(ii_singles[mode]), None]
     if mode == 2:
-        return [interrogate(ii_singles[mode]["image"]), None]
+        return [interrogation_function(ii_singles[mode]["image"]), None]
     if mode == 5:
         if len(ii_input_files) > 0:
             images = [f.name for f in ii_input_files]
@@ -28,7 +27,7 @@ def process_interrogate(mode, ii_input_files, ii_input_dir, ii_output_dir, *ii_s
             img = Image.open(image)
             filename = os.path.basename(image)
             left, _ = os.path.splitext(filename)
-            print(interrogate(img), file=open(os.path.join(ii_output_dir, f"{left}.txt"), 'a', encoding='utf-8')) # pylint: disable=consider-using-with
+            print(interrogation_function(img), file=open(os.path.join(ii_output_dir, f"{left}.txt"), 'a', encoding='utf-8')) # pylint: disable=consider-using-with
     return [gr.update(), None]
 
 
@@ -69,7 +68,7 @@ def create_ui():
                     state = gr.Textbox(value='', visible=False)
                     with gr.TabItem('Image', id='img2img_image', elem_id="img2img_image_tab") as tab_img2img:
                         img_init = gr.Image(label="", elem_id="img2img_image", show_label=False, source="upload", interactive=True, type="pil", tool="editor", image_mode="RGBA", height=512)
-                        interrogate_btn = ui_sections.create_interrogate_button(tab='img2img')
+                        interrogate_clip, interrogate_booru = ui_sections.create_interrogate_buttons('img2img')
                         add_copy_image_controls('img2img', img_init)
 
                     with gr.TabItem('Inpaint', id='img2img_inpaint', elem_id="img2img_inpaint_tab") as tab_inpaint:
@@ -134,7 +133,7 @@ def create_ui():
                     full_quality, tiling, hidiffusion, cfg_scale, clip_skip, image_cfg_scale, diffusers_guidance_rescale, pag_scale, pag_adaptive, cfg_end = ui_sections.create_advanced_inputs('img2img')
                     hdr_mode, hdr_brightness, hdr_color, hdr_sharpen, hdr_clamp, hdr_boundary, hdr_threshold, hdr_maximize, hdr_max_center, hdr_max_boundry, hdr_color_picker, hdr_tint_ratio = ui_sections.create_correction_inputs('img2img')
                     enable_hr, hr_sampler_index, hr_denoising_strength, hr_resize_mode, hr_resize_context, hr_upscaler, hr_force, hr_second_pass_steps, hr_scale, hr_resize_x, hr_resize_y, refiner_steps, hr_refiner_start, refiner_prompt, refiner_negative = ui_sections.create_hires_inputs('txt2img')
-                    detailer_enabled, detailer_prompt, detailer_negative, detailer_steps, detailer_strength = shared.yolo.ui('img2img')
+                    detailer = shared.yolo.ui('img2img')
 
                     # with gr.Group(elem_id="inpaint_controls", visible=False) as inpaint_controls:
                     with gr.Accordion(open=False, label="Mask", elem_classes=["small-accordion"], elem_id="img2img_mask_group") as inpaint_controls:
@@ -175,8 +174,7 @@ def create_ui():
                 sampler_index,
                 mask_blur, mask_alpha,
                 inpainting_fill,
-                full_quality, tiling, hidiffusion,
-                detailer_enabled, detailer_prompt, detailer_negative, detailer_steps, detailer_strength,
+                full_quality, detailer, tiling, hidiffusion,
                 batch_count, batch_size,
                 cfg_scale, image_cfg_scale,
                 diffusers_guidance_rescale, pag_scale, pag_adaptive, cfg_end,
@@ -195,7 +193,7 @@ def create_ui():
                 override_settings,
             ]
             img2img_dict = dict(
-                fn=wrap_gradio_gpu_call(modules.img2img.img2img, extra_outputs=[None, '', ''], name='Image'),
+                fn=wrap_gradio_gpu_call(modules.img2img.img2img, extra_outputs=[None, '', '']),
                 _js="submit_img2img",
                 inputs= img2img_args + img2img_script_inputs,
                 outputs=[
@@ -228,7 +226,8 @@ def create_ui():
                 ],
                 outputs=[img2img_prompt, dummy_component],
             )
-            interrogate_btn.click(fn=lambda *args: process_interrogate(*args), **interrogate_args)
+            interrogate_clip.click(fn=lambda *args: process_interrogate(ui_common.interrogate_clip, *args), **interrogate_args)
+            interrogate_booru.click(fn=lambda *args: process_interrogate(ui_common.interrogate_booru, *args), **interrogate_args)
 
             img2img_token_button.click(fn=wrap_queued_call(ui_common.update_token_counter), inputs=[img2img_prompt, steps], outputs=[img2img_token_counter])
             img2img_negative_token_button.click(fn=wrap_queued_call(ui_common.update_token_counter), inputs=[img2img_negative_prompt, steps], outputs=[img2img_negative_token_counter])
@@ -254,45 +253,19 @@ def create_ui():
                 (seed, "Seed"),
                 (subseed, "Variation seed"),
                 (subseed_strength, "Variation strength"),
+                # denoise
+                (denoising_strength, "Denoising strength"),
+                (refiner_start, "Refiner start"),
                 # advanced
                 (cfg_scale, "CFG scale"),
                 (cfg_end, "CFG end"),
                 (image_cfg_scale, "Image CFG scale"),
-                (image_cfg_scale, "Hires CFG scale"),
                 (clip_skip, "Clip skip"),
                 (diffusers_guidance_rescale, "CFG rescale"),
                 (full_quality, "Full quality"),
+                (detailer, "Detailer"),
                 (tiling, "Tiling"),
                 (hidiffusion, "HiDiffusion"),
-                # detailer
-                (detailer_enabled, "Detailer"),
-                (detailer_prompt, "Detailer prompt"),
-                (detailer_negative, "Detailer negative"),
-                (detailer_steps, "Detailer steps"),
-                (detailer_strength, "Detailer strength"),
-                # second pass
-                (enable_hr, "Second pass"),
-                (enable_hr, "Refine"),
-                (denoising_strength, "Denoising strength"),
-                (denoising_strength, "Hires strength"),
-                (hr_sampler_index, "Hires sampler"),
-                (hr_resize_mode, "Hires mode"),
-                (hr_resize_context, "Hires context"),
-                (hr_upscaler, "Hires upscaler"),
-                (hr_force, "Hires force"),
-                (hr_second_pass_steps, "Hires steps"),
-                (hr_scale, "Hires upscale"),
-                (hr_scale, "Hires scale"),
-                (hr_resize_x, "Hires fixed-1"),
-                (hr_resize_y, "Hires fixed-2"),
-                # refiner
-                (refiner_start, "Refiner start"),
-                (refiner_steps, "Refiner steps"),
-                (refiner_prompt, "refiner prompt"),
-                (refiner_negative, "Refiner negative"),
-                # pag
-                (pag_scale, "PAG scale"),
-                (pag_adaptive, "PAG adaptive"),
                 # inpaint
                 (mask_blur, "Mask blur"),
                 (mask_alpha, "Mask alpha"),

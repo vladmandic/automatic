@@ -1,6 +1,6 @@
 [submodule "wiki"]
   path = wiki
-  url = https://github.com/vladmandic/sdnext.wiki
+  url = https://github.com/vladmandic/automatic.wiki
   ignore = dirty
 [submodule "modules/k-diffusion"]
   path = modules/k-diffusion

@@ -45,6 +45,10 @@ class Script(scripts.Script):
         global redux_pipe, processor_canny, processor_depth # pylint: disable=global-statement
         if tool is None or tool == 'None':
             return
+        supported_model_list = ['f1']
+        if shared.sd_model_type not in supported_model_list:
+            shared.log.warning(f'{title}: class={shared.sd_model.__class__.__name__} model={shared.sd_model_type} required={supported_model_list}')
+            return None
         image = getattr(p, 'init_images', None)
         if image is None or len(image) == 0:
             shared.log.error(f'{title}: tool={tool} no init_images')
@@ -56,10 +60,6 @@ class Script(scripts.Script):
 
         t0 = time.time()
         if tool == 'Redux':
-            supported_model_list = ['f1']
-            if shared.sd_model_type not in supported_model_list:
-                shared.log.warning(f'{title}: class={shared.sd_model.__class__.__name__} model={shared.sd_model_type} required={supported_model_list}')
-                return None
             # pipe_prior_redux = FluxPriorReduxPipeline.from_pretrained("black-forest-labs/FLUX.1-Redux-dev", revision="refs/pr/8", torch_dtype=torch.bfloat16).to("cuda")
             shared.log.debug(f'{title}: tool={tool} prompt={prompt}')
             if redux_pipe is None:

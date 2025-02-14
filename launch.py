@@ -24,20 +24,12 @@ python = sys.executable # used by some extensions to run python
 skip_install = False # parsed by some extensions
 
 
-try:
-    from modules.timer import launch
-    rec = launch.record
-except Exception:
-    rec = lambda *args, **kwargs: None # pylint: disable=unnecessary-lambda-assignment
-
-
 def init_args():
     global parser, args # pylint: disable=global-statement
     import modules.cmd_args
     parser = modules.cmd_args.parser
     installer.add_args(parser)
     args, _ = parser.parse_known_args()
-    rec('args')
 
 
 def init_paths():
@@ -46,7 +38,6 @@ def init_paths():
     modules.paths.register_paths()
     script_path = modules.paths.script_path
     extensions_dir = modules.paths.extensions_dir
-    rec('paths')
 
 
 def get_custom_args():
@@ -66,11 +57,9 @@ def get_custom_args():
         installer.log.trace(f'Environment: {installer.print_dict(env)}')
     env = [f'{k}={v}' for k, v in os.environ.items() if k.startswith('SD_')]
     installer.log.debug(f'Env flags: {env}')
-    ldpreload = os.environ.get('LD_PRELOAD', None)
-    ldpath = os.environ.get('LD_LIBRARY_PATH', None)
-    if ldpreload is not None or ldpath is not None:
-        installer.log.debug(f'Linker flags: preload="{ldpreload}" path="{ldpath}"')
-    rec('args')
+    ldd = os.environ.get('LD_PRELOAD', None)
+    if ldd is not None:
+        installer.log.debug(f'Linker flags: "{ldd}"')
 
 
 @lru_cache()
@@ -82,7 +71,6 @@ def commit_hash(): # compatbility function
         stored_commit_hash = run(f"{git} rev-parse HEAD").strip()
     except Exception:
         stored_commit_hash = "<none>"
-    rec('commit')
     return stored_commit_hash
 
 
@@ -151,9 +139,13 @@ def run_extension_installer(ext_dir): # compatbility function
 
 
 def get_memory_stats():
-    from modules.memstats import ram_stats
-    res = ram_stats()
-    return f'{res["used"]}/{res["total"]}'
+    import psutil
+    def gb(val: float):
+        return round(val / 1024 / 1024 / 1024, 2)
+    process = psutil.Process(os.getpid())
+    res = process.memory_info()
+    ram_total = 100 * res.rss / process.memory_percent()
+    return f'{gb(res.rss)}/{gb(ram_total)}'
 
 
 def start_server(immediate=True, server=None):
@@ -193,7 +185,6 @@ def start_server(immediate=True, server=None):
     if args.profile:
         pr.disable()
         installer.print_profile(pr, 'WebUI')
-    rec('server')
     return uvicorn, server
 
 
@@ -227,6 +218,7 @@ def main():
         installer.install("uv", "uv")
     installer.check_torch()
     installer.check_onnx()
+    installer.check_torchao()
     installer.check_diffusers()
     installer.check_modified_files()
     if args.reinstall:

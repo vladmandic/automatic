@@ -221,20 +221,19 @@ def open_folder(result_gallery, gallery_index = 0):
             subprocess.Popen(["xdg-open", path]) # pylint: disable=consider-using-with
 
 
-def interrogate_clip(image): # legacy function
+def interrogate_clip(image):
     if image is None:
         shared.log.error("Interrogate: no image selected")
         return gr.update()
-    from modules.interrogate import openclip
-    prompt = openclip.interrogator.interrogate(image)
+    prompt = shared.interrogator.interrogate(image)
     return gr.update() if prompt is None else prompt
 
 
-def interrogate_booru(image): # legacy function
+def interrogate_booru(image):
     if image is None:
         shared.log.error("Interrogate: no image selected")
         return gr.update()
-    from modules.interrogate import deepbooru
+    from modules import deepbooru
     prompt = deepbooru.model.tag(image)
     return gr.update() if prompt is None else prompt
 
@@ -259,7 +258,10 @@ def create_output_panel(tabname, preview=True, prompt=None, height=None):
                                         elem_classes=["gallery_main"],
                                        )
             if prompt is not None:
-                ui_sections.create_interrogate_button(tab=tabname, inputs=result_gallery, outputs=prompt)
+                interrogate_clip_btn, interrogate_booru_btn = ui_sections.create_interrogate_buttons('control')
+                interrogate_clip_btn.click(fn=interrogate_clip, inputs=[result_gallery], outputs=[prompt])
+                interrogate_booru_btn.click(fn=interrogate_booru, inputs=[result_gallery], outputs=[prompt])
+
 
         with gr.Column(elem_id=f"{tabname}_footer", elem_classes="gallery_footer"):
             dummy_component = gr.Label(visible=False)

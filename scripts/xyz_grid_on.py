@@ -14,12 +14,11 @@ from scripts.xyz_grid_classes import axis_options, AxisOption, SharedSettingsSta
 from scripts.xyz_grid_draw import draw_xyz_grid # pylint: disable=no-name-in-module
 from modules import shared, errors, scripts, images, processing
 from modules.ui_components import ToolButton
-from modules.ui_sections import create_video_inputs
 import modules.ui_symbols as symbols
 
 
 active = False
-xyz_results_cache = None
+cache = None
 debug = shared.log.trace if os.environ.get('SD_XYZ_DEBUG', None) is not None else lambda *args, **kwargs: None
 
 
@@ -71,8 +70,23 @@ class Script(scripts.Script):
                     create_video = gr.Checkbox(label='Create video', value=False, elem_id=self.elem_id("xyz_create_video"), container=False)
 
             with gr.Row(visible=False) as ui_video:
-                video_type, video_duration, video_loop, video_pad, video_interpolate = create_video_inputs(tab='img2img' if is_img2img else 'txt2img')
-                create_video.change(fn=lambda x: gr.update(visible=x), inputs=[create_video], outputs=[ui_video])
+                def video_type_change(video_type):
+                    return [
+                        gr.update(visible=video_type != 'None'),
+                        gr.update(visible=video_type == 'GIF' or video_type == 'PNG'),
+                        gr.update(visible=video_type == 'MP4'),
+                        gr.update(visible=video_type == 'MP4'),
+                    ]
+
+                with gr.Column():
+                    video_type = gr.Dropdown(label='Video type', choices=['None', 'GIF', 'PNG', 'MP4'], value='None')
+                with gr.Column():
+                    video_duration = gr.Slider(label='Duration', minimum=0.25, maximum=300, step=0.25, value=2, visible=False)
+                    video_loop = gr.Checkbox(label='Loop', value=True, visible=False, elem_id="control_video_loop")
+                    video_pad = gr.Slider(label='Pad frames', minimum=0, maximum=24, step=1, value=1, visible=False)
+                    video_interpolate = gr.Slider(label='Interpolate frames', minimum=0, maximum=24, step=1, value=0, visible=False)
+                video_type.change(fn=video_type_change, inputs=[video_type], outputs=[video_duration, video_loop, video_pad, video_interpolate])
+            create_video.change(fn=lambda x: gr.update(visible=x), inputs=[create_video], outputs=[ui_video])
 
             with gr.Row():
                 margin_size = gr.Slider(label="Grid margins", minimum=0, maximum=500, value=0, step=2, elem_id=self.elem_id("margin_size"))
@@ -174,8 +188,8 @@ class Script(scripts.Script):
                 include_time, include_text, margin_size,
                 create_video, video_type, video_duration, video_loop, video_pad, video_interpolate,
                ): # pylint: disable=W0221
-        global active, xyz_results_cache # pylint: disable=W0603
-        xyz_results_cache = None
+        global active, cache # pylint: disable=W0603
+        cache = None
         if not enabled or active:
             return
         active = True
@@ -194,35 +208,29 @@ class Script(scripts.Script):
             if opt.type == int:
                 valslist_ext = []
                 for val in valslist:
-                    try:
-                        m = re_range.fullmatch(val)
-                        if m is not None:
-                            start_val = int(m.group(1)) if m.group(1) is not None else val
-                            end_val = int(m.group(2)) if m.group(2) is not None else val
-                            num = int(m.group(3)) if m.group(3) is not None else int(end_val-start_val)
-                            valslist_ext += [int(x) for x in np.linspace(start=start_val, stop=end_val, num=max(2, num)).tolist()]
-                            shared.log.debug(f'XYZ grid range: start={start_val} end={end_val} num={max(2, num)} list={valslist}')
-                        else:
-                            valslist_ext.append(int(val))
-                    except Exception as e:
-                        shared.log.error(f"XYZ grid: value={val} {e}")
+                    m = re_range.fullmatch(val)
+                    if m is not None:
+                        start_val = int(m.group(1)) if m.group(1) is not None else val
+                        end_val = int(m.group(2)) if m.group(2) is not None else val
+                        num = int(m.group(3)) if m.group(3) is not None else int(end_val-start_val)
+                        valslist_ext += [int(x) for x in np.linspace(start=start_val, stop=end_val, num=max(2, num)).tolist()]
+                        shared.log.debug(f'XYZ grid range: start={start_val} end={end_val} num={max(2, num)} list={valslist}')
+                    else:
+                        valslist_ext.append(int(val))
                 valslist.clear()
                 valslist = [x for x in valslist_ext if x not in valslist]
             elif opt.type == float:
                 valslist_ext = []
                 for val in valslist:
-                    try:
-                        m = re_range.fullmatch(val)
-                        if m is not None:
-                            start_val = float(m.group(1)) if m.group(1) is not None else val
-                            end_val = float(m.group(2)) if m.group(2) is not None else val
-                            num = int(m.group(3)) if m.group(3) is not None else int(end_val-start_val)
-                            valslist_ext += [round(float(x), 2) for x in np.linspace(start=start_val, stop=end_val, num=max(2, num)).tolist()]
-                            shared.log.debug(f'XYZ grid range: start={start_val} end={end_val} num={max(2, num)} list={valslist}')
-                        else:
-                            valslist_ext.append(float(val))
-                    except Exception as e:
-                        shared.log.error(f"XYZ grid: value={val} {e}")
+                    m = re_range.fullmatch(val)
+                    if m is not None:
+                        start_val = float(m.group(1)) if m.group(1) is not None else val
+                        end_val = float(m.group(2)) if m.group(2) is not None else val
+                        num = int(m.group(3)) if m.group(3) is not None else int(end_val-start_val)
+                        valslist_ext += [round(float(x), 2) for x in np.linspace(start=start_val, stop=end_val, num=max(2, num)).tolist()]
+                        shared.log.debug(f'XYZ grid range: start={start_val} end={end_val} num={max(2, num)} list={valslist}')
+                    else:
+                        valslist_ext.append(float(val))
                 valslist.clear()
                 valslist = [x for x in valslist_ext if x not in valslist]
             elif opt.type == str_permutations: # pylint: disable=comparison-with-callable
@@ -233,24 +241,18 @@ class Script(scripts.Script):
                 opt.confirm(p, valslist)
             return valslist
 
-        try:
-            x_opt = self.current_axis_options[x_type]
-            if x_opt.choices is not None and not csv_mode:
-                x_values = list_to_csv_string(x_values_dropdown)
-            xs = process_axis(x_opt, x_values, x_values_dropdown)
-            y_opt = self.current_axis_options[y_type]
-            if y_opt.choices is not None and not csv_mode:
-                y_values = list_to_csv_string(y_values_dropdown)
-            ys = process_axis(y_opt, y_values, y_values_dropdown)
-            z_opt = self.current_axis_options[z_type]
-            if z_opt.choices is not None and not csv_mode:
-                z_values = list_to_csv_string(z_values_dropdown)
-            zs = process_axis(z_opt, z_values, z_values_dropdown)
-        except Exception as e:
-            shared.log.error(f"XYZ grid: invalid axis values {e}")
-            active = False
-            return None
-
+        x_opt = self.current_axis_options[x_type]
+        if x_opt.choices is not None and not csv_mode:
+            x_values = list_to_csv_string(x_values_dropdown)
+        xs = process_axis(x_opt, x_values, x_values_dropdown)
+        y_opt = self.current_axis_options[y_type]
+        if y_opt.choices is not None and not csv_mode:
+            y_values = list_to_csv_string(y_values_dropdown)
+        ys = process_axis(y_opt, y_values, y_values_dropdown)
+        z_opt = self.current_axis_options[z_type]
+        if z_opt.choices is not None and not csv_mode:
+            z_values = list_to_csv_string(z_values_dropdown)
+        zs = process_axis(z_opt, z_values, z_values_dropdown)
         Image.MAX_IMAGE_PIXELS = None # disable check in Pillow and rely on check below to allow large custom image sizes
 
         def fix_axis_seeds(axis_opt, axis_list):
@@ -264,7 +266,6 @@ class Script(scripts.Script):
             ys = fix_axis_seeds(y_opt, ys)
             zs = fix_axis_seeds(z_opt, zs)
 
-        total_jobs = len(xs) * len(ys) * len(zs)
         if x_opt.label == 'Steps':
             total_steps = sum(xs) * len(ys) * len(zs)
         elif y_opt.label == 'Steps':
@@ -272,8 +273,8 @@ class Script(scripts.Script):
         elif z_opt.label == 'Steps':
             total_steps = sum(zs) * len(xs) * len(ys)
         else:
-            total_steps = p.steps * total_jobs
-        if p.enable_hr:
+            total_steps = p.steps * len(xs) * len(ys) * len(zs)
+        if isinstance(p, processing.StableDiffusionProcessingTxt2Img) and p.enable_hr:
             if x_opt.label == "Hires steps":
                 total_steps += sum(xs) * len(ys) * len(zs)
             elif y_opt.label == "Hires steps":
@@ -281,16 +282,10 @@ class Script(scripts.Script):
             elif z_opt.label == "Hires steps":
                 total_steps += sum(zs) * len(xs) * len(ys)
             elif p.hr_second_pass_steps:
-                total_steps += p.hr_second_pass_steps * total_jobs
+                total_steps += p.hr_second_pass_steps * len(xs) * len(ys) * len(zs)
             else:
                 total_steps *= 2
-        if p.detailer_enabled:
-            total_steps += p.detailer_steps * total_jobs
-
         total_steps *= p.n_iter
-        total_jobs *= p.n_iter
-        shared.state.update('Grid', total_steps, total_jobs)
-
         image_cell_count = p.n_iter * p.batch_size
         shared.log.info(f"XYZ grid start: images={len(xs)*len(ys)*len(zs)*image_cell_count} grid={len(zs)} shape={len(xs)}x{len(ys)} cells={len(zs)} steps={total_steps}")
         AxisInfo = namedtuple('AxisInfo', ['axis', 'values'])
@@ -365,7 +360,7 @@ class Script(scripts.Script):
             return processed
 
         with SharedSettingsStackHelper():
-            processed: processing.Processed = draw_xyz_grid(
+            processed = draw_xyz_grid(
                 p,
                 xs=xs,
                 ys=ys,
@@ -423,15 +418,19 @@ class Script(scripts.Script):
         p.do_not_save_samples = True
         p.disable_extra_networks = True
         active = False
-        xyz_results_cache = processed
+        cache = processed
         return processed
 
 
     def process_images(self, p, *args): # pylint: disable=W0221, W0613
-        if xyz_results_cache is not None and len(xyz_results_cache.images) > 0:
+        if hasattr(cache, 'used'):
+            cache.images.clear()
+            cache.used = False
+        elif cache is not None and len(cache.images) > 0:
+            cache.used = True
             p.restore_faces = False
-            p.detailer_enabled = False
+            p.detailer = False
             p.color_corrections = None
-            # p.scripts = None
-            return xyz_results_cache
+            p.scripts = None
+            return cache
         return None

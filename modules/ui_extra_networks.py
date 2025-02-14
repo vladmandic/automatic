@@ -227,7 +227,7 @@ class ExtraNetworksPage:
         for parentdir, dirs in {d: files_cache.walk(d, cached=True, recurse=files_cache.not_hidden) for d in allowed_folders}.items():
             for tgt in dirs:
                 tgt = tgt.path
-                if os.path.join(paths.models_path, 'Reference') in tgt and shared.opts.extra_network_reference_enable:
+                if os.path.join(paths.models_path, 'Reference') in tgt:
                     subdirs['Reference'] = 1
                 if shared.native and shared.opts.diffusers_dir in tgt:
                     subdirs[os.path.basename(shared.opts.diffusers_dir)] = 1
@@ -238,31 +238,19 @@ class ExtraNetworksPage:
                     subdir = subdir[1:]
                 if not subdir:
                     continue
+                # if not self.is_empty(tgt):
                 subdirs[subdir] = 1
         debug(f"Networks: page='{self.name}' subfolders={list(subdirs)}")
         subdirs = OrderedDict(sorted(subdirs.items()))
-        if self.name == 'model' and shared.opts.extra_network_reference_enable:
-            subdirs['Local'] = 1
+        if self.name == 'model':
             subdirs['Reference'] = 1
             subdirs[os.path.basename(shared.opts.diffusers_dir)] = 1
+            subdirs.move_to_end(os.path.basename(shared.opts.diffusers_dir))
+            subdirs.move_to_end('Reference')
         if self.name == 'style' and shared.opts.extra_networks_styles:
-            subdirs['Local'] = 1
-            subdirs['Reference'] = 1
-        subdirs['All'] = 1
-        if 'All' in subdirs:
-            subdirs.move_to_end('All', last=False)
-        if 'Local' in subdirs:
-            subdirs.move_to_end('Local', last=True)
-        if os.path.basename(shared.opts.diffusers_dir) in subdirs:
-            subdirs.move_to_end(os.path.basename(shared.opts.diffusers_dir), last=True)
-        if 'Reference' in subdirs:
-            subdirs.move_to_end('Reference', last=True)
-        subdirs_html = ''
-        for subdir in subdirs:
-            if len(subdir) == 0:
-                continue
-            style = 'color: var(--color-accent)' if subdir in ['All', 'Local', 'Diffusers', 'Reference'] else ''
-            subdirs_html += f'<button class="lg secondary gradio-button custom-button" onclick="extraNetworksSearchButton(event)" style="{style}">{html.escape(subdir)}</button><br>'
+            subdirs['built-in'] = 1
+        subdirs_html = "<button class='lg secondary gradio-button custom-button search-all' onclick='extraNetworksSearchButton(event)'>All</button><br>"
+        subdirs_html += "".join([f"<button class='lg secondary gradio-button custom-button' onclick='extraNetworksSearchButton(event)'>{html.escape(subdir)}</button><br>" for subdir in subdirs if subdir != ''])
         self.html = ''
         self.create_items(tabname)
         self.create_xyz_grid()
@@ -343,7 +331,7 @@ class ExtraNetworksPage:
             return 'html/card-no-preview.png'
         if os.path.join('models', 'Reference') in path:
             return path
-        exts = ["jpg", "jpeg", "png", "webp", "tiff", "jp2", "jxl"]
+        exts = ["jpg", "jpeg", "png", "webp", "tiff", "jp2"]
         reference_path = os.path.abspath(os.path.join('models', 'Reference'))
         files = list(files_cache.list_files(reference_path, ext_filter=exts, recursive=False))
         if shared.opts.diffusers_dir in path:
@@ -372,7 +360,7 @@ class ExtraNetworksPage:
         t0 = time.time()
         reference_path = os.path.abspath(os.path.join('models', 'Reference'))
         possible_paths = list(set([os.path.dirname(item['filename']) for item in items] + [reference_path]))
-        exts = ["jpg", "jpeg", "png", "webp", "tiff", "jp2", "jxl"]
+        exts = ["jpg", "jpeg", "png", "webp", "tiff", "jp2"]
         all_previews = list(files_cache.list_files(*possible_paths, ext_filter=exts, recursive=False))
         all_previews_fn = [os.path.basename(x) for x in all_previews]
         for item in items:
@@ -697,7 +685,7 @@ def create_ui(container, button_parent, tabname, skip_indexing = False):
         return image
 
     def fn_delete_img(_image):
-        preview_extensions = ["jpg", "jpeg", "png", "webp", "tiff", "jp2", "jxl"]
+        preview_extensions = ["jpg", "jpeg", "png", "webp", "tiff", "jp2"]
         fn = os.path.splitext(ui.last_item.filename)[0]
         for file in [f'{fn}{mid}{ext}' for ext in preview_extensions for mid in ['.thumb.', '.preview.', '.']]:
             if os.path.exists(file):

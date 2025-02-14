@@ -1,6 +1,5 @@
 import os
 import time
-import threading
 from typing import Union
 from diffusers import StableDiffusionPipeline, StableDiffusionXLPipeline, FluxPipeline, StableDiffusion3Pipeline, ControlNetModel
 from modules.control.units import detect
@@ -10,8 +9,8 @@ from modules.processing import StableDiffusionProcessingControl
 
 
 what = 'ControlNet'
-debug = os.environ.get('SD_CONTROL_DEBUG', None) is not None
-debug_log = log.trace if os.environ.get('SD_CONTROL_DEBUG', None) is not None else lambda *args, **kwargs: None
+debug = log.trace if os.environ.get('SD_CONTROL_DEBUG', None) is not None else lambda *args, **kwargs: None
+debug('Trace: CONTROL')
 predefined_sd15 = {
     'Canny': "lllyasviel/control_v11p_sd15_canny",
     'Depth': "lllyasviel/control_v11f1p_sd15_depth",
@@ -92,15 +91,15 @@ predefined_f1 = {
     "XLabs-AI HED": 'XLabs-AI/flux-controlnet-hed-diffusers'
 }
 predefined_sd3 = {
-    "StabilityAI Canny SD35": 'diffusers-internal-dev/sd35-controlnet-canny-8b',
-    "StabilityAI Depth SD35": 'diffusers-internal-dev/sd35-controlnet-depth-8b',
-    "StabilityAI Blur SD35": 'diffusers-internal-dev/sd35-controlnet-blur-8b',
-    "InstantX Canny SD35": 'InstantX/SD3-Controlnet-Canny',
-    "InstantX Pose SD35": 'InstantX/SD3-Controlnet-Pose',
-    "InstantX Depth SD35": 'InstantX/SD3-Controlnet-Depth',
-    "InstantX Tile SD35": 'InstantX/SD3-Controlnet-Tile',
-    "Alimama Inpainting SD35": 'alimama-creative/SD3-Controlnet-Inpainting',
-    "Alimama SoftEdge SD35": 'alimama-creative/SD3-Controlnet-Softedge',
+    "StabilityAI Canny": 'diffusers-internal-dev/sd35-controlnet-canny-8b',
+    "StabilityAI Depth": 'diffusers-internal-dev/sd35-controlnet-depth-8b',
+    "StabilityAI Blur": 'diffusers-internal-dev/sd35-controlnet-blur-8b',
+    "InstantX Canny": 'InstantX/SD3-Controlnet-Canny',
+    "InstantX Pose": 'InstantX/SD3-Controlnet-Pose',
+    "InstantX Depth": 'InstantX/SD3-Controlnet-Depth',
+    "InstantX Tile": 'InstantX/SD3-Controlnet-Tile',
+    "Alimama Inpainting": 'alimama-creative/SD3-Controlnet-Inpainting',
+    "Alimama SoftEdge": 'alimama-creative/SD3-Controlnet-Softedge',
 }
 variants = {
     'NoobAI Canny XL': 'fp16',
@@ -117,7 +116,6 @@ all_models.update(predefined_sdxl)
 all_models.update(predefined_f1)
 all_models.update(predefined_sd3)
 cache_dir = 'models/control/controlnet'
-load_lock = threading.Lock()
 
 
 def find_models():
@@ -156,7 +154,7 @@ def list_models(refresh=False):
     else:
         log.warning(f'Control {what} model list failed: unknown model type')
         models = ['None'] + sorted(predefined_sd15) + sorted(predefined_sdxl) + sorted(predefined_f1) + sorted(predefined_sd3) + sorted(find_models())
-    debug_log(f'Control list {what}: path={cache_dir} models={models}')
+    debug(f'Control list {what}: path={cache_dir} models={models}')
     return models
 
 
@@ -174,7 +172,7 @@ class ControlNet():
 
     def reset(self):
         if self.model is not None:
-            debug_log(f'Control {what} model unloaded')
+            debug(f'Control {what} model unloaded')
         self.model = None
         self.model_id = None
 
@@ -233,86 +231,78 @@ class ControlNet():
             self.load_config['original_config_file '] = config_path
         cls, config = self.get_class(model_id)
         if cls is None:
-            log.error(f'Control {what} model load: unknown base model')
+            log.error(f'Control {what} model load failed: unknown base model')
         else:
             self.model = cls.from_single_file(model_path, config=config, **self.load_config)
 
     def load(self, model_id: str = None, force: bool = True) -> str:
-        with load_lock:
-            try:
-                t0 = time.time()
-                model_id = model_id or self.model_id
-                if model_id is None or model_id == 'None':
-                    self.reset()
+        try:
+            t0 = time.time()
+            model_id = model_id or self.model_id
+            if model_id is None or model_id == 'None':
+                self.reset()
+                return
+            if model_id not in all_models:
+                log.error(f'Control {what} unknown model: id="{model_id}" available={list(all_models)}')
+                return
+            model_path = all_models[model_id]
+            if model_path == '':
+                return
+            if model_path is None:
+                log.error(f'Control {what} model load failed: id="{model_id}" error=unknown model id')
+                return
+            if 'lora' in model_id.lower():
+                self.model = model_path
+                return
+            if model_id == self.model_id and not force:
+                log.debug(f'Control {what} model: id="{model_id}" path="{model_path}" already loaded')
+                return
+            log.debug(f'Control {what} model loading: id="{model_id}" path="{model_path}"')
+            cls, _config = self.get_class(model_id)
+            if model_path.endswith('.safetensors'):
+                self.load_safetensors(model_id, model_path)
+            else:
+                kwargs = {}
+                if '/bin' in model_path:
+                    model_path = model_path.replace('/bin', '')
+                    self.load_config['use_safetensors'] = False
+                if cls is None:
+                    log.error(f'Control {what} model load failed: id="{model_id}" unknown base model')
                     return
-                if model_id not in all_models:
-                    log.error(f'Control {what}: id="{model_id}" available={list(all_models)} unknown model')
-                    return
-                model_path = all_models[model_id]
-                if model_path == '':
-                    return
-                if model_path is None:
-                    log.error(f'Control {what} model load: id="{model_id}" unknown model id')
-                    return
-                if 'lora' in model_id.lower():
-                    self.model = model_path
-                    return
-                if model_id == self.model_id and not force:
-                    # log.debug(f'Control {what} model: id="{model_id}" path="{model_path}" already loaded')
-                    return
-                log.debug(f'Control {what} model loading: id="{model_id}" path="{model_path}"')
-                cls, _config = self.get_class(model_id)
-                if model_path.endswith('.safetensors'):
-                    self.load_safetensors(model_id, model_path)
-                else:
-                    kwargs = {}
-                    if '/bin' in model_path:
-                        model_path = model_path.replace('/bin', '')
-                        self.load_config['use_safetensors'] = False
-                    else:
-                        self.load_config['use_safetensors'] = True
-                    if cls is None:
-                        log.error(f'Control {what} model load: id="{model_id}" unknown base model')
-                        return
-                    if variants.get(model_id, None) is not None:
-                        kwargs['variant'] = variants[model_id]
-                    try:
-                        self.model = cls.from_pretrained(model_path, **self.load_config, **kwargs)
-                    except Exception as e:
-                        log.error(f'Control {what} model load: id="{model_id}" {e}')
-                        if debug:
-                            errors.display(e, 'Control')
-                if self.model is None:
-                    return
-                if self.dtype is not None:
-                    self.model.to(self.dtype)
-                if "ControlNet" in opts.nncf_compress_weights:
-                    try:
-                        log.debug(f'Control {what} model NNCF Compress: id="{model_id}"')
-                        from installer import install
-                        install('nncf==2.7.0', quiet=True)
-                        from modules.model_quant import nncf_compress_model
-                        self.model = nncf_compress_model(self.model)
-                    except Exception as e:
-                        log.error(f'Control {what} model NNCF Compression failed: id="{model_id}" {e}')
-                elif "ControlNet" in opts.optimum_quanto_weights:
-                    try:
-                        log.debug(f'Control {what} model Optimum Quanto: id="{model_id}"')
-                        model_quant.load_quanto('Load model: type=ControlNet')
-                        from modules.model_quant import optimum_quanto_model
-                        self.model = optimum_quanto_model(self.model)
-                    except Exception as e:
-                        log.error(f'Control {what} model Optimum Quanto: id="{model_id}" {e}')
-                if self.device is not None:
-                    self.model.to(self.device)
-                t1 = time.time()
-                self.model_id = model_id
-                log.info(f'Control {what} model loaded: id="{model_id}" path="{model_path}" cls={cls.__name__} time={t1-t0:.2f}')
-                return f'{what} loaded model: {model_id}'
-            except Exception as e:
-                log.error(f'Control {what} model load: id="{model_id}" {e}')
-                errors.display(e, f'Control {what} load')
-                return f'{what} failed to load model: {model_id}'
+                if variants.get(model_id, None) is not None:
+                    kwargs['variant'] = variants[model_id]
+                self.model = cls.from_pretrained(model_path, **self.load_config, **kwargs)
+            if self.model is None:
+                return
+            if self.dtype is not None:
+                self.model.to(self.dtype)
+            if "ControlNet" in opts.nncf_compress_weights:
+                try:
+                    log.debug(f'Control {what} model NNCF Compress: id="{model_id}"')
+                    from installer import install
+                    install('nncf==2.7.0', quiet=True)
+                    from modules.sd_models_compile import nncf_compress_model
+                    self.model = nncf_compress_model(self.model)
+                except Exception as e:
+                    log.error(f'Control {what} model NNCF Compression failed: id="{model_id}" error={e}')
+            elif "ControlNet" in opts.optimum_quanto_weights:
+                try:
+                    log.debug(f'Control {what} model Optimum Quanto: id="{model_id}"')
+                    model_quant.load_quanto('Load model: type=ControlNet')
+                    from modules.sd_models_compile import optimum_quanto_model
+                    self.model = optimum_quanto_model(self.model)
+                except Exception as e:
+                    log.error(f'Control {what} model Optimum Quanto failed: id="{model_id}" error={e}')
+            if self.device is not None:
+                self.model.to(self.device)
+            t1 = time.time()
+            self.model_id = model_id
+            log.debug(f'Control {what} model loaded: id="{model_id}" path="{model_path}" cls={cls.__name__} time={t1-t0:.2f}')
+            return f'{what} loaded model: {model_id}'
+        except Exception as e:
+            log.error(f'Control {what} model load failed: id="{model_id}" error={e}')
+            errors.display(e, f'Control {what} load')
+            return f'{what} failed to load model: {model_id}'
 
 
 class ControlNetPipeline():
@@ -335,15 +325,9 @@ class ControlNetPipeline():
             return
         elif detect.is_sdxl(pipeline) and len(controlnets) > 0:
             from diffusers import StableDiffusionXLControlNetPipeline, StableDiffusionXLControlNetUnionPipeline
-            classes = [c.__class__.__name__ for c in controlnets]
-            if any(c == 'ControlNetUnionModel' for c in classes):
-                if not all(c == 'ControlNetUnionModel' for c in classes):
-                    log.warning(f'Control {what}: units={classes} mixed type')
+            if controlnet.__class__.__name__ == 'ControlNetUnionModel':
                 cls = StableDiffusionXLControlNetUnionPipeline
-                if len(controlnets) > 1:
-                    # TODO controlnet-union multi-unit
-                    log.warning(f'Control {what}: units={classes} supports single unit only')
-                controlnets = controlnets[0]
+                controlnets = controlnets[0] # using only first one
             else:
                 cls = StableDiffusionXLControlNetPipeline
             self.pipeline = cls(
@@ -417,14 +401,13 @@ class ControlNetPipeline():
         if dtype is not None:
             self.pipeline = self.pipeline.to(dtype)
 
-        sd_models.copy_diffuser_options(self.pipeline, pipeline)
         if opts.diffusers_offload_mode == 'none':
             sd_models.move_model(self.pipeline, devices.device)
         from modules.sd_models import set_diffuser_offload
         set_diffuser_offload(self.pipeline, 'model')
 
         t1 = time.time()
-        debug_log(f'Control {what} pipeline: class={self.pipeline.__class__.__name__} time={t1-t0:.2f}')
+        log.debug(f'Control {what} pipeline: class={self.pipeline.__class__.__name__} time={t1-t0:.2f}')
 
     def restore(self):
         self.pipeline.unload_lora_weights()

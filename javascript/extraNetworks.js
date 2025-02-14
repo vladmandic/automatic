@@ -106,9 +106,8 @@ function getCardsForActivePage() {
 }
 
 async function filterExtraNetworksForTab(searchTerm) {
-  let items = 0;
   let found = 0;
-  searchTerm = searchTerm.toLowerCase().trim();
+  let items = 0;
   const t0 = performance.now();
   const pagename = getENActivePage();
   if (!pagename) return;
@@ -116,47 +115,73 @@ async function filterExtraNetworksForTab(searchTerm) {
   const pages = allPages.filter((el) => el.id.toLowerCase().includes(pagename.toLowerCase()));
   for (const pg of pages) {
     const cards = Array.from(pg.querySelectorAll('.card') || []);
+
+    // We will always have as many items as cards
     items += cards.length;
-    if (searchTerm === '' || searchTerm === 'all/') {
-      cards.forEach((elem) => elem.style.display = '');
-    } else if (searchTerm === 'reference/') {
-      cards.forEach((elem) => elem.style.display = elem.dataset.name
-        .toLowerCase()
-        .includes('reference/') ? '' : 'none');
-    } else if (searchTerm === 'local/') {
-      cards.forEach((elem) => elem.style.display = elem.dataset.name
-        .toLowerCase()
-        .includes('reference/') ? 'none' : '');
-    } else if (searchTerm === 'diffusers/') {
-      cards.forEach((elem) => elem.style.display = elem.dataset.name
-        .toLowerCase().replace('models--', 'diffusers').replaceAll('\\', '/')
-        .includes('diffusers/') ? '' : 'none');
-    } else if (searchTerm.startsWith('r#')) {
-      searchTerm = searchTerm.substring(2);
-      const re = new RegExp(searchTerm, 'i');
-      cards.forEach((elem) => elem.style.display = re.test(`filename: ${elem.dataset.filename}|name: ${elem.dataset.name}|tags: ${elem.dataset.tags}`) ? '' : 'none');
-    } else {
-      const searchList = searchTerm.split('|').filter((s) => s !== '' && !s.startsWith('-')).map((s) => s.trim());
-      const excludeList = searchTerm.split('|').filter((s) => s !== '' && s.trim().startsWith('-')).map((s) => s.trim().substring(1).trim());
-      const searchListAll = searchList.map((s) => s.split('&').map((t) => t.trim()));
-      const excludeListAll = excludeList.map((s) => s.split('&').map((t) => t.trim()));
+
+    // Reset the results to show all cards if the search term is empty
+    if (searchTerm === '') {
       cards.forEach((elem) => {
-        let text = '';
-        if (elem.dataset.filename) text += `${elem.dataset.filename} `;
-        if (elem.dataset.name) text += `${elem.dataset.name} `;
-        if (elem.dataset.tags) text += `${elem.dataset.tags} `;
-        text = text.toLowerCase().replace('models--', 'diffusers').replaceAll('\\', '/');
-        if (searchListAll.some((sl) => sl.every((st) => text.includes(st))) && !excludeListAll.some((el) => el.every((et) => text.includes(et)))) {
-          elem.style.display = '';
-        } else {
-          elem.style.display = 'none';
-        }
+        elem.style.display = '';
       });
+    } else {
+      // Do not account for case or whitespace
+      searchTerm = searchTerm.toLowerCase().trim();
+
+      // If the searchTerm starts with "r#", then we are using regex search
+      if (searchTerm.startsWith('r#')) {
+        searchTerm = searchTerm.substring(2);
+
+        // Insensitive regex search based on the searchTerm
+
+        // The regex can be invalid -> then it will error out of this function, so the timing log will be missing, instead the error will be logged to console
+        const re = new RegExp(searchTerm, 'i');
+
+        cards.forEach((elem) => {
+          // Construct the search text, which is the concatenation of all data elements with a prefix to make it unique
+          // This combined text allows to exclude search terms for example by using negative lookahead
+          if (re.test(`filename: ${elem.dataset.filename}|name: ${elem.dataset.name}|tags: ${elem.dataset.tags}`)) {
+            elem.style.display = '';
+            found += 1;
+          } else {
+            elem.style.display = 'none';
+          }
+        });
+      } else {
+        // If we are not using regex search, we still use an extended syntax to allow for searching for multiple keywords, or also excluding keywords
+        // Keywords are separated by |, and keywords that should be excluded are prefixed with -
+        const searchList = searchTerm.split('|').filter((s) => s !== '' && !s.startsWith('-')).map((s) => s.trim());
+        const excludeList = searchTerm.split('|').filter((s) => s !== '' && s.trim().startsWith('-')).map((s) => s.trim().substring(1).trim());
+        // In addition, both the searchList, and exclude List can be separated by &, which means that all keywords in the searchList must be present, and none of the excludeList
+        // So we construct an array of arrays, which we will then use to filter the cards
+        const searchListAll = searchList.map((s) => s.split('&').map((t) => t.trim()));
+        const excludeListAll = excludeList.map((s) => s.split('&').map((t) => t.trim()));
+
+        cards.forEach((elem) => {
+          let text = '';
+          if (elem.dataset.filename) text += `${elem.dataset.filename} `;
+          if (elem.dataset.name) text += `${elem.dataset.name} `;
+          if (elem.dataset.tags) text += `${elem.dataset.tags} `;
+          text = text.toLowerCase().replace('models--', 'diffusers').replaceAll('\\', '/');
+          if (
+            // In searchListAll we have a list of lists, in the sublist, every keyword must be present
+            // In the top level list, at least one sublist must be present
+            // In excludeListAll we have a list of lists, in the sublist, the keywords may not appear together
+            // In the top level list, none of the sublists must be present
+            searchListAll.some((sl) => sl.every((st) => text.includes(st))) && !excludeListAll.some((el) => el.every((et) => text.includes(et)))
+          ) {
+            elem.style.display = '';
+            found += 1;
+          } else {
+            elem.style.display = 'none';
+          }
+        });
+      }
     }
-    found += cards.filter((elem) => elem.style.display === '').length;
   }
   const t1 = performance.now();
-  log(`filterExtraNetworks: text="${searchTerm}" items=${items} match=${found} time=${Math.round(1000 * (t1 - t0)) / 1000000}`);
+  if (searchTerm !== '') log(`filterExtraNetworks: text=${searchTerm} items=${items} match=${found} time=${Math.round(1000 * (t1 - t0)) / 1000000}`);
+  else log(`filterExtraNetworks: text=all items=${items} time=${Math.round(1000 * (t1 - t0)) / 1000000}`);
 }
 
 function tryToRemoveExtraNetworkFromPrompt(textarea, text) {
@@ -242,7 +267,8 @@ function extraNetworksSearchButton(event) {
   const tabname = getENActiveTab();
   const searchTextarea = gradioApp().querySelector(`#${tabname}_extra_search textarea`);
   const button = event.target;
-  searchTextarea.value = `${button.textContent.trim()}/`;
+  if (button.classList.contains('search-all')) searchTextarea.value = '';
+  else searchTextarea.value = `${button.textContent.trim()}/`;
   updateInput(searchTextarea);
 }
 

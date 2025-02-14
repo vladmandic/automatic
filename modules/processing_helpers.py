@@ -409,34 +409,30 @@ def resize_hires(p, latents): # input=latents output=pil if not latent_upscaler 
         shared.log.warning('Hires: input is not tensor')
         first_pass_images = processing_vae.vae_decode(latents=latents, model=shared.sd_model, full_quality=p.full_quality, output_type='pil', width=p.width, height=p.height)
         return first_pass_images
-
-    if (p.hr_upscale_to_x == 0 or p.hr_upscale_to_y == 0) and hasattr(p, 'init_hr'):
+    latent_upscaler = shared.latent_upscale_modes.get(p.hr_upscaler, None)
+    # shared.log.info(f'Hires: upscaler={p.hr_upscaler} width={p.hr_upscale_to_x} height={p.hr_upscale_to_y} images={latents.shape[0]}')
+    if latent_upscaler is not None:
+        return torch.nn.functional.interpolate(latents, size=(p.hr_upscale_to_y // 8, p.hr_upscale_to_x // 8), mode=latent_upscaler["mode"], antialias=latent_upscaler["antialias"])
+    first_pass_images = processing_vae.vae_decode(latents=latents, model=shared.sd_model, full_quality=p.full_quality, output_type='pil', width=p.width, height=p.height)
+    if p.hr_upscale_to_x == 0 or (p.hr_upscale_to_y == 0 and hasattr(p, 'init_hr')):
         shared.log.error('Hires: missing upscaling dimensions')
         return first_pass_images
-
-    if p.hr_upscaler.lower().startswith('latent'):
-        resized_image = images.resize_image(p.hr_resize_mode, latents, p.hr_upscale_to_x, p.hr_upscale_to_y, upscaler_name=p.hr_upscaler, context=p.hr_resize_context)
-        return resized_image
-
-    first_pass_images = processing_vae.vae_decode(latents=latents, model=shared.sd_model, full_quality=p.full_quality, output_type='pil', width=p.width, height=p.height)
     resized_images = []
     for img in first_pass_images:
-        resized_image = images.resize_image(p.hr_resize_mode, img, p.hr_upscale_to_x, p.hr_upscale_to_y, upscaler_name=p.hr_upscaler, context=p.hr_resize_context)
+        if latent_upscaler is None:
+            resized_image = images.resize_image(p.hr_resize_mode, img, p.hr_upscale_to_x, p.hr_upscale_to_y, upscaler_name=p.hr_upscaler, context=p.hr_resize_context)
+        else:
+            resized_image = img
         resized_images.append(resized_image)
     devices.torch_gc()
     return resized_images
 
 
-def fix_prompts(p, prompts, negative_prompts, prompts_2, negative_prompts_2):
+def fix_prompts(prompts, negative_prompts, prompts_2, negative_prompts_2):
     if type(prompts) is str:
         prompts = [prompts]
     if type(negative_prompts) is str:
         negative_prompts = [negative_prompts]
-    if hasattr(p, '[init_images]') and p.init_images is not None and len(p.init_images) > 1:
-        while len(prompts) < len(p.init_images):
-            prompts.append(prompts[-1])
-        while len(negative_prompts) < len(p.init_images):
-            negative_prompts.append(negative_prompts[-1])
     while len(negative_prompts) < len(prompts):
         negative_prompts.append(negative_prompts[-1])
     while len(prompts) < len(negative_prompts):
@@ -588,26 +584,3 @@ def update_sampler(p, sd_model, second_pass=False):
             sampler_options.append('low order')
         if len(sampler_options) > 0:
             p.extra_generation_params['Sampler options'] = '/'.join(sampler_options)
-
-
-def get_job_name(p, model):
-    if hasattr(model, 'pipe'):
-        model = model.pipe
-    if hasattr(p, 'xyz'):
-        return 'Ignore' # xyz grid handles its own jobs
-    if sd_models.get_diffusers_task(model) == sd_models.DiffusersTaskType.TEXT_2_IMAGE:
-        return 'Text'
-    elif sd_models.get_diffusers_task(model) == sd_models.DiffusersTaskType.IMAGE_2_IMAGE:
-        if p.is_refiner_pass:
-            return 'Refiner'
-        elif p.is_hr_pass:
-            return 'Hires'
-        else:
-            return 'Image'
-    elif sd_models.get_diffusers_task(model) == sd_models.DiffusersTaskType.INPAINTING:
-        if p.detailer_enabled:
-            return 'Detailer'
-        else:
-            return 'Inpaint'
-    else:
-        return 'Unknown'

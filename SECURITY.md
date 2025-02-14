@@ -4,7 +4,7 @@
 
 ## Issues
 
-All issues are tracked publicly on GitHub: <https://github.com/vladmandic/sdnext/issues>
+All issues are tracked publicly on GitHub: <https://github.com/vladmandic/automatic/issues>
 
 <br>
 
@@ -14,8 +14,8 @@ All issues are tracked publicly on GitHub: <https://github.com/vladmandic/sdnext
 
 Any code commit is validated before merge
 
-- [Dependencies](https://github.com/vladmandic/sdnext/security/dependabot)
-- [Scanning Alerts](https://github.com/vladmandic/sdnext/security/code-scanning)
+- [Dependencies](https://github.com/vladmandic/automatic/security/dependabot)
+- [Scanning Alerts](https://github.com/vladmandic/automatic/security/code-scanning)
 
 <br>
 

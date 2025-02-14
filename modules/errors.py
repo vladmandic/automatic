@@ -1,18 +1,33 @@
 import logging
 import warnings
-from installer import get_log, get_console, setup_logging, install_traceback
+from installer import log as installer_log, setup_logging
 
-
-log = get_log()
 setup_logging()
-install_traceback()
+log = installer_log
+
+from rich.console import Console # pylint: disable=wrong-import-order
+from rich.theme import Theme # pylint: disable=wrong-import-order
+from rich.pretty import install as pretty_install # pylint: disable=wrong-import-order
+from rich.traceback import install as traceback_install # pylint: disable=wrong-import-order
+
+console = Console(log_time=True, tab_size=4, log_time_format='%H:%M:%S-%f', soft_wrap=True, safe_box=True, theme=Theme({
+    "traceback.border": "black",
+    "traceback.border.syntax_error": "black",
+    "inspect.value.border": "black",
+}))
+
+pretty_install(console=console)
+traceback_install(console=console, extra_lines=1, width=console.width, word_wrap=False, indent_guides=False, max_frames=16)
 already_displayed = {}
 
 
 def install(suppress=[]):
     warnings.filterwarnings("ignore", category=UserWarning)
-    install_traceback(suppress=suppress)
+    pretty_install(console=console)
+    traceback_install(console=console, extra_lines=1, width=console.width, word_wrap=False, indent_guides=False, suppress=suppress)
     logging.basicConfig(level=logging.ERROR, format='%(asctime)s | %(levelname)s | %(pathname)s | %(message)s')
+    # for handler in logging.getLogger().handlers:
+    #    handler.setLevel(logging.INFO)
 
 
 def print_error_explanation(message):
@@ -23,7 +38,6 @@ def print_error_explanation(message):
 
 def display(e: Exception, task: str, suppress=[]):
     log.error(f"{task or 'error'}: {type(e).__name__}")
-    console = get_console()
     console.print_exception(show_locals=False, max_frames=16, extra_lines=1, suppress=suppress, theme="ansi_dark", word_wrap=False, width=console.width)
 
 
@@ -42,7 +56,6 @@ def run(code, task: str):
 
 
 def exception(suppress=[]):
-    console = get_console()
     console.print_exception(show_locals=False, max_frames=16, extra_lines=2, suppress=suppress, theme="ansi_dark", word_wrap=False, width=min([console.width, 200]))
 
 

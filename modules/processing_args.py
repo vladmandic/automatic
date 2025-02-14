@@ -15,7 +15,6 @@ from modules.api import helpers
 
 debug_enabled = os.environ.get('SD_DIFFUSERS_DEBUG', None)
 debug_log = shared.log.trace if os.environ.get('SD_DIFFUSERS_DEBUG', None) is not None else lambda *args, **kwargs: None
-disable_pbar = os.environ.get('SD_DISABLE_PBAR', None) is not None
 
 
 def task_specific_kwargs(p, model):
@@ -36,8 +35,7 @@ def task_specific_kwargs(p, model):
     elif (sd_models.get_diffusers_task(model) == sd_models.DiffusersTaskType.IMAGE_2_IMAGE or is_img2img_model) and len(getattr(p, 'init_images', [])) > 0:
         if shared.sd_model_type == 'sdxl' and hasattr(model, 'register_to_config'):
             model.register_to_config(requires_aesthetics_score = False)
-        if 'hires' not in p.ops:
-            p.ops.append('img2img')
+        p.ops.append('img2img')
         task_args = {
             'image': p.init_images,
             'strength': p.denoising_strength,
@@ -65,7 +63,7 @@ def task_specific_kwargs(p, model):
     elif (sd_models.get_diffusers_task(model) == sd_models.DiffusersTaskType.INPAINTING or is_img2img_model) and len(getattr(p, 'init_images', [])) > 0:
         if shared.sd_model_type == 'sdxl' and hasattr(model, 'register_to_config'):
             model.register_to_config(requires_aesthetics_score = False)
-        if p.detailer_enabled:
+        if p.detailer:
             p.ops.append('detailer')
         else:
             p.ops.append('inpaint')
@@ -99,7 +97,7 @@ def task_specific_kwargs(p, model):
             'output_type': 'pil',
         }
     if debug_enabled:
-        debug_log(f'Process task specific args: {task_args}')
+        debug_log(f'Diffusers task specific args: {task_args}')
     return task_args
 
 
@@ -108,27 +106,22 @@ def set_pipeline_args(p, model, prompts:list, negative_prompts:list, prompts_2:t
     shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
     apply_circular(p.tiling, model)
     if hasattr(model, "set_progress_bar_config"):
-        if disable_pbar:
-            model.set_progress_bar_config(bar_format='Progress {rate_fmt}{postfix} {bar} {percentage:3.0f}% {n_fmt}/{total_fmt} {elapsed} {remaining} ' + '\x1b[38;5;71m' + desc, ncols=80, colour='#327fba', disable=disable_pbar)
-        else:
-            model.set_progress_bar_config(bar_format='Progress {rate_fmt}{postfix} {bar} {percentage:3.0f}% {n_fmt}/{total_fmt} {elapsed} {remaining} ' + '\x1b[38;5;71m' + desc, ncols=80, colour='#327fba')
+        model.set_progress_bar_config(bar_format='Progress {rate_fmt}{postfix} {bar} {percentage:3.0f}% {n_fmt}/{total_fmt} {elapsed} {remaining} ' + '\x1b[38;5;71m' + desc, ncols=80, colour='#327fba')
     args = {}
-    has_vae = hasattr(model, 'vae') or (hasattr(model, 'pipe') and hasattr(model.pipe, 'vae'))
     if hasattr(model, 'pipe') and not hasattr(model, 'no_recurse'): # recurse
         model = model.pipe
-        has_vae = has_vae or hasattr(model, 'vae')
     signature = inspect.signature(type(model).__call__, follow_wrapped=True)
     possible = list(signature.parameters)
 
     if debug_enabled:
-        debug_log(f'Process pipeline possible: {possible}')
-    prompts, negative_prompts, prompts_2, negative_prompts_2 = fix_prompts(p, prompts, negative_prompts, prompts_2, negative_prompts_2)
+        debug_log(f'Diffusers pipeline possible: {possible}')
+    prompts, negative_prompts, prompts_2, negative_prompts_2 = fix_prompts(prompts, negative_prompts, prompts_2, negative_prompts_2)
     steps = kwargs.get("num_inference_steps", None) or len(getattr(p, 'timesteps', ['1']))
     clip_skip = kwargs.pop("clip_skip", 1)
 
     parser = 'fixed'
     prompt_attention = prompt_attention or shared.opts.prompt_attention
-    if (prompt_attention != 'fixed') and ('Onnx' not in model.__class__.__name__) and ('prompt' not in p.task_args) and (
+    if prompt_attention != 'fixed' and 'Onnx' not in model.__class__.__name__ and (
         'StableDiffusion' in model.__class__.__name__ or
         'StableCascade' in model.__class__.__name__ or
         'Flux' in model.__class__.__name__
@@ -179,9 +172,6 @@ def set_pipeline_args(p, model, prompts:list, negative_prompts:list, prompts_2:t
         p.extra_generation_params["CHI"] = chi
         if not chi:
             args['complex_human_instruction'] = None
-    if 'use_resolution_binning' in possible:
-        args['use_resolution_binning'] = False
-        # p.extra_generation_params["Binning"] = True
     if prompt_parser_diffusers.embedder is not None and not prompt_parser_diffusers.embedder.scheduled_prompt: # not scheduled so we dont need it anymore
         prompt_parser_diffusers.embedder = None
 
@@ -242,7 +232,7 @@ def set_pipeline_args(p, model, prompts:list, negative_prompts:list, prompts_2:t
         if sd_models.get_diffusers_task(model) == sd_models.DiffusersTaskType.TEXT_2_IMAGE:
             args['latents'] = p.init_latent
     if 'output_type' in possible:
-        if not has_vae:
+        if not hasattr(model, 'vae'):
             kwargs['output_type'] = 'np' # only set latent if model has vae
 
     # model specific
@@ -281,10 +271,7 @@ def set_pipeline_args(p, model, prompts:list, negative_prompts:list, prompts_2:t
         args['callback'] = diffusers_callback_legacy
 
     if 'image' in kwargs:
-        if isinstance(kwargs['image'], list) and isinstance(kwargs['image'][0], Image.Image):
-            p.init_images = kwargs['image']
-        if isinstance(kwargs['image'], Image.Image):
-            p.init_images = [kwargs['image']]
+        p.init_images = kwargs['image'] if isinstance(kwargs['image'], list) else [kwargs['image']]
 
     # handle remaining args
     for arg in kwargs:
@@ -300,15 +287,15 @@ def set_pipeline_args(p, model, prompts:list, negative_prompts:list, prompts_2:t
             args[arg] = task_kwargs[arg]
     task_args = getattr(p, 'task_args', {})
     if debug_enabled:
-        debug_log(f'Process task args: {task_args}')
+        debug_log(f'Diffusers task args: {task_args}')
     for k, v in task_args.items():
         if k in possible:
             args[k] = v
         else:
-            debug_log(f'Process unknown task args: {k}={v}')
+            debug_log(f'Diffusers unknown task args: {k}={v}')
     cross_attention_args = getattr(p, 'cross_attention_kwargs', {})
     if debug_enabled:
-        debug_log(f'Process cross-attention args: {cross_attention_args}')
+        debug_log(f'Diffusers cross-attention args: {cross_attention_args}')
     for k, v in cross_attention_args.items():
         if args.get('cross_attention_kwargs', None) is None:
             args['cross_attention_kwargs'] = {}
@@ -329,7 +316,7 @@ def set_pipeline_args(p, model, prompts:list, negative_prompts:list, prompts_2:t
 
     # handle implicit controlnet
     if 'control_image' in possible and 'control_image' not in args and 'image' in args:
-        debug_log('Process: set control image')
+        debug_log('Diffusers: set control image')
         args['control_image'] = args['image']
 
     sd_hijack_hypertile.hypertile_set(p, hr=len(getattr(p, 'init_images', [])) > 0)
@@ -365,15 +352,5 @@ def set_pipeline_args(p, model, prompts:list, negative_prompts:list, prompts_2:t
         t1 = time.time()
         shared.log.debug(f'Profile: pipeline args: {t1-t0:.2f}')
     if debug_enabled:
-        debug_log(f'Process pipeline args: {args}')
-
-    _args = {}
-    for k, v in args.items(): # pipeline may modify underlying args
-        if isinstance(v, Image.Image):
-            _args[k] = v.copy()
-        elif (isinstance(v, list) and len(v) > 0 and isinstance(v[0], Image.Image)):
-            _args[k] = [i.copy() for i in v]
-        else:
-            _args[k] = v
-
-    return _args
+        debug_log(f'Diffusers pipeline args: {args}')
+    return args

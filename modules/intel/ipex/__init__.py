@@ -37,6 +37,7 @@ def ipex_init(): # pylint: disable=too-many-statements
             torch.cuda.is_current_stream_capturing = lambda: False
             torch.cuda.set_device = torch.xpu.set_device
             torch.cuda.stream = torch.xpu.stream
+            torch.cuda.synchronize = torch.xpu.synchronize
             torch.cuda.Event = torch.xpu.Event
             torch.cuda.Stream = torch.xpu.Stream
             torch.Tensor.cuda = torch.Tensor.xpu
@@ -205,10 +206,10 @@ def ipex_init(): # pylint: disable=too-many-statements
             torch.cuda.ipc_collect = lambda *args, **kwargs: None
             torch.cuda.utilization = lambda *args, **kwargs: 0
 
-            device_supports_fp64, can_allocate_plus_4gb = ipex_hijacks(legacy=legacy)
+            ipex_hijacks(legacy=legacy)
             try:
                 from .diffusers import ipex_diffusers
-                ipex_diffusers(device_supports_fp64=device_supports_fp64, can_allocate_plus_4gb=can_allocate_plus_4gb)
+                ipex_diffusers()
             except Exception: # pylint: disable=broad-exception-caught
                 pass
             torch.cuda.is_xpu_hijacked = True

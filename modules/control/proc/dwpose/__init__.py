@@ -4,7 +4,6 @@
 # 3rd Edited by ControlNet
 # 4th Edited by ControlNet (added face and correct hands)
 
-from typing import Type, Optional, Union, List
 import os
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 import cv2
@@ -14,64 +13,38 @@ from installer import installed, pip, log
 from modules.control.util import HWC3, resize_image
 from .draw import draw_bodypose, draw_handpose, draw_facepose
 checked_ok = False
-busy = False
-
-
-def _register_module(self, module: Type, module_name: Optional[Union[str, List[str]]] = None, force: bool = False) -> None:
-    if not callable(module):
-        raise TypeError(f'module must be Callable, but got {type(module)}')
-    if module_name is None:
-        module_name = module.__name__
-    if isinstance(module_name, str):
-        module_name = [module_name]
-    for name in module_name:
-        if not force and name in self._module_dict: # pylint: disable=protected-access
-            pass # patch for 'Adafactor is already registered in optimizer at torch.optim'
-        self._module_dict[name] = module # pylint: disable=protected-access
 
 
 def check_dependencies():
-    global checked_ok, busy # pylint: disable=global-statement
-    busy = True
+    global checked_ok # pylint: disable=global-statement
     debug = log.trace if os.environ.get('SD_DWPOSE_DEBUG', None) is not None else lambda *args, **kwargs: None
-    # pip install --upgrade --no-deps --force-reinstall termcolor xtcocotools terminaltables pycocotools munkres shapely openmim==0.3.9 mmengine==0.10.5 mmcv==2.1.0 mmpose==1.3.2 mmdet==3.3.0
     packages = [
-        'termcolor',
-        'xtcocotools',
-        'terminaltables',
-        'pycocotools',
-        'munkres',
-        'shapely',
         'openmim==0.3.9',
-        'mmengine==0.10.5',
+        'mmengine==0.10.4',
         'mmcv==2.1.0',
-        'mmpose==1.3.2',
+        'mmpose==1.3.1',
         'mmdet==3.3.0',
     ]
-    status = [installed(p, reload=False, quiet=True) for p in packages]
+    status = [installed(p, reload=False, quiet=False) for p in packages]
     debug(f'DWPose required={packages} status={status}')
     if not all(status):
-        log.info(f'Installing DWPose dependencies: {packages}')
+        log.info(f'Installing DWPose dependencies: {[packages]}')
         cmd = 'install --upgrade --no-deps --force-reinstall '
         pkgs = ' '.join(packages)
-        pip(cmd + pkgs, ignore=False, quiet=True, uv=False)
+        res = pip(cmd + pkgs, ignore=False, quiet=False)
+        debug(f'DWPose pip install: {res}')
     try:
         import pkg_resources
         import imp # pylint: disable=deprecated-module
         imp.reload(pkg_resources)
         import mmcv # pylint: disable=unused-import
         import mmengine # pylint: disable=unused-import
-        from mmengine.registry import Registry
-        Registry._register_module = _register_module # pylint: disable=protected-access
         import mmpose # pylint: disable=unused-import
         import mmdet # pylint: disable=unused-import
         debug('DWPose import ok')
         checked_ok = True
     except Exception as e:
         log.error(f'DWPose: {e}')
-        # from modules import errors
-        # errors.display(e, 'DWPose')
-    busy = False
     return checked_ok
 
 
@@ -95,13 +68,8 @@ class DWposeDetector:
         if not checked_ok:
             if not check_dependencies():
                 return
-        Wholebody = None
-        try:
-            from .wholebody import Wholebody
-        except Exception as e:
-            log.error(f'DWPose: {e}')
-        if Wholebody is not None:
-            self.pose_estimation = Wholebody(det_config, det_ckpt, pose_config, pose_ckpt, device)
+        from .wholebody import Wholebody
+        self.pose_estimation = Wholebody(det_config, det_ckpt, pose_config, pose_ckpt, device)
 
     def to(self, device):
         self.pose_estimation.to(device)
@@ -110,7 +78,6 @@ class DWposeDetector:
     def __call__(self, input_image, detect_resolution=512, image_resolution=512, output_type="pil", min_confidence=0.3, **kwargs):
         if self.pose_estimation is None:
             log.error("DWPose: not loaded")
-            return None
         input_image = cv2.cvtColor(np.array(input_image, dtype=np.uint8), cv2.COLOR_RGB2BGR)
 
         input_image = HWC3(input_image)

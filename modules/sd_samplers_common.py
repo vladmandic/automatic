@@ -59,7 +59,7 @@ def single_sample_to_image(sample, approximation=None):
                 except Exception:
                     pass
             x_sample = sd_vae_taesd.decode(sample)
-            # x_sample = (1.0 + x_sample) / 2.0 # preview requires smaller range
+            x_sample = (1.0 + x_sample) / 2.0 # preview requires smaller range
         elif shared.sd_model_type == 'sc' and approximation != 3:
             x_sample = sd_vae_stablecascade.decode(sample)
         elif approximation == 0: # Simple
@@ -67,24 +67,19 @@ def single_sample_to_image(sample, approximation=None):
         elif approximation == 1: # Approximate
             x_sample = sd_vae_approx.nn_approximation(sample) * 0.5 + 0.5
             if shared.sd_model_type == "sdxl":
-                x_sample = x_sample[[2, 1, 0], :, :] # BGR to RGB
+                x_sample = x_sample[[2,1,0], :, :] # BGR to RGB
         elif approximation == 3: # Full VAE
             x_sample = processing.decode_first_stage(shared.sd_model, sample.unsqueeze(0))[0]
         else:
             warn_once(f"Unknown latent decode type: {approximation}")
             return Image.new(mode="RGB", size=(512, 512))
         try:
-            if isinstance(x_sample, Image.Image):
-                image = x_sample
-            else:
-                if x_sample.shape[0] > 4 or x_sample.shape[0] == 4:
-                    return Image.new(mode="RGB", size=(512, 512))
-                if x_sample.dtype == torch.bfloat16:
-                    x_sample = x_sample.to(torch.float16)
-                if len(x_sample.shape) == 4:
-                    x_sample = x_sample[0]
-                transform = T.ToPILImage()
-                image = transform(x_sample)
+            if x_sample.shape[0] > 4:
+                return Image.new(mode="RGB", size=(512, 512))
+            if x_sample.dtype == torch.bfloat16:
+                x_sample.to(torch.float16)
+            transform = T.ToPILImage()
+            image = transform(x_sample)
         except Exception as e:
             warn_once(f'Preview: {e}')
             image = Image.new(mode="RGB", size=(512, 512))

@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 title: SD.Next
-url: 'https://github.com/vladmandic/sdnext'
+url: 'https://github.com/vladmandic/automatic'
 message: >-
   If you use this software, please cite it using the
   metadata from this file
@@ -17,11 +17,11 @@ identifiers:
   - type: url
     value: 'https://www.linkedin.com/in/cyan051/'
     description: LinkedIn
-repository-code: 'https://github.com/vladmandic/sdnext'
+repository-code: 'https://github.com/vladmandic/automatic'
 abstract: >-
-  SD.Next: Advanced Implementation of Stable Diffusion
-  and other diffusion models for text, image and video
-  generation  
+  SD.Next: Advanced Implementation of Stable Diffusion and
+  other diffusion models for text, image and video
+  generation
 keywords:
   - stablediffusion diffusers sdnext
 license: Apache-2.0

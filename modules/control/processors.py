@@ -167,13 +167,13 @@ class Processor():
                 self.config(processor_id)
             else:
                 if not force and self.model is not None:
-                    # log.debug(f'Control Processor: id={processor_id} already loaded')
+                    log.debug(f'Control Processor: id={processor_id} already loaded')
                     return ''
             if processor_id not in config:
                 log.error(f'Control Processor unknown: id="{processor_id}" available={list(config)}')
                 return f'Processor failed to load: {processor_id}'
             cls = config[processor_id]['class']
-            # log.debug(f'Control Processor loading: id="{processor_id}" class={cls.__name__}')
+            log.debug(f'Control Processor loading: id="{processor_id}" class={cls.__name__}')
             debug(f'Control Processor config={self.load_config}')
             if 'DWPose' in processor_id:
                 det_ckpt = 'https://download.openmmlab.com/mmdetection/v2.0/yolox/yolox_l_8x8_300e_coco/yolox_l_8x8_300e_coco_20211126_140236-d3bd2b23.pth'
@@ -253,9 +253,6 @@ class Processor():
                 image_resized = image_input
             with devices.inference_context():
                 image_process = self.model(image_resized, **kwargs)
-            if image_process is None:
-                log.error(f'Control Processor: id="{self.processor_id}" no image')
-                return image_input
             if isinstance(image_process, np.ndarray):
                 if np.max(image_process) < 2:
                     image_process = (255.0 * image_process).astype(np.uint8)

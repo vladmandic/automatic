@@ -16,7 +16,6 @@ modules.errors.install()
 mimetypes.init()
 mimetypes.add_type('application/javascript', '.js')
 mimetypes.add_type('image/webp', '.webp')
-mimetypes.add_type('image/jxl', '.jxl')
 log = shared.log
 opts = shared.opts
 cmd_opts = shared.cmd_opts
@@ -234,8 +233,6 @@ def create_ui(startup_timer = None):
         changed = []
         for key, value, comp in zip(opts.data_labels.keys(), args, components):
             if comp == dummy_component or value=='dummy':
-                continue
-            if getattr(comp, 'visible', True) is False:
                 continue
             if not opts.same_type(value, opts.data_labels[key].default):
                 log.error(f'Setting bad value: {key}={value} expecting={type(opts.data_labels[key].default).__name__}')

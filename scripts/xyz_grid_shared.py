@@ -62,35 +62,16 @@ def apply_seed(p, x, xs):
     shared.log.debug(f'XYZ grid apply seed: {x}')
 
 
-def apply_prompt(positive, negative, p, x, xs):
+def apply_prompt(p, x, xs):
     for s in xs:
-        shared.log.debug(f'XYZ grid apply prompt: fields={positive}/{negative} "{s}"="{x}"')
-        orig_positive = getattr(p, positive)
-        orig_negative = getattr(p, negative)
-        if s in orig_positive:
-            setattr(p, positive, orig_positive.replace(s, x))
-        if s in orig_negative:
-            setattr(p, negative, orig_negative.replace(s, x))
-
-
-def apply_prompt_primary(p, x, xs):
-    apply_prompt('prompt', 'negative_prompt', p, x, xs)
+        if s in p.prompt:
+            shared.log.debug(f'XYZ grid apply prompt: "{s}"="{x}"')
+            p.prompt = p.prompt.replace(s, x)
+        if s in p.negative_prompt:
+            shared.log.debug(f'XYZ grid apply negative: "{s}"="{x}"')
+            p.negative_prompt = p.negative_prompt.replace(s, x)
     p.all_prompts = None
     p.all_negative_prompts = None
-
-
-def apply_prompt_refine(p, x, xs):
-    apply_prompt('refiner_prompt', 'refiner_negative', p, x, xs)
-
-
-def apply_prompt_detailer(p, x, xs):
-    apply_prompt('detailer_prompt', 'detailer_negative', p, x, xs)
-
-
-def apply_prompt_all(p, x, xs):
-    apply_prompt('prompt', 'negative_prompt', p, x, xs)
-    apply_prompt('refiner_prompt', 'refiner_negative', p, x, xs)
-    apply_prompt('detailer_prompt', 'detailer_negative', p, x, xs)
 
 
 def apply_order(p, x, xs):
@@ -213,7 +194,7 @@ def list_lora():
     import sys
     lora = [v for k, v in sys.modules.items() if k == 'networks' or k == 'modules.lora.networks'][0]
     loras = [v.fullname for v in lora.available_networks.values()]
-    return ['None'] + sorted(loras)
+    return ['None'] + loras
 
 
 def apply_lora(p, x, xs):
@@ -270,7 +251,7 @@ def apply_detailer(p, opt, x):
         p.detailer_model = 'GFPGAN'
     else:
         is_active = opt in ('true', 'yes', 'y', '1')
-    p.detailer_enabled = is_active
+    p.detailer = is_active
     shared.log.debug(f'XYZ grid apply face-restore: "{x}"')
 
 

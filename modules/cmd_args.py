@@ -1,5 +1,4 @@
 import os
-import sys
 import argparse
 from modules.paths import data_path
 
@@ -78,6 +77,7 @@ def compatibility_args():
     group_compat.add_argument("--disable-queue", default=os.environ.get("SD_DISABLEQUEUE", False), action='store_true', help=argparse.SUPPRESS)
 
 
+
 def settings_args(opts, args):
     # removed args are added here as hidden in fixed format for compatbility reasons
     group_compat = parser.add_argument_group('Compatibility options')
@@ -154,12 +154,7 @@ def settings_args(opts, args):
     opts.onchange("lora_dir", lambda: setattr(args, "lora_dir", opts.lora_dir))
     opts.onchange("lyco_dir", lambda: setattr(args, "lyco_dir", opts.lyco_dir))
 
-    if "USED_VSCODE_COMMAND_PICKARGS" in os.environ:
-        import shlex
-        argv = shlex.split(" ".join(sys.argv[1:])) if "USED_VSCODE_COMMAND_PICKARGS" in os.environ else sys.argv[1:]
-        args = parser.parse_args(argv)
-    else:
-        args = parser.parse_args()
+    args = parser.parse_args()
     return args
 
 
