@@ -77,6 +77,11 @@ We're back with another update with over 50 commits!
   - **Text encoder**  
     add advanced per-model options for text encoder  
     set in *settings -> text encoder -> Optional*  
+  - **Subpath**  
+    allow setting additional mount subpath over which server url will be accessible  
+    set in *settings -> user interface*
+  - **Prompt parsing**  
+    better handling of prompt parsing when using masking char `\`  
 - **Fixes**  
   - update torch nightly urls  
   - docs/wiki always use relative links  
