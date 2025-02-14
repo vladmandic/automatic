@@ -47,6 +47,9 @@ We're back with another update with over 50 commits!
   - [Mixture-of-Diffusers](https://huggingface.co/posts/elismasilva/251775641926329)  
     Regional tiling type of a solution for SDXL models  
     select from *scripts -> mixture of diffusers*  
+  - [Automatic Color Inpaint]  
+    Automatically creates mask based on selected color and triggers inpaint  
+    simply select in *scripts -> automatic color inpaint* when in img2img mode  
 - **Docker** 
   - updated **CUDA** receipe to `torch==2.6.0` with `cuda==12.6` and add prebuilt image  
   - added **ROCm** receipe and prebuilt image  
