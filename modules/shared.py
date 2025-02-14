@@ -793,6 +793,7 @@ options_templates.update(options_section(('ui', "User Interface"), {
     "theme_style": OptionInfo("Auto", "Theme mode", gr.Radio, {"choices": ["Auto", "Dark", "Light"]}),
     "gradio_theme": OptionInfo("black-teal", "UI theme", gr.Dropdown, lambda: {"choices": theme.list_themes()}, refresh=theme.refresh_themes),
     "ui_locale": OptionInfo("Auto", "UI locale", gr.Dropdown, lambda: {"choices": theme.list_locales()}),
+    "subpath": OptionInfo("", "Mount URL subpath"),
     "autolaunch": OptionInfo(False, "Autolaunch browser upon startup"),
     "font_size": OptionInfo(14, "Font size", gr.Slider, {"minimum": 8, "maximum": 32, "step": 1, "visible": True}),
     "aspect_ratios": OptionInfo("1:1, 4:3, 3:2, 16:9, 16:10, 21:9, 2:3, 3:4, 9:16, 10:16, 9:21", "Allowed aspect ratios"),

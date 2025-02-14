@@ -136,16 +136,16 @@ async function getLocaleData(desiredLocale = null) {
   // primary
   let json = {};
   try {
-    let res = await fetch(`/file=html/locale_${localeData.locale}.json`);
+    let res = await fetch(`${window.subpath}/file=html/locale_${localeData.locale}.json`);
     if (!res || !res.ok) {
       localeData.locale = 'en';
-      res = await fetch(`/file=html/locale_${localeData.locale}.json`);
+      res = await fetch(`${window.subpath}/file=html/locale_${localeData.locale}.json`);
     }
     json = await res.json();
   } catch { /**/ }
 
   try {
-    const res = await fetch(`/file=html/override_${localeData.locale}.json`);
+    const res = await fetch(`${window.subpath}/file=html/override_${localeData.locale}.json`);
     if (res && res.ok) json.override = await res.json();
   } catch { /**/ }
 

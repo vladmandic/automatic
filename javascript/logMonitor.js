@@ -70,7 +70,7 @@ async function logMonitor() {
   if (!logMonitorEl) return;
   const atBottom = logMonitorEl.scrollHeight <= (logMonitorEl.scrollTop + logMonitorEl.clientHeight);
   try {
-    const res = await fetch('/sdapi/v1/log?clear=True');
+    const res = await fetch(`${window.api}/log?clear=True`);
     if (res?.ok) {
       logMonitorStatus = true;
       const lines = await res.json();
@@ -116,7 +116,7 @@ async function initLogMonitor() {
     </table>
   `;
   el.style.display = 'none';
-  fetch(`/sdapi/v1/start?agent=${encodeURI(navigator.userAgent)}`);
+  fetch(`${window.api}/start?agent=${encodeURI(navigator.userAgent)}`);
   logMonitor();
   log('initLogMonitor');
 }

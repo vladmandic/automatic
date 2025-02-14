@@ -53,7 +53,7 @@ card_list = '''
 preview_map = None
 
 
-def init_api(app):
+def init_api():
 
     def fetch_file(filename: str = ""):
         if not os.path.exists(filename):
@@ -102,10 +102,10 @@ def init_api(app):
         # shared.log.debug(f"Networks desc: page='{page.name}' item={item['name']} len={len(desc)}")
         return JSONResponse({"description": desc})
 
-    app.add_api_route("/sd_extra_networks/thumb", fetch_file, methods=["GET"])
-    app.add_api_route("/sd_extra_networks/metadata", get_metadata, methods=["GET"])
-    app.add_api_route("/sd_extra_networks/info", get_info, methods=["GET"])
-    app.add_api_route("/sd_extra_networks/description", get_desc, methods=["GET"])
+    shared.api.add_api_route("/sd_extra_networks/thumb", fetch_file, methods=["GET"])
+    shared.api.add_api_route("/sd_extra_networks/metadata", get_metadata, methods=["GET"])
+    shared.api.add_api_route("/sd_extra_networks/info", get_info, methods=["GET"])
+    shared.api.add_api_route("/sd_extra_networks/description", get_desc, methods=["GET"])
 
 
 class ExtraNetworksPage:

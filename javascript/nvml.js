@@ -30,7 +30,7 @@ async function updateNVMLChart(mem, load) {
 
 async function updateNVML() {
   try {
-    const res = await fetch('/sdapi/v1/nvml');
+    const res = await fetch(`${window.api}/nvml`);
     if (!res.ok) {
       clearInterval(nvmlInterval);
       nvmlEl.style.display = 'none';

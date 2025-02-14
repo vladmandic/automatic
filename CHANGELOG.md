@@ -60,6 +60,8 @@ We're back with another update with over 50 commits!
     - improve upscaler compatibility  
     - enable upscaler compile by default  
     - fix shape mismatch errors on too many resolution changes  
+  - **ZLUDA**  
+    - update to `zluda==3.8.8`  
 - **Other**  
   - **Asymmetric tiling**  
     allows for configurable image tiling for x/y axis separately  
@@ -90,6 +92,8 @@ We're back with another update with over 50 commits!
   - force pydantic version reinstall/reload  
   - multi-unit when using controlnet-union  
   - pulid with hidiffusion  
+  - api: stricter access control  
+  - api: universal handle mount subpaths  
 
 ## Update for 2025-02-05
 
