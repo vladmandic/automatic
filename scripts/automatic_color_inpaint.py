@@ -44,7 +44,7 @@ class Script(scripts.Script):
             gr.HTML("&nbsp ACI: Automatic Color Inpaint<br>")
         with gr.Row():
             color_picker = gr.ColorPicker(
-                label="Color to Mask",
+                label="ACI: Color to Mask",
                 value="#04F404",  # Default to green screen green
                 info="Pick the color you want to mask and inpaint."
             )
@@ -53,14 +53,14 @@ class Script(scripts.Script):
                 maximum=100,
                 step=1,
                 value=25,
-                label="Color Tolerance",
+                label="ACI: Color Tolerance",
             )
             padding_slider = gr.Slider(
                 minimum=0,
                 maximum=256,
                 step=1,
                 value=2,
-                label="Mask Padding",
+                label="ACI: Mask Padding",
                 info="(Recommended value = 2 to remove leftovers at edges)"
             )
             blur_slider = gr.Slider(
@@ -68,7 +68,7 @@ class Script(scripts.Script):
                 maximum=64,
                 step=1,
                 value=0,
-                label="Mask Blur",
+                label="ACI: Mask Blur",
                 info="(Recommended value = 0 for sharpness)"
             )
             denoising_slider = gr.Slider(
@@ -76,7 +76,7 @@ class Script(scripts.Script):
                 maximum=1,
                 step=0.01,
                 value=1,
-                label="Denoising Strength",
+                label="ACI: Denoising Strength",
             )
         return [color_picker, tolerance_slider, padding_slider, blur_slider, denoising_slider]
 
