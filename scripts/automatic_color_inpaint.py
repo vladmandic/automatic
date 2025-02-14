@@ -30,7 +30,7 @@ img2img = True
 # is pipeline ok to run in pure latent mode without implicit conversions
 latent = True
 
-# pipeline args values are defined in ui method below, here we need to define their exact names
+# pipeline args values are defined in ui method below
 params = ['color_to_mask', 'mask_tolerance']
 
 
