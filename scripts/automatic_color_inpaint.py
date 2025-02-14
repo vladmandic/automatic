@@ -27,13 +27,6 @@ txt2img = False
 # is script available in img2img tab
 img2img = True
 
-# is pipeline ok to run in pure latent mode without implicit conversions
-latent = True
-
-# pipeline args values are defined in ui method below
-params = ['color_to_mask', 'mask_tolerance', 'mask_padding', 'mask_blur', 'inpaint_denoising_strength']
-
-
 ### Script definition
 
 class Script(scripts.Script):
@@ -97,7 +90,7 @@ class Script(scripts.Script):
         # Convert hex color to RGB tuple (0-255)
         color_to_mask_rgb = tuple(int(color_to_mask_hex[i:i+2], 16) for i in (1, 3, 5))
 
-        shared.log.debug(f'{title}: Color to Mask={color_to_mask_rgb}, Tolerance={mask_tolerance}, Padding={mask_padding}, Blur={mask_blur}, Denoising Strength={inpaint_denoising_strength}')
+        shared.log.debug(f'{title}: rgb={color_to_mask_rgb} tolerance={mask_tolerance} padding={mask_padding} blur={mask_blur} denoise={inpaint_denoising_strength}')
 
         # Create Color Mask using vectorized operations
         init_image = p.init_images[0].convert("RGB")
@@ -125,7 +118,5 @@ class Script(scripts.Script):
         p.inpaint_full_res_padding = mask_padding
         p.mask_blur = mask_blur
         p.denoising_strength = inpaint_denoising_strength
-
-        # Process the image using SD.Next’s inpainting
-        processed: processing.Processed = processing.process_images(p)
-        return processed
+        
+        return None
