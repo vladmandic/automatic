@@ -88,7 +88,8 @@ We're back with another update with over 50 commits!
   - validate output before hires/refine  
   - scheduler fix sigma index out of bounds  
   - force pydantic version reinstall/reload  
-  - multi-unit when using controlnet-union
+  - multi-unit when using controlnet-union  
+  - pulid with hidiffusion  
 
 ## Update for 2025-02-05
 

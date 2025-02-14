@@ -171,9 +171,6 @@ def install_extension_from_url(dirname, url, branch_name, search_text, sort_colu
         if ssh:
             args['env'] = {'GIT_SSH_COMMAND':ssh}
         shared.log.debug(f'GIT: {args}')
-        # from installer import run
-        # ssh_test = run('ssh', '-v -c chacha20-poly1305@openssh.com -T git@github.com')
-        # shared.log.debug('GIT SSH TEST', ssh_test)
         with git.Repo.clone_from(**args) as repo:
             repo.remote().fetch(verbose=True)
             for submodule in repo.submodules:

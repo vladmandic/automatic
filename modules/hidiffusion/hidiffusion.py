@@ -6,6 +6,7 @@ from diffusers.utils.torch_utils import is_torch_version
 from diffusers.pipelines import auto_pipeline
 
 
+current_steps = 50
 def sd15_hidiffusion_key():
     modified_key = dict()
     modified_key['down_module_key'] = ['down_blocks.0.downsamplers.0.conv']
@@ -163,12 +164,14 @@ def make_diffusers_transformer_block(block_class: Type[torch.nn.Module]) -> Type
             widow_size = (math.ceil(H/2), math.ceil(W/2))
             if rand_num <= 0.25:
                 shift_size = (0,0)
-            if rand_num > 0.25 and rand_num <= 0.5:
+            elif rand_num > 0.25 and rand_num <= 0.5:
                 shift_size = (widow_size[0]//4, widow_size[1]//4)
-            if rand_num > 0.5 and rand_num <= 0.75:
+            elif rand_num > 0.5 and rand_num <= 0.75:
                 shift_size = (widow_size[0]//4*2, widow_size[1]//4*2)
-            if rand_num > 0.75 and rand_num <= 1:
+            elif rand_num > 0.75 and rand_num <= 1:
                 shift_size = (widow_size[0]//4*3, widow_size[1]//4*3)
+            else:
+                shift_size = (0,0)
             norm_hidden_states = window_partition(norm_hidden_states, widow_size, shift_size, H, W)
 
             # 1. Retrieve lora scale.
@@ -261,7 +264,7 @@ def make_diffusers_cross_attn_down_block(block_class: Type[torch.nn.Module]) -> 
         T1_start = 0
         T1_end = 0
         T1 = 0 # to avoid confict with sdxl-turbo
-        max_timestep = 50
+        max_timestep = current_steps
 
         def forward(
             self,
@@ -273,6 +276,8 @@ def make_diffusers_cross_attn_down_block(block_class: Type[torch.nn.Module]) -> 
             encoder_attention_mask: Optional[torch.FloatTensor] = None,
             additional_residuals: Optional[torch.FloatTensor] = None,
         ) -> Tuple[torch.FloatTensor, Tuple[torch.FloatTensor, ...]]:
+            if not hasattr(self.info['pipeline'], '_num_timesteps'):
+                self.info['pipeline']._num_timesteps = self.max_timestep # pylint: disable=protected-access
             self.max_timestep = self.info['pipeline']._num_timesteps # pylint: disable=protected-access
             # self.max_timestep = len(self.info['scheduler'].timesteps)
             ori_H, ori_W = self.info['size']
@@ -618,13 +623,15 @@ def apply_hidiffusion(
         model: torch.nn.Module,
         apply_raunet: bool = True,
         apply_window_attn: bool = True,
-        model_type: str = 'None'):
+        model_type: str = 'None',
+        steps: int = 50):
     """
     model: diffusers model. We support SD 1.5, 2.1, XL, XL Turbo.
     apply_raunet: whether to apply RAU-Net
     apply_window_attn: whether to apply MSW-MSA.
     """
-
+    global current_steps # pylint: disable=global-statement
+    current_steps = steps
     if hasattr(model, 'controlnet'):
         from .hidiffusion_controlnet import make_diffusers_sdxl_contrtolnet_ppl, make_diffusers_unet_2d_condition
         make_ppl_fn = make_diffusers_sdxl_contrtolnet_ppl
