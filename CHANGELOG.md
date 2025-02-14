@@ -1,8 +1,8 @@
 # Change Log for SD.Next
 
-## Update for 2025-02-13
+## Update for 2025-02-14
 
-### Highlight for 2025-02-13
+### Highlight for 2025-02-14
 
 We're back with another update with over 50 commits!  
 - Starting with massive UI update with full [localization](https://vladmandic.github.io/sdnext-docs/Locale/) for 8 languages 
@@ -11,10 +11,12 @@ We're back with another update with over 50 commits!
 - A lot of [outpainting](https://vladmandic.github.io/sdnext-docs/Outpaint/) goodies  
 - Support for new models: [AlphaVLLM Lumina 2](https://github.com/Alpha-VLLM/Lumina-Image-2.0) and [Ostris Flex.1-Alpha](https://huggingface.co/ostris/Flex.1-alpha)  
 - And new **Mixture-of-Diffusers** regional tiling pipeline  
+- Some changes to **prompt parsing** to allow more control as well as more flexibility when mouting SDNext server to custom URL  
+- Of course, cumulative fixes...
 
 *...and more* - see [changelog](https://github.com/vladmandic/sdnext/blob/dev/CHANGELOG.md) for full details!  
 
-### Details for 2025-02-13
+### Details for 2025-02-14
 
 - **User Interface**  
   - **Hints**  
@@ -79,7 +81,7 @@ We're back with another update with over 50 commits!
     set in *settings -> text encoder -> Optional*  
   - **Subpath**  
     allow setting additional mount subpath over which server url will be accessible  
-    set in *settings -> user interface*
+    set in *settings -> user interface*  
   - **Prompt parsing**  
     better handling of prompt parsing when using masking char `\`  
 - **Fixes**  
