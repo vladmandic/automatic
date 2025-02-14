@@ -53,7 +53,7 @@ class Script(scripts.Script):
             color_picker = gr.ColorPicker(
                 label="Color to Mask",
                 value="#04F404",  # Default to green screen green
-                info="Pick the color you want to mask and inpaint. Click on the color in the image to automatically select it.\n Advised to use images like green screens to get precise results."
+                info="Pick the color you want to mask and inpaint."
             )
             tolerance_slider = gr.Slider(
                 minimum=0,
@@ -61,7 +61,6 @@ class Script(scripts.Script):
                 step=1,
                 value=25,
                 label="Color Tolerance",
-                info="Adjust the tolerance to include similar colors in the mask. Lower values = mask only very similar colors. Higher = values mask a wider range of similar colors."
             )
             padding_slider = gr.Slider(
                 minimum=0,
@@ -69,7 +68,7 @@ class Script(scripts.Script):
                 step=1,
                 value=2,
                 label="Mask Padding",
-                info="Adjust padding to apply a inside offset to the mask. (Recommended value = 2 to remove leftovers at edges)"
+                info="(Recommended value = 2 to remove leftovers at edges)"
             )
             blur_slider = gr.Slider(
                 minimum=0,
@@ -77,7 +76,7 @@ class Script(scripts.Script):
                 step=1,
                 value=0,
                 label="Mask Blur",
-                info="Adjust blur to apply a smooth transition between image and inpainted area. (Recommended value = 0 for sharpness)"
+                info="(Recommended value = 0 for sharpness)"
             )
             denoising_slider = gr.Slider(
                 minimum=0.01,
@@ -85,7 +84,6 @@ class Script(scripts.Script):
                 step=0.01,
                 value=1,
                 label="Denoising Strength",
-                info="Change Denoising Strength to achieve desired inpaint amount."
             )
         return [color_picker, tolerance_slider, padding_slider, blur_slider, denoising_slider]
 
