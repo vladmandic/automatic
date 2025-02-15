@@ -151,6 +151,11 @@ def create_ui(startup_timer = None):
         ui_postprocessing.create_ui()
         timer.startup.record("ui-extras")
 
+    with gr.Blocks(analytics_enabled=False) as caption_interface:
+        from modules import ui_caption
+        ui_caption.create_ui()
+        timer.startup.record("ui-caption")
+
     with gr.Blocks(analytics_enabled=False) as models_interface:
         from modules import ui_models
         ui_models.create_ui()
@@ -389,6 +394,7 @@ def create_ui(startup_timer = None):
     interfaces += [(img2img_interface, "Image", "img2img")]
     interfaces += [(control_interface, "Control", "control")] if control_interface is not None else []
     interfaces += [(extras_interface, "Process", "process")]
+    interfaces += [(caption_interface, "Caption", "caption")]
     interfaces += [(gallery_interface, "Gallery", "gallery")]
     interfaces += [(models_interface, "Models", "models")]
     interfaces += script_callbacks.ui_tabs_callback()

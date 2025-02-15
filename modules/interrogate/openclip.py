@@ -6,6 +6,7 @@ import threading
 import re
 import torch
 import torch.hub # pylint: disable=ungrouped-imports
+import gradio as gr
 from PIL import Image
 from torchvision import transforms
 from torchvision.transforms.functional import InterpolationMode
@@ -423,7 +424,13 @@ def analyze_image(image, clip_model, blip_model):
     movement_ranks = dict(zip(top_movements, ci.similarities(image_features, top_movements)))
     trending_ranks = dict(zip(top_trendings, ci.similarities(image_features, top_trendings)))
     flavor_ranks = dict(zip(top_flavors, ci.similarities(image_features, top_flavors)))
-    return medium_ranks, artist_ranks, movement_ranks, trending_ranks, flavor_ranks
+    return [
+        gr.update(value=medium_ranks, visible=True),
+        gr.update(value=artist_ranks, visible=True),
+        gr.update(value=movement_ranks, visible=True),
+        gr.update(value=trending_ranks, visible=True),
+        gr.update(value=flavor_ranks, visible=True),
+    ]
 
 
 interrogator = InterrogateModels()

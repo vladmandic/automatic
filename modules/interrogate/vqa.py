@@ -31,7 +31,9 @@ vlm_models = {
     "Microsoft GIT VQA Base": "microsoft/git-base-vqav2", # 0.7GB
     "Microsoft GIT VQA Large": "microsoft/git-large-vqav2", # 1.6GB
     "ToriiGate 0.4 2B": "Minthy/ToriiGate-v0.4-2B",
+    "ToriiGate 0.4 7B": "Minthy/ToriiGate-v0.4-7B",
     "ViLT Base": "dandelin/vilt-b32-finetuned-vqa", # 0.5GB
+    "Google PaliGemma 2 3B": "google/paligemma2-3b-pt-224",
     "JoyCaption": "fancyfeast/llama-joycaption-alpha-two-hf-llava", # 0.7GB
     "JoyTag": "fancyfeast/joytag", # 17.4GB
     # "DeepSeek VL2 Tiny": "deepseek-ai/deepseek-vl2-tiny", # broken
@@ -86,7 +88,7 @@ def qwen(question: str, image: Image.Image, repo: str = None):
         model = transformers.Qwen2VLForConditionalGeneration.from_pretrained(repo, cache_dir=shared.opts.hfcache_dir)
         processor = transformers.AutoProcessor.from_pretrained(repo, cache_dir=shared.opts.hfcache_dir)
         loaded = repo
-    model.to(devices.device, devices.dtype)
+    model = model.to(devices.device, devices.dtype)
     if len(question) < 2:
         question = "Describe the image."
     question = question.replace('<', '').replace('>', '')
@@ -118,6 +120,30 @@ def qwen(question: str, image: Image.Image, repo: str = None):
         for input_ids, output_ids in zip(inputs.input_ids, output_ids)
     ]
     response = processor.batch_decode(generated_ids, skip_special_tokens=True, clean_up_tokenization_spaces=True)
+    return response
+
+
+def paligemma(question: str, image: Image.Image, repo: str = None):
+    global processor, model, loaded # pylint: disable=global-statement
+    if model is None or loaded != repo:
+        shared.log.debug(f'Interrogate load: vlm="{repo}"')
+        processor = transformers.PaliGemmaProcessor.from_pretrained(repo, cache_dir=shared.opts.hfcache_dir)
+        model = transformers.PaliGemmaForConditionalGeneration.from_pretrained(repo, cache_dir=shared.opts.hfcache_dir, torch_dtype=devices.dtype)
+        loaded = repo
+    model = model.to(devices.device, devices.dtype)
+    if len(question) < 2:
+        question = "Describe the image."
+    question = question.replace('<', '').replace('>', '')
+    model_inputs = processor(text=question, images=image, return_tensors="pt").to(devices.device, devices.dtype)
+    input_len = model_inputs["input_ids"].shape[-1]
+    with devices.inference_context():
+        generation = model.generate(
+            **model_inputs,
+            max_new_tokens=shared.opts.interrogate_vlm_max_length,
+            do_sample=shared.opts.interrogate_vlm_do_sample,
+        )
+    generation = generation[0][input_len:]
+    response = processor.decode(generation, skip_special_tokens=True)
     return response
 
 
@@ -295,14 +321,14 @@ def florence(question: str, image: Image.Image, repo: str = None, revision: str 
             pixel_values=pixel_values,
             max_new_tokens=shared.opts.interrogate_vlm_max_length,
             num_beams=shared.opts.interrogate_vlm_num_beams,
-            do_sample=False
+            do_sample=shared.opts.interrogate_vlm_do_sample,
         )
         generated_text = processor.batch_decode(generated_ids, skip_special_tokens=False)[0]
         response = processor.post_process_generation(generated_text, task="task", image_size=(image.width, image.height))
     return response
 
 
-def interrogate(question, image, model_name):
+def interrogate(question, prompt, image, model_name):
     t0 = time.time()
     if isinstance(image, list):
         image = image[0] if len(image) > 0 else None
@@ -314,6 +340,8 @@ def interrogate(question, image, model_name):
         image.thumbnail((768, 768), Image.Resampling.HAMMING)
     if image.mode != 'RGB':
         image = image.convert('RGB')
+    if prompt is not None and len(prompt) > 0:
+        question = prompt
     from modules import modelloader
     modelloader.hf_login()
     try:
@@ -352,6 +380,8 @@ def interrogate(question, image, model_name):
         elif 'deepseek' in vqa_model.lower():
             from modules.interrogate import deepseek
             answer = deepseek.predict(question, image, vqa_model)
+        elif 'paligemma' in vqa_model.lower():
+            answer = paligemma(question, image, vqa_model)
         else:
             answer = 'unknown model'
     except Exception as e:

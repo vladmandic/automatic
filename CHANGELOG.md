@@ -11,7 +11,9 @@ We're back with another update with over 50 commits!
 - A lot of [outpainting](https://vladmandic.github.io/sdnext-docs/Outpaint/) goodies  
 - Support for new models: [AlphaVLLM Lumina 2](https://github.com/Alpha-VLLM/Lumina-Image-2.0) and [Ostris Flex.1-Alpha](https://huggingface.co/ostris/Flex.1-alpha)  
 - And new **Mixture-of-Diffusers** regional tiling pipeline  
-- Following last weeks **interrogate/captioning** rewrite, added **JoyTag** and **JoyCaption** to list of supported models  
+- Follow-up to last weeks **interrogate/captioning** rewrite  
+  now with redesigned captioning UI and  
+  added **JoyTag**, **JoyCaption**, **Google PaliGemma**, **ToriiGate 0.4** to list of supported models  
 - Some changes to **prompt parsing** to allow more control as well as more flexibility when mouting SDNext server to custom URL  
 - Of course, cumulative fixes...
 
@@ -28,13 +30,13 @@ We're back with another update with over 50 commits!
       *english, croatian, spanish, french, italian, portuguese, chinese, japanese, korean, russian*  
     - set in *settings -> user interface -> language*  
     - [localization](https://vladmandic.github.io/sdnext-docs/Locale/) documentation  
-  - **UI**:  
+  - **UI**  
     - force browser cache-invalidate on page load  
-- **Docs**
+- **Docs**  
   - New [Outpaint](https://vladmandic.github.io/sdnext-docs/Outpaint/) step-by-step guide  
   - Updated [Docker](https://github.com/vladmandic/sdnext/wiki/Docker) guide  
     includes build and publish and both local and cloud examples  
-- **Models**
+- **Models**  
   - [AlphaVLLM Lumina 2](https://github.com/Alpha-VLLM/Lumina-Image-2.0)  
     new foundation model for image generation based o Gemma-2-2B text encoder and a flow-based diffusion transformer  
     fully supports offloading and on-the-fly quantization  
@@ -44,18 +46,23 @@ We're back with another update with over 50 commits!
     result is model smaller than *Flux.1-Dev*, but with similar capabilities  
     fully supports offloading and on-the-fly quantization  
     simply select from *networks -> models -> reference*  
-- **Pipelines**
+- **Pipelines**  
   - [Mixture-of-Diffusers](https://huggingface.co/posts/elismasilva/251775641926329)  
     Regional tiling type of a solution for SDXL models  
     select from *scripts -> mixture of diffusers*  
   - [Automatic Color Inpaint]  
     Automatically creates mask based on selected color and triggers inpaint  
     simply select in *scripts -> automatic color inpaint* when in img2img mode  
-- **Interrogate/Captioning**
+- **Interrogate/Captioning**  
+  - Redesigned captioning UI  
+    split from Process tab into separate tab  
+    split `clip` vs `vlm` models processing  
+    direct *send-to* buttons on all tabs  
   - [JoyTag](https://huggingface.co/fancyfeast/joytag)
-  - [JoyCaption](https://huggingface.co/fancyfeast/llama-joycaption-alpha-two-hf-llava)  
-    *note*: this is a very large model based on LLama 3.1
-- **Docker** 
+  - [JoyCaption 2](https://huggingface.co/fancyfeast/llama-joycaption-alpha-two-hf-llava)  
+  - [Google PaliGemma 2](https://huggingface.co/google/paligemma2-3b-pt-224)
+  - [ToriiGate 0.4 7B](https://huggingface.co/Minthy/ToriiGate-v0.4-7B),
+- **Docker**  
   - updated **CUDA** receipe to `torch==2.6.0` with `cuda==12.6` and add prebuilt image  
   - added **ROCm** receipe and prebuilt image  
   - added **IPEX** receipe and add prebuilt image  
@@ -80,7 +87,7 @@ We're back with another update with over 50 commits!
   - **Styles**  
     ability to save and/or restore prompts before or after parsing of wildcards  
     set in *settings -> networks -> styles*  
-  - **Access tokens**
+  - **Access tokens**  
     persist *models -> hugginface -> token*  
     persist *models -> civitai -> token*  
   - global switch to lancosz method for all interal resize ops and bicubic for interpolation ops  

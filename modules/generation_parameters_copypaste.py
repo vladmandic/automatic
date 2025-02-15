@@ -101,6 +101,8 @@ def create_buttons(tabs_list):
             name = 'Process'
         elif name == 'control':
             name = 'Control'
+        elif name == 'caption':
+            name = 'Caption'
         buttons[tab] = gr.Button(f"➠ {name}", elem_id=f"{tab}_tab")
     return buttons
 

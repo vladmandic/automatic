@@ -155,6 +155,11 @@ function switch_to_control(...args) {
   return Array.from(arguments);
 }
 
+function switch_to_caption(...args) {
+  switchToTab('Caption');
+  return Array.from(arguments);
+}
+
 function get_tab_index(tabId) {
   let res = 0;
   gradioApp().getElementById(tabId).querySelector('div').querySelectorAll('button')

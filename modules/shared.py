@@ -926,8 +926,10 @@ options_templates.update(options_section(('interrogate', "Interrogate"), {
     "interrogate_vlm_sep": OptionInfo("<h2>VLM</h2>", "", gr.HTML),
     "interrogate_vlm_model": OptionInfo(list(vlm_models)[0], "VLM: default model", gr.Dropdown, {"choices": list(vlm_models)}),
     "interrogate_vlm_prompt": OptionInfo(vlm_prompts[2], "VLM: default prompt", DropdownEditable, {"choices": vlm_prompts }),
-    "interrogate_vlm_num_beams": OptionInfo(3, "VLM: num beams", gr.Slider, {"minimum": 1, "maximum": 16, "step": 1}),
-    "interrogate_vlm_max_length": OptionInfo(512, "VLM: max length", gr.Slider, {"minimum": 1, "maximum": 4096, "step": 1}),
+    "interrogate_vlm_num_beams": OptionInfo(3, "VLM: num beams", gr.Slider, {"minimum": 1, "maximum": 16, "step": 1, "visible": False}),
+    "interrogate_vlm_max_length": OptionInfo(512, "VLM: max length", gr.Slider, {"minimum": 1, "maximum": 4096, "step": 1, "visible": False}),
+    "interrogate_vlm_do_sample": OptionInfo(False, "VLM: use sample method"),
+    "interrogate_vlm_temperature": OptionInfo(0.6, "VLM: num beams", gr.Slider, {"minimum": 0.1, "maximum": 1.0, "step": 0.11, "visible": False}),
 
     "deepbooru_sep": OptionInfo("<h2>DeepBooru</h2>", "", gr.HTML),
     "deepbooru_score_threshold": OptionInfo(0.65, "DeepBooru: score threshold", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01}),
