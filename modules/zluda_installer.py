@@ -5,7 +5,7 @@ import ctypes
 import shutil
 import zipfile
 import urllib.request
-from typing import Union, Optional
+from typing import Union
 from modules import rocm
 
 
