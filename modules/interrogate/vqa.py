@@ -8,11 +8,6 @@ import transformers.dynamic_module_utils
 from PIL import Image
 from modules import shared, devices, errors
 
-# TODO vlm: add additional models
-# https://huggingface.co/nvidia/Eagle2-1B not compatible with latest transformers
-# https://huggingface.co/deepseek-ai/deepseek-vl2-tiny requires custom code
-
-
 processor = None
 model = None
 loaded: str = None
@@ -39,6 +34,8 @@ vlm_models = {
     "ViLT Base": "dandelin/vilt-b32-finetuned-vqa", # 0.5GB
     "JoyCaption": "fancyfeast/llama-joycaption-alpha-two-hf-llava", # 0.7GB
     "JoyTag": "fancyfeast/joytag", # 17.4GB
+    # "DeepSeek VL2 Tiny": "deepseek-ai/deepseek-vl2-tiny", # broken
+    # "nVidia Eagle 2 1B": "nvidia/Eagle2-1B", # not compatible with latest transformers
 }
 vlm_prompts = [
     '<CAPTION>',
@@ -352,6 +349,9 @@ def interrogate(question, image, model_name):
         elif 'joycaption' in vqa_model.lower():
             from modules.interrogate import joycaption
             answer = joycaption.predict(question, image)
+        elif 'deepseek' in vqa_model.lower():
+            from modules.interrogate import deepseek
+            answer = deepseek.predict(question, image, vqa_model)
         else:
             answer = 'unknown model'
     except Exception as e:

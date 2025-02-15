@@ -55,7 +55,7 @@ re_attention_v2 = re.compile(r"""
 \\               |      # Removes '\'
 \(               |      # Start '('
 \[               |      # Start '['
-:([+-]?[.\d]+)\) |      # Weight ':', followed by an optional sign and a number (integer or decimal), and then ')'
+:([+-]?[.\d]+)\) |      # Weight ':', followed by an optional sign and a number, and then ')'
 \)               |      # End ')'
 \]               |      # End ']'
 [^\\()\[\]:]+    |      # Content matches any character except '\', '(', ')', '[', ']', ':'
