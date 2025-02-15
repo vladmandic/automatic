@@ -1,4 +1,5 @@
 import io
+import os
 import time
 import json
 import base64
@@ -77,8 +78,28 @@ def clean(response, question):
     if question in response:
         response = response.split(question, 1)[1]
     response = response.replace('\n', '').replace('\r', '').replace('\t', '').strip()
+    if response.startswith('"'):
+        response = response[1:]
+    if response.endswith('"'):
+        response = response[:-1]
     response = response.replace('Assistant:', '').strip()
     return response
+
+
+def get_kwargs():
+    kwargs = {
+        'max_new_tokens': shared.opts.interrogate_vlm_max_length,
+        'do_sample': shared.opts.interrogate_vlm_do_sample,
+    }
+    if shared.opts.interrogate_vlm_num_beams > 0:
+        kwargs['num_beams'] = shared.opts.interrogate_vlm_num_beams
+    if shared.opts.interrogate_vlm_temperature > 0:
+        kwargs['temperature'] = shared.opts.interrogate_vlm_temperature
+    if shared.opts.interrogate_vlm_top_k > 0:
+        kwargs['top_k'] = shared.opts.interrogate_vlm_top_k
+    if shared.opts.interrogate_vlm_top_p > 0:
+        kwargs['top_p'] = shared.opts.interrogate_vlm_top_p
+    return kwargs
 
 
 def qwen(question: str, image: Image.Image, repo: str = None):
@@ -113,7 +134,7 @@ def qwen(question: str, image: Image.Image, repo: str = None):
     inputs = inputs.to(devices.device, devices.dtype)
     output_ids = model.generate(
         **inputs,
-        max_new_tokens=shared.opts.interrogate_vlm_max_length,
+        **get_kwargs(),
     )
     generated_ids = [
         output_ids[len(input_ids) :]
@@ -139,8 +160,7 @@ def paligemma(question: str, image: Image.Image, repo: str = None):
     with devices.inference_context():
         generation = model.generate(
             **model_inputs,
-            max_new_tokens=shared.opts.interrogate_vlm_max_length,
-            do_sample=shared.opts.interrogate_vlm_do_sample,
+            **get_kwargs(),
         )
     generation = generation[0][input_len:]
     response = processor.decode(generation, skip_special_tokens=True)
@@ -184,7 +204,7 @@ def smol(question: str, image: Image.Image, repo: str = None):
     inputs = inputs.to(devices.device, devices.dtype)
     output_ids = model.generate(
         **inputs,
-        max_new_tokens=shared.opts.interrogate_vlm_max_length,
+        **get_kwargs(),
     )
     response = processor.batch_decode(output_ids,skip_special_tokens=True)
     return response
@@ -297,7 +317,7 @@ def florence(question: str, image: Image.Image, repo: str = None, revision: str 
         return R
     revision = None
     if '@' in repo:
-        repo, revision = model.split('@')
+        repo, revision = repo.split('@')
     if model is None or loaded != repo:
         shared.log.debug(f'Interrogate load: vlm="{repo}" path="{shared.opts.hfcache_dir}"')
         transformers.dynamic_module_utils.get_imports = get_imports
@@ -319,16 +339,16 @@ def florence(question: str, image: Image.Image, repo: str = None, revision: str 
         generated_ids = model.generate(
             input_ids=input_ids,
             pixel_values=pixel_values,
-            max_new_tokens=shared.opts.interrogate_vlm_max_length,
-            num_beams=shared.opts.interrogate_vlm_num_beams,
-            do_sample=shared.opts.interrogate_vlm_do_sample,
+            **get_kwargs()
         )
         generated_text = processor.batch_decode(generated_ids, skip_special_tokens=False)[0]
         response = processor.post_process_generation(generated_text, task="task", image_size=(image.width, image.height))
     return response
 
 
-def interrogate(question, prompt, image, model_name):
+def interrogate(question, prompt, image, model_name, quiet:bool=False):
+    if not quiet:
+        shared.state.begin('Caption')
     t0 = time.time()
     if isinstance(image, list):
         image = image[0] if len(image) > 0 else None
@@ -337,7 +357,7 @@ def interrogate(question, prompt, image, model_name):
     if image is None:
         return ''
     if image.width > 768 or image.height > 768:
-        image.thumbnail((768, 768), Image.Resampling.HAMMING)
+        image.thumbnail((768, 768), Image.Resampling.LANCZOS)
     if image.mode != 'RGB':
         image = image.convert('RGB')
     if prompt is not None and len(prompt) > 0:
@@ -392,5 +412,64 @@ def interrogate(question, prompt, image, model_name):
     devices.torch_gc()
     answer = clean(answer, question)
     t1 = time.time()
-    shared.log.debug(f'Interrogate: type=vlm model="{model_name}" repo="{vqa_model}" time={t1-t0:.2f}')
+    if not quiet:
+        shared.log.debug(f'Interrogate: type=vlm model="{model_name}" repo="{vqa_model}" args={get_kwargs()} time={t1-t0:.2f}')
+        shared.state.end()
     return answer
+
+
+def batch(model_name, batch_files, batch_folder, batch_str, question, prompt, write, append):
+    class BatchWriter:
+        def __init__(self, folder, mode='w'):
+            self.folder = folder
+            self.csv = None
+            self.file = None
+            self.mode = mode
+
+        def add(self, file, prompt):
+            txt_file = os.path.splitext(file)[0] + ".txt"
+            with open(os.path.join(self.folder, txt_file), self.mode, encoding='utf-8') as f:
+                f.write(prompt)
+
+        def close(self):
+            if self.file is not None:
+                self.file.close()
+
+    files = []
+    if batch_files is not None:
+        files += [f.name for f in batch_files]
+    if batch_folder is not None:
+        files += [f.name for f in batch_folder]
+    if batch_str is not None and len(batch_str) > 0 and os.path.exists(batch_str) and os.path.isdir(batch_str):
+        files += [os.path.join(batch_str, f) for f in os.listdir(batch_str) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.webp'))]
+    if len(files) == 0:
+        shared.log.error('Interrogate batch no images')
+        return ''
+    shared.state.begin('Caption batch')
+    prompts = []
+    if write:
+        mode = 'w' if not append else 'a'
+        writer = BatchWriter(os.path.dirname(files[0]), mode=mode)
+    import rich.progress as rp
+    orig_offload = shared.opts.interrogate_offload
+    shared.opts.interrogate_offload = False
+    pbar = rp.Progress(rp.TextColumn('[cyan]Caption:'), rp.BarColumn(), rp.TaskProgressColumn(), rp.TimeRemainingColumn(), rp.TimeElapsedColumn(), rp.TextColumn('[cyan]{task.description}'), console=shared.console)
+    with pbar:
+        task = pbar.add_task(total=len(files), description='starting...')
+        for file in files:
+            pbar.update(task, advance=1, description=file)
+            try:
+                if shared.state.interrupted:
+                    break
+                image = Image.open(file)
+                prompt = interrogate(question, prompt, image, model_name, quiet=True)
+                prompts.append(prompt)
+                if write:
+                    writer.add(file, prompt)
+            except Exception as e:
+                shared.log.error(f'Interrogate batch: {e}')
+    if write:
+        writer.close()
+    shared.opts.interrogate_offload = orig_offload
+    shared.state.end()
+    return '\n\n'.join(prompts)

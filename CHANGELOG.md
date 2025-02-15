@@ -2,6 +2,12 @@
 
 ## Update for 2025-02-14
 
+### TODO
+
+- VLM ModernUI support
+- CLiP Move settings
+- CLiP Batch progress bar
+
 ### Highlight for 2025-02-14
 
 We're back with another update with over 50 commits!  
@@ -58,10 +64,18 @@ We're back with another update with over 50 commits!
     split from Process tab into separate tab  
     split `clip` vs `vlm` models processing  
     direct *send-to* buttons on all tabs  
-  - [JoyTag](https://huggingface.co/fancyfeast/joytag)
-  - [JoyCaption 2](https://huggingface.co/fancyfeast/llama-joycaption-alpha-two-hf-llava)  
-  - [Google PaliGemma 2](https://huggingface.co/google/paligemma2-3b-pt-224)
-  - [ToriiGate 0.4 7B](https://huggingface.co/Minthy/ToriiGate-v0.4-7B),
+  - Add VLM advanced params: max-tokens, num-beams, temperature, top-k, top-p, do-sample  
+    params are saved in `config.json` and used when using quick interrogate  
+    params that are set to 0 mean use model defaults  
+  - Add VLM batch processing  
+    for example, can be used to caption your training dataset in one go  
+    add option to append to captions file, can be used to run multiple captioning models in sequence  
+    add progress bar  
+  - Add additional VLM models:  
+    [JoyTag](https://huggingface.co/fancyfeast/joytag)  
+    [JoyCaption 2](https://huggingface.co/fancyfeast/llama-joycaption-alpha-two-hf-llava)  
+    [Google PaliGemma 2](https://huggingface.co/google/paligemma2-3b-pt-224)  
+    [ToriiGate 0.4 7B](https://huggingface.co/Minthy/ToriiGate-v0.4-7B)  
 - **Docker**  
   - updated **CUDA** receipe to `torch==2.6.0` with `cuda==12.6` and add prebuilt image  
   - added **ROCm** receipe and prebuilt image  

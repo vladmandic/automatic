@@ -909,7 +909,7 @@ options_templates.update(options_section(('control', "Control Options"), {
 
 options_templates.update(options_section(('interrogate', "Interrogate"), {
     "interrogate_default_type": OptionInfo("OpenCLiP", "Default type", gr.Radio, {"choices": ["OpenCLiP", "VLM", "DeepBooru"]}),
-    "interrogate_offload": OptionInfo(True, "Interrogate: offload models "),
+    "interrogate_offload": OptionInfo(True, "Offload models "),
     "interrogate_score": OptionInfo(False, "Include scores in results when available"),
 
     "interrogate_clip_sep": OptionInfo("<h2>OpenCLiP</h2>", "", gr.HTML),
@@ -929,7 +929,9 @@ options_templates.update(options_section(('interrogate', "Interrogate"), {
     "interrogate_vlm_num_beams": OptionInfo(3, "VLM: num beams", gr.Slider, {"minimum": 1, "maximum": 16, "step": 1, "visible": False}),
     "interrogate_vlm_max_length": OptionInfo(512, "VLM: max length", gr.Slider, {"minimum": 1, "maximum": 4096, "step": 1, "visible": False}),
     "interrogate_vlm_do_sample": OptionInfo(False, "VLM: use sample method"),
-    "interrogate_vlm_temperature": OptionInfo(0.6, "VLM: num beams", gr.Slider, {"minimum": 0.1, "maximum": 1.0, "step": 0.11, "visible": False}),
+    "interrogate_vlm_temperature": OptionInfo(0, "VLM: num beams", gr.Slider, {"minimum": 0, "maximum": 1.0, "step": 0.01, "visible": False}),
+    "interrogate_vlm_top_k": OptionInfo(0, "VLM: top-k", gr.Slider, {"minimum": 0, "maximum": 99, "step": 1, "visible": False}),
+    "interrogate_vlm_top_p": OptionInfo(0, "VLM: top-p", gr.Slider, {"minimum": 0, "maximum": 1.0, "step": 0.01, "visible": False}),
 
     "deepbooru_sep": OptionInfo("<h2>DeepBooru</h2>", "", gr.HTML),
     "deepbooru_score_threshold": OptionInfo(0.65, "DeepBooru: score threshold", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01}),

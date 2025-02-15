@@ -228,13 +228,15 @@ class InterrogateModels:
 # --------- interrrogate ui
 
 class BatchWriter:
-    def __init__(self, folder):
+    def __init__(self, folder, mode='w'):
         self.folder = folder
-        self.csv, self.file = None, None
+        self.csv = None
+        self.file = None
+        self.mode = mode
 
     def add(self, file, prompt):
         txt_file = os.path.splitext(file)[0] + ".txt"
-        with open(os.path.join(self.folder, txt_file), 'w', encoding='utf-8') as f:
+        with open(os.path.join(self.folder, txt_file), self.mode, encoding='utf-8') as f:
             f.write(prompt)
 
     def close(self):
@@ -354,7 +356,7 @@ def interrogate_image(image, clip_model, blip_model, mode):
     return prompt
 
 
-def interrogate_batch(batch_files, batch_folder, batch_str, clip_model, blip_model, mode, write):
+def interrogate_batch(batch_files, batch_folder, batch_str, clip_model, blip_model, mode, write, append):
     files = []
     if batch_files is not None:
         files += [f.name for f in batch_files]
@@ -388,7 +390,8 @@ def interrogate_batch(batch_files, batch_folder, batch_str, clip_model, blip_mod
                 captions.append(caption)
         # second pass: interrogate
         if write:
-            writer = BatchWriter(os.path.dirname(files[0]))
+            mode = 'w' if not append else 'a'
+            writer = BatchWriter(os.path.dirname(files[0]), mode=mode)
         for idx, file in enumerate(files):
             try:
                 if shared.state.interrupted:
