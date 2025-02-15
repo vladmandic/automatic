@@ -34,7 +34,12 @@ def set_default_agent(agent: rocm.Agent):
     global default_agent # pylint: disable=global-statement
     default_agent = agent
 
-    is_nightly = is_nightly_zluda() or (not os.path.exists(path) and nightly)
+    global nvcuda # pylint: disable=global-statement
+    if nvcuda is None:
+        nvcuda = ctypes.windll.LoadLibrary(os.path.join(path, 'nvcuda.dll'))
+        nvcuda.zluda_get_nightly_flag.restype = ctypes.c_int
+        nvcuda.zluda_get_nightly_flag.argtypes = []
+    is_nightly = nvcuda.zluda_get_nightly_flag() == 1
 
     global hipBLASLt_available, hipBLASLt_enabled # pylint: disable=global-statement
     hipBLASLt_available = is_nightly and os.path.exists(rocm.blaslt_tensile_libpath)
@@ -44,26 +49,12 @@ def set_default_agent(agent: rocm.Agent):
     MIOpen_available = is_nightly and agent.gfx_version in (0x908, 0x90a, 0x940, 0x941, 0x942, 0x1030, 0x1100, 0x1101, 0x1102,)
 
 
-def load_nvcuda():
-    global nvcuda # pylint: disable=global-statement
-    if nvcuda is None:
-        nvcuda = ctypes.windll.LoadLibrary(os.path.join(path, 'nvcuda.dll'))
-
-
-def is_old_zluda() -> bool: # ZLUDA<3.8.7
-    load_nvcuda()
+def is_old_zluda() -> bool: # ZLUDA<3.8.8
     try:
         nvcuda.zluda_get_nightly_flag()
         return False
     except AttributeError:
         return True
-
-
-def is_nightly_zluda() -> bool:
-    load_nvcuda()
-    nvcuda.zluda_get_nightly_flag.restype = ctypes.c_int
-    nvcuda.zluda_get_nightly_flag.argtypes = []
-    return nvcuda.zluda_get_nightly_flag() == 1
 
 
 def install() -> None:
