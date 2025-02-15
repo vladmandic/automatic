@@ -49,11 +49,16 @@ def set_default_agent(agent: rocm.Agent):
     MIOpen_available = is_nightly and agent.gfx_version in (0x908, 0x90a, 0x940, 0x941, 0x942, 0x1030, 0x1100, 0x1101, 0x1102,)
 
 
-def is_old_zluda() -> bool: # ZLUDA<3.8.8
+def is_reinstall_needed() -> bool: # ZLUDA<3.8.8
+    if not os.path.exists(path):
+        return False
     try:
+        global nvcuda # pylint: disable=global-statement
+        if nvcuda is None:
+            nvcuda = ctypes.windll.LoadLibrary(os.path.join(path, 'nvcuda.dll'))
         nvcuda.zluda_get_nightly_flag()
         return False
-    except AttributeError:
+    except Exception:
         return True
 
 

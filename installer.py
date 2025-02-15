@@ -630,7 +630,7 @@ def install_rocm_zluda():
         error = None
         from modules import zluda_installer
         try:
-            if args.reinstall or zluda_installer.is_old_zluda():
+            if args.reinstall or zluda_installer.is_reinstall_needed():
                 zluda_installer.uninstall()
             zluda_installer.install()
             zluda_installer.set_default_agent(device)
