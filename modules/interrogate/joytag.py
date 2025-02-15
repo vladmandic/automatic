@@ -71,33 +71,24 @@ MODEL_CONFIGS = {
     # random_resize_method = true
     # total_labels = 6549
     'SWModel1': {'class': 'ViT', 'num_blocks': 12, 'patch_size': 16, 'd_model': 768, 'mlp_dim': 768*4, 'num_heads': 12, 'stochdepth_rate': 0.05, 'use_sine': False},
-
     # Sinusoidal positional embeddings
     'SWModel2': {'class': 'ViT', 'num_blocks': 12, 'patch_size': 16, 'd_model': 768, 'mlp_dim': 768*4, 'num_heads': 12, 'stochdepth_rate': 0.05, 'use_sine': True},
-
     # Sinusoidal positional embeddings + 224 image size + L/14
     'SWModel3': {'class': 'ViT', 'num_blocks': 24, 'patch_size': 14, 'd_model': 1024, 'mlp_dim': 1024*4, 'num_heads': 16, 'stochdepth_rate': 0.05, 'layerscale_init': 1e-1, 'use_sine': True},
-
     # Sinusoidal positional embeddings + 224 image size + G/14
     'SWModel4': {'class': 'ViT', 'num_blocks': 48, 'patch_size': 14, 'd_model': 1664, 'mlp_dim': 1664*4, 'num_heads': 16, 'stochdepth_rate': 0.05, 'layerscale_init': 1e-1, 'use_sine': True},
-
     # Sinusoidal positional embeddings + focal loss
     'SWModel5': {'class': 'ViT', 'num_blocks': 12, 'patch_size': 16, 'd_model': 768, 'mlp_dim': 768*4, 'num_heads': 12, 'stochdepth_rate': 0.05, 'use_sine': True},
-
     'SWModel6': {'class': 'ViT', 'num_blocks': 12, 'patch_size': 16, 'd_model': 768, 'mlp_dim': 768*4, 'num_heads': 12, 'stochdepth_rate': 0.05, 'use_sine': True},
-
     'SWModel7': {'class': 'ViT', 'num_blocks': 12, 'patch_size': 16, 'd_model': 768, 'mlp_dim': 768*4, 'num_heads': 12, 'stochdepth_rate': 0.05, 'use_sine': True},
     'SWModel8': {'class': 'ViT', 'num_blocks': 12, 'patch_size': 16, 'd_model': 768, 'mlp_dim': 768*4, 'num_heads': 12, 'stochdepth_rate': 0.05, 'use_sine': True},
     'SWModel9': {'class': 'ViT', 'num_blocks': 12, 'patch_size': 16, 'd_model': 768, 'mlp_dim': 768*4, 'num_heads': 12, 'stochdepth_rate': 0.05, 'use_sine': True},
     'SWModel10': {'class': 'ViT', 'num_blocks': 12, 'patch_size': 16, 'd_model': 768, 'mlp_dim': 768*4, 'num_heads': 12, 'stochdepth_rate': 0.05, 'use_sine': True},
     'SWModel11': {'class': 'ViT', 'num_blocks': 12, 'patch_size': 16, 'd_model': 768, 'mlp_dim': 768*4, 'num_heads': 12, 'stochdepth_rate': 0, 'use_sine': True},
-
     # Trying head_mean_after
     'SWModel12': {'class': 'ViT', 'num_blocks': 12, 'patch_size': 16, 'd_model': 768, 'mlp_dim': 768*4, 'num_heads': 12, 'stochdepth_rate': 0.05, 'use_sine': True, 'head_mean_after': True},
-
     # Fat boy
     'SWModel13': {'class': 'ViT', 'num_blocks': 6, 'patch_size': 16, 'd_model': 1536, 'mlp_dim': 1536*4, 'num_heads': 12, 'stochdepth_rate': 0.05, 'use_sine': True},
-
     # L/14
     'SWModel14': {'class': 'ViT', 'num_blocks': 24, 'patch_size': 14, 'd_model': 1024, 'mlp_dim': 1024*4, 'num_heads': 16, 'stochdepth_rate': 0.05, 'layerscale_init': 1e-1, 'use_sine': True},
     'SWModel15': {'class': 'ViT', 'num_blocks': 24, 'patch_size': 14, 'd_model': 1024, 'mlp_dim': 1024*4, 'num_heads': 16, 'stochdepth_rate': 0.05, 'layerscale_init': 1e-5, 'use_sine': True},
@@ -105,7 +96,6 @@ MODEL_CONFIGS = {
     'SWModel16f': {'class': 'ViT', 'num_blocks': 24, 'patch_size': 14, 'd_model': 1024, 'mlp_dim': 1024*4, 'num_heads': 16, 'stochdepth_rate': 0.10, 'layerscale_init': 1e-1, 'use_sine': True},
     'SWModel22': {'class': 'ViT', 'num_blocks': 24, 'patch_size': 14, 'd_model': 1024, 'mlp_dim': 1024*4, 'num_heads': 16, 'stochdepth_rate': 0.20, 'layerscale_init': 1e-1, 'use_sine': True},
     'SWModel25': {'class': 'ViT', 'num_blocks': 24, 'patch_size': 16, 'd_model': 1024, 'mlp_dim': 1024*4, 'num_heads': 16, 'stochdepth_rate': 0.15, 'layerscale_init': 1e-1, 'use_sine': True, 'cnn_stem': 'conv:c=128;ln;relu;conv:c=256;ln;relu;conv:c=512;ln;relu;conv:c=1024;ln;relu;conv:c=1024,s=1,k=1,p=0'},
-
     # CNN stem
     'SWModel18': {'class': 'ViT', 'num_blocks': 12, 'patch_size': 16, 'd_model': 768, 'mlp_dim': 768*4, 'num_heads': 12, 'stochdepth_rate': 0.05, 'use_sine': True, 'cnn_stem': 'conv:c=64;bn;relu;conv:c=128;bn;relu;conv:c=256;bn;relu;conv:c=512;bn;relu;conv:c=768,s=1,k=1'},
     'SWModel19': {'class': 'ViT', 'num_blocks': 12, 'patch_size': 16, 'd_model': 768, 'mlp_dim': 768*4, 'num_heads': 12, 'stochdepth_rate': 0.05, 'use_sine': True, 'cnn_stem': 'conv:c=64;bn;relu;conv:c=128;bn;relu;conv:c=128,s=1;bn;relu;conv:c=256;bn;relu;conv:c=256,s=1;bn;relu;conv:c=512;bn;relu;conv:c=768,s=1,k=1,p=0'},
@@ -113,7 +103,6 @@ MODEL_CONFIGS = {
     'SWModel21': {'class': 'ViT', 'num_blocks': 12, 'patch_size': 16, 'd_model': 768, 'mlp_dim': 768*4, 'num_heads': 12, 'stochdepth_rate': 0.05, 'use_sine': True, 'cnn_stem': 'conv:c=64;ln;gelu;conv:c=128;ln;gelu;conv:c=256;ln;gelu;conv:c=512;ln;gelu;conv:c=768,s=1,k=1,p=0'},
     'SWModel23': {'class': 'ViT', 'num_blocks': 12, 'patch_size': 16, 'd_model': 768, 'mlp_dim': 768*4, 'num_heads': 12, 'stochdepth_rate': 0.05, 'use_sine': True, 'cnn_stem': 'conv:c=64;ln;relu;conv:c=128;ln;relu;conv:c=256;ln;relu;conv:c=512;ln;relu;conv:c=768,s=1,k=1,p=0'},
     'SWModel24': {'class': 'ViT', 'num_blocks': 12, 'patch_size': 16, 'd_model': 768, 'mlp_dim': 768*4, 'num_heads': 12, 'stochdepth_rate': 0.05, 'use_sine': True, 'cnn_stem': 'conv:c=64;ln;relu;conv:c=128;ln;relu;conv:c=256;ln;relu;conv:c=512;ln;relu;conv:c=768,s=1,k=1,p=0'},
-
     # H/14
     'SWModel17': {'class': 'ViT', 'num_blocks': 32, 'patch_size': 14, 'd_model': 1280, 'mlp_dim': 1280*4, 'num_heads': 16, 'stochdepth_rate': 0.05, 'layerscale_init': 1e-1, 'use_sine': True},
     'SWModel26': {'class': 'ViT', 'num_blocks': 32, 'patch_size': 14, 'd_model': 1280, 'mlp_dim': 1280*4, 'num_heads': 16, 'stochdepth_rate': 0.15, 'layerscale_init': 1e-1, 'use_sine': True},
@@ -126,35 +115,20 @@ class VisionModel(nn.Module):
 
     def __init__(self, image_size: int, n_tags: int):
         super().__init__()
-
         self.image_size = image_size
         self.n_tags = n_tags
 
     @staticmethod
-    def load_model(path: Path, device: str = None) -> 'VisionModel':
-        """
-        Load a model from a directory.
-        :param path: The directory containing the model.
-        :return: The model, the image size, and the number of tags.
-        """
+    def load_model(path: str) -> 'VisionModel':
         with open(Path(path) / 'config.json', 'r', encoding='utf8') as f:
             config = json.load(f)
-
-        if (Path(path) / 'model.safetensors').exists():
-            from safetensors.torch import load_file
-            resume = load_file(Path(path) / 'model.safetensors', device='cpu')
-        else:
-            resume = torch.load(Path(path) / 'model.pt', map_location=torch.device('cpu'))['model']
-
+        from safetensors.torch import load_file
+        resume = load_file(Path(path) / 'model.safetensors', device='cpu')
         model_classes = VisionModel.__subclasses__()
         model_cls = next(cls for cls in model_classes if cls.__name__ == config['class'])
-
-        model = model_cls(**{k: v for k, v in config.items() if k != 'class'})
-        model.load(resume)
-        if device is not None:
-            model = model.to(device)
-
-        return model
+        instance = model_cls(**{k: v for k, v in config.items() if k != 'class'})
+        instance.load(resume)
+        return instance
 
     @staticmethod
     def from_config(config: dict) -> 'VisionModel':
@@ -177,12 +151,10 @@ def basic_calculate_loss(preds: dict[str, torch.Tensor], batch: dict, pos_weight
         p = F.softmax(preds, dim=1)
         xs_pos = p.clamp(min=1e-6)
         xs_neg = (1 - p).clamp(min=1e-6)
-
         los_pos = torch.log(torch.gather(xs_pos, 1, target.unsqueeze(1))).sum()
         los_neg = torch.log(xs_neg)
         los_neg = los_neg.sum() - torch.gather(los_neg, 1, target.unsqueeze(1)).sum()
         loss = los_pos + los_neg
-
         return -loss
 
     if loss_type == "ce":
@@ -207,22 +179,18 @@ def basic_calculate_loss(preds: dict[str, torch.Tensor], batch: dict, pos_weight
         p = torch.sigmoid(preds['tags'])
         xs_pos = p
         xs_neg = 1 - p
-
         los_pos = batch['tags'] * torch.log(xs_pos.clamp(min=1e-6))
         los_neg = (1 - batch['tags']) * torch.log(xs_neg.clamp(min=1e-6))
         loss = los_pos + los_neg
         loss = -loss.sum()
-
         # Rating
         loss = loss + asl_helper(preds['rating'], batch['rating'])
-
         # Score
         loss = loss + asl_helper(preds['score'], batch['score'])
     elif loss_type == "asl2":
         p = torch.sigmoid(preds['tags'])
         xs_pos = p
         xs_neg = 1 - p
-
         los_pos = batch['tags'] * torch.log(xs_pos.clamp(min=1e-6))
         los_neg = (1 - batch['tags']) * torch.log(xs_neg.clamp(min=1e-6))
         loss = -los_pos - los_neg
@@ -231,7 +199,6 @@ def basic_calculate_loss(preds: dict[str, torch.Tensor], batch: dict, pos_weight
         p = torch.sigmoid(preds['tags'])
         xs_pos = p
         xs_neg = 1 - p
-
         los_pos = batch['tags'] * torch.log(xs_pos.clamp(min=1e-6))
         los_neg = (1 - batch['tags']) * torch.log(xs_neg.clamp(min=1e-6))
         loss = -los_pos - los_neg
@@ -240,7 +207,6 @@ def basic_calculate_loss(preds: dict[str, torch.Tensor], batch: dict, pos_weight
         p = torch.sigmoid(preds['tags'])
         xs_pos = p
         xs_neg = 1 - p
-
         los_pos = batch['tags'] * torch.log(xs_pos.clamp(min=1e-6))
         los_neg = (1 - batch['tags']) * torch.log(xs_neg.clamp(min=1e-6))
         loss = -los_pos - los_neg
@@ -253,7 +219,6 @@ def basic_calculate_loss(preds: dict[str, torch.Tensor], batch: dict, pos_weight
         loss = F.binary_cross_entropy_with_logits(preds['tags'], batch['tags'], pos_weight=pos_weight) * 2
     else:
         raise ValueError(f"Invalid loss type: {loss_type}")
-
     return loss
 
 
@@ -282,17 +247,12 @@ class FastCLIPAttention2(nn.Module):
         self.num_heads = num_attention_heads
         self.head_dim = hidden_size // num_attention_heads
         assert self.head_dim * num_attention_heads == self.embed_dim, "embed_dim must be divisible by num_attention_heads"
-
         self.q_proj = nn.Linear(self.embed_dim, self.embed_dim)
         self.kv_proj = nn.Linear(self.embed_dim, self.embed_dim * 2)
         self.out_proj = nn.Linear(self.embed_dim, self.out_dim)
-
         if self.norm_qk:
             self.query_norm = nn.LayerNorm(self.embed_dim)
             self.key_norm = nn.LayerNorm(self.embed_dim)
-
-    #def _shape(self, tensor: torch.Tensor, seq_len: int, bsz: int):
-    #    return tensor.view(bsz, seq_len, self.num_heads, self.head_dim).contiguous()
 
     def forward(self, query_states: torch.Tensor, kv_states: torch.Tensor) -> torch.Tensor:
         bsz, src_len, embed_dim = kv_states.size()
@@ -300,10 +260,8 @@ class FastCLIPAttention2(nn.Module):
             tgt_len = self.out_seq_len
         else:
             tgt_len = src_len
-
         kv_states = self.kv_proj(kv_states)  # (bsz, src_len, embed_dim * 2)
         q_states = self.q_proj(query_states[:, :tgt_len])   # (bsz, tgt_len, embed_dim)
-
         # NOTE: It is not clear if LayerNorm should be applied to the embed_dim, or to the head_dim
         if self.norm_qk:
             q_states = self.query_norm(q_states).type(q_states.dtype)
@@ -312,19 +270,15 @@ class FastCLIPAttention2(nn.Module):
         else:
             k_states = kv_states[:, :, :embed_dim]
             v_states = kv_states[:, :, embed_dim:]
-
         q_states = q_states.view(bsz, tgt_len, self.num_heads, self.head_dim).transpose(1, 2)  # (bsz, num_heads, tgt_len, head_dim)
         k_states = k_states.view(bsz, src_len, self.num_heads, self.head_dim).transpose(1, 2)  # (bsz, num_heads, src_len, head_dim)
         v_states = v_states.view(bsz, src_len, self.num_heads, self.head_dim).transpose(1, 2)  # (bsz, num_heads, src_len, head_dim)
-
         # Performs scale of query_states, attention, and softmax
         with torch.backends.cuda.sdp_kernel(enable_math=False):
             x = F.scaled_dot_product_attention(q_states, k_states, v_states)   # (bsz, num_heads, tgt_len, head_dim)
             x = x.transpose(1, 2).contiguous().view(bsz, tgt_len, embed_dim)   # (bsz, tgt_len, embed_dim)
-
         # Projection
         x = self.out_proj(x)  # (bsz, tgt_len, out_dim)
-
         return x
 
 
@@ -334,7 +288,6 @@ class SkipInit(nn.Module):
         self.hidden_size = hidden_size
         self.channel_wise = channel_wise
         self.init_scale = init_scale
-
         if self.channel_wise:
             self.scale = nn.Parameter(torch.ones(hidden_size) * init_scale)
         else:
@@ -357,10 +310,8 @@ class FastCLIPEncoderLayer(nn.Module):
         stochastic_depth: Optional[float] = None,
     ):
         super().__init__()
-
         self.use_palm_alt = use_palm_alt
         self.stochastic_depth = stochastic_depth
-
         self.self_attn = FastCLIPAttention2(
             hidden_size=hidden_size,
             out_dim=hidden_size,
@@ -372,7 +323,6 @@ class FastCLIPEncoderLayer(nn.Module):
         self.layer_norm1 = nn.LayerNorm(hidden_size)
         if not use_palm_alt:
             self.layer_norm2 = nn.LayerNorm(hidden_size)
-
         if skip_init is not None:
             self.attn_skip_init = SkipInit(hidden_size, channel_wise=True, init_scale=skip_init)
             self.mlp_skip_init = SkipInit(hidden_size, channel_wise=True, init_scale=skip_init)
@@ -383,12 +333,10 @@ class FastCLIPEncoderLayer(nn.Module):
     def forward(self, hidden_states: torch.Tensor):
         residual = hidden_states
         hidden_states = self.layer_norm1(hidden_states)
-
         if not self.use_palm_alt:
             hidden_states = self.self_attn(query_states=hidden_states, kv_states=hidden_states)
             hidden_states = self.attn_skip_init(hidden_states)
             hidden_states = hidden_states + residual[:, :hidden_states.size(1)]
-
             residual = hidden_states
             hidden_states = self.layer_norm2(hidden_states)
             hidden_states = self.mlp(hidden_states)
@@ -402,13 +350,10 @@ class FastCLIPEncoderLayer(nn.Module):
             attn = self.attn_skip_init(attn)
             mlp = self.mlp(hidden_states[:, :attn.size(1)])
             mlp = self.mlp_skip_init(mlp)
-
             if self.stochastic_depth is not None:
                 attn = torchvision.ops.stochastic_depth(attn, self.stochastic_depth, mode='row', training=self.training)
                 mlp = torchvision.ops.stochastic_depth(mlp, self.stochastic_depth, mode='row', training=self.training)
-
             hidden_states = residual[:, :attn.size(1)] + attn + mlp
-
         return hidden_states
 
 
@@ -417,24 +362,19 @@ def sinusoidal_position_embedding(width: int, height: int, depth: int, dtype, de
     Sinusoidal position embedding. Returns a flat tensor of shape (h * w, d).
     """
     assert depth % 4 == 0, "Embedding dimension must be divisible by 4."
-
     y, x = torch.meshgrid(torch.arange(height, device=device), torch.arange(width, device=device), indexing="ij")
     omega = torch.arange(depth // 4, device=device) / (depth // 4 - 1)
     omega = 1. / (temperature ** omega)
-
     y = y.flatten()[:, None] * omega[None, :]
     x = x.flatten()[:, None] * omega[None, :]
     embedding = torch.cat([x.sin(), x.cos(), y.sin(), y.cos()], dim=1)
-
     return embedding.type(dtype)
 
 
 class CLIPEmbeddingLayer(nn.Module):
     def __init__(self, hidden_size: int, num_channels: int, image_size: int, patch_size: int, patch_dropout: float = 0.0, good_dropout: bool = False, dpn: bool = False, sine_positional_embeddings: bool = False):
         super().__init__()
-
         assert image_size % patch_size == 0, "Image dimensions must be divisible by the patch size."
-
         seq_len = (image_size // patch_size) ** 2
         self.patch_dropout = patch_dropout
         self.hidden_size = hidden_size
@@ -442,7 +382,6 @@ class CLIPEmbeddingLayer(nn.Module):
         self.dpn = dpn
         self.sine_positional_embeddings = sine_positional_embeddings
         self.patch_size = patch_size
-
         self.patch_embeddings = nn.Conv2d(
             in_channels=num_channels,
             out_channels=hidden_size,
@@ -453,7 +392,6 @@ class CLIPEmbeddingLayer(nn.Module):
         if not self.sine_positional_embeddings:
             self.positional_embeddings = nn.Embedding(seq_len, hidden_size)
         self.register_buffer("position_ids", torch.arange(seq_len))
-
         if self.dpn:
             self.to_patch_embeddings = nn.Sequential(
                 Rearrange('b c (h p1) (w p2) -> b (h w) (p1 p2 c)', p1=patch_size, p2=patch_size),
@@ -474,27 +412,22 @@ class CLIPEmbeddingLayer(nn.Module):
         B, _C, H, W = pixel_values.shape
         assert H % self.patch_size == 0, f"Input image height ({H}) needs to be divisible by the patch size ({self.patch_size})."
         assert W % self.patch_size == 0, f"Input image width ({W}) needs to be divisible by the patch size ({self.patch_size})."
-
         if self.dpn:
             patches = self.to_patch_embeddings(pixel_values)
         else:
             patches = self.to_patch_embeddings(pixel_values)
             patches = patches.flatten(2).transpose(1, 2)
-
         seq_len = patches.shape[1]
         patch_dropout = int(math.ceil((1.0 - self.patch_dropout) * seq_len))
-
         if self.sine_positional_embeddings:
             position_embeddings = sinusoidal_position_embedding(W // self.patch_size, H // self.patch_size, self.hidden_size, pixel_values.dtype, pixel_values.device)
         else:
             position_embeddings = self.positional_embeddings(self.position_ids)
-
         if patch_dropout == seq_len or not self.training:
             embeddings = patches + position_embeddings
         elif self.good_dropout:
             # Pick random patches to drop out
             # The "good_dropout" variant uses random permutations for each batch item, but is slightly slower and involves more code
-
             # The below method is a nice trick to generate a batch of random permutations.
             # Torch (as of 1.13) doesn't have a built-in function to do this, and a for loop of torch.randperm is slow.
             # Based on some benchmarks I measured the generation of the mask and the fetching to be only 50% slower than the non-"good_dropout" variant.
@@ -511,22 +444,17 @@ class CLIPEmbeddingLayer(nn.Module):
             # The non-"good_dropout" variant uses a single random permutation for all batch items, but is faster and uses less code
             indices = torch.randperm(seq_len, device=pixel_values.device)[:patch_dropout]
             embeddings = patches[:, indices, :] + position_embeddings[indices.expand(1, -1)]
-
         return embeddings
 
 
 class MHAPoolingHead(nn.Module):
     def __init__(self, hidden_size: int, num_attention_heads: int, activation_cls, out_dim: int, alt_style: bool, norm_qk: bool):
         super().__init__()
-
         self.out_dim = out_dim if not alt_style else hidden_size
-
         self.probe = nn.Parameter(torch.randn(hidden_size))
-
         self.mlp = CLIPMlp(hidden_size, 4 * hidden_size, activation_cls)
         self.layer_norm = nn.LayerNorm(hidden_size)
         self.pooling_head = nn.Linear(hidden_size, 1)
-
         self.self_attn = FastCLIPAttention2(
             hidden_size=hidden_size,
             out_dim=self.out_dim,
@@ -537,7 +465,6 @@ class MHAPoolingHead(nn.Module):
         self.mlp = CLIPMlp(self.out_dim, 4 * self.out_dim, activation_cls)
         self.layer_norm1 = nn.LayerNorm(hidden_size)
         self.layer_norm2 = nn.LayerNorm(self.out_dim)
-
         if alt_style:
             self.final_proj = nn.Linear(hidden_size, out_dim)
         else:
@@ -546,23 +473,19 @@ class MHAPoolingHead(nn.Module):
     def forward(self, hidden_states: torch.Tensor):
         hidden_states = self.layer_norm1(hidden_states)
         query_states = self.probe.unsqueeze(0).unsqueeze(0).expand(hidden_states.size(0), 1, -1)
-
         hidden_states = self.self_attn(query_states=query_states, kv_states=hidden_states)
         # We don't use a residual connection here because the out_dim is different from the hidden_size
-
         residual = hidden_states
         hidden_states = self.layer_norm2(hidden_states)
         hidden_states = self.mlp(hidden_states)
         hidden_states = hidden_states + residual
         hidden_states = self.final_proj(hidden_states)
-
         return hidden_states.squeeze(1)
 
 
 class GAPHead(nn.Module):
     def __init__(self, hidden_size: int, out_dim: int):
         super().__init__()
-
         self.norm = nn.LayerNorm(hidden_size)
         self.proj = nn.Linear(hidden_size, out_dim)
 
@@ -598,14 +521,11 @@ class CLIPLikeModel(VisionModel):
         stochastic_depth: Optional[float] = None,
     ):
         super().__init__(image_size, n_tags)
-
         out_dim = n_tags
         self.n_tags = n_tags
         self.loss_type = loss_type
         self.no_wd_bias = no_wd_bias
-
         stochastic_depth_space = torch.linspace(0, stochastic_depth, num_layers) if stochastic_depth is not None else None
-
         self.embedding_layer = CLIPEmbeddingLayer(embedding_dim, num_channels, image_size, patch_size, patch_dropout, good_dropout, dpn, sine_positional_embeddings)
         self.pre_layer_norm = nn.LayerNorm(embedding_dim)
         self.encoder_layers = nn.ModuleList([FastCLIPEncoderLayer(
@@ -618,7 +538,6 @@ class CLIPLikeModel(VisionModel):
             skip_init=skip_init,
             stochastic_depth=stochastic_depth_space[i].item() if stochastic_depth_space is not None else None,
         ) for i in range(num_layers)])
-
         if use_gap_head:
             self.pooling_head = GAPHead(embedding_dim, out_dim)
         else:
@@ -627,16 +546,10 @@ class CLIPLikeModel(VisionModel):
     def forward(self, batch):
         hidden_states = self.embedding_layer(batch['image'])
         hidden_states = self.pre_layer_norm(hidden_states)
-
         for layer in self.encoder_layers:
             hidden_states = layer(hidden_states)
-
         preds = self.pooling_head(hidden_states)
-
-        result = {
-            'tags': preds,
-        }
-
+        result = { 'tags': preds }
         return result
 
     def calculate_loss(self, preds, batch, pos_weight):
@@ -651,11 +564,9 @@ class CLIPLikeModel(VisionModel):
     def get_optimized_parameters_no_wd_bias(self):
         decay = []
         no_decay = []
-
         for name, param in self.named_parameters():
             if not param.requires_grad:
                 continue
-
             if len(param.shape) == 1 or name.endswith(".bias"):
                 no_decay.append(param)
                 print(f'No decay: {name}')
@@ -678,7 +589,6 @@ class MaskedAutoEncoderViT(nn.Module):
     def __init__(
         self,
         n_tags: int,
-
         embedding_dim: int,
         num_attention_heads: int,
         activation_cls,
@@ -688,19 +598,16 @@ class MaskedAutoEncoderViT(nn.Module):
         num_layers: int,
         loss_type: str,
         sine_positional_embeddings: bool=False,
-
         decoder_embedding_dim: int = 512,
         decoder_num_attention_heads: int = 8,
         decoder_num_layers: int = 6,
         decoder_force_projection: bool = False,
-
         masking_ratio: float = 0.75,
         mae_loss_weight: float = 1.0,
         mae_normalize_targets: bool = False,
         mae_post_norm: bool = False,
     ):
         super().__init__()
-
         self.n_tags = n_tags
         self.seq_len = (image_size // patch_size) ** 2
         self.embedding_dim = embedding_dim
@@ -712,12 +619,10 @@ class MaskedAutoEncoderViT(nn.Module):
         self.loss_type = loss_type
         self.mae_loss_weight = mae_loss_weight
         self.mae_normalize_targets = mae_normalize_targets
-
         if not self.sine_positional_embeddings:
             self.positional_embeddings = nn.Embedding(self.seq_len, embedding_dim)
             self.decoder_positional_embeddings = nn.Embedding(self.seq_len, decoder_embedding_dim)
         self.register_buffer("position_ids", torch.arange(self.seq_len))
-
         self.to_patches = Rearrange('b c (h p1) (w p2) -> b (h w) (p1 p2 c)', p1=patch_size, p2=patch_size)
         self.patch_embedder = nn.Linear(num_channels * patch_size * patch_size, embedding_dim)
 
@@ -732,10 +637,8 @@ class MaskedAutoEncoderViT(nn.Module):
             norm_qk=False,
             skip_init=None,
         ) for _ in range(num_layers)])
-
         # Head for classification
         self.pooling_head = GAPHead(embedding_dim, n_tags)
-
         # Decoder
         if embedding_dim != decoder_embedding_dim or decoder_force_projection:
             self.encoder_to_decoder_proj = nn.Linear(embedding_dim, decoder_embedding_dim)
@@ -751,7 +654,6 @@ class MaskedAutoEncoderViT(nn.Module):
             norm_qk=False,
             skip_init=None,
         ) for _ in range(decoder_num_layers)])
-
         if mae_post_norm:
             self.decoder_to_pixel_values = nn.Sequential(
                 nn.LayerNorm(decoder_embedding_dim),
@@ -768,42 +670,33 @@ class MaskedAutoEncoderViT(nn.Module):
         B, _C, H, W = pixel_values.shape
         assert H % self.patch_size == 0, f"Input image height ({H}) needs to be divisible by the patch size ({self.patch_size})."
         assert W % self.patch_size == 0, f"Input image width ({W}) needs to be divisible by the patch size ({self.patch_size})."
-
         # Convert image to patches (B, seq_len, C * patch_size * patch_size)
         patches = self.to_patches(pixel_values)
         seq_len = patches.shape[1]
         num_masked = int(self.masking_ratio * seq_len)
-
         # For each batch tensor, use argsort to convert the random numbers into a permutation of the patch indices
         # From this we can get the masked and unmasked indices
         patch_mask = torch.rand(B, seq_len, device=device)
         patch_mask = torch.argsort(patch_mask, dim=1)
         masked_indices, unmasked_indices = patch_mask[:, :num_masked], patch_mask[:, num_masked:]
         batch_range = torch.arange(B, device=device)[:, None]
-
         # Masked and unmasked patches
         unmasked_patches = patches[batch_range, unmasked_indices]
         masked_patches = patches[batch_range, masked_indices]
-
         # Embed unmasked patches for the encoder (B, seq_len, embedding_dim)
         tokens = self.patch_embedder(unmasked_patches)
-
         if self.sine_positional_embeddings:
             position_embeddings = sinusoidal_position_embedding(W // self.patch_size, H // self.patch_size, self.embedding_dim, pixel_values.dtype, device)
             decoder_position_embeddings = sinusoidal_position_embedding(W // self.patch_size, H // self.patch_size, self.decoder_embedding_dim, pixel_values.dtype, device)
         else:
             position_embeddings = self.positional_embeddings(self.position_ids)
             decoder_position_embeddings = self.decoder_positional_embeddings(self.position_ids)
-
         # Add position embeddings
         tokens = tokens + position_embeddings[unmasked_indices]
-
         # Run the encoder
         encoded_tokens = self.pre_layer_norm(tokens)
-
         for layer in self.encoder_layers:
             encoded_tokens = layer(encoded_tokens)
-
         # Label predictions
         if self.training:
             preds = self.pooling_head(encoded_tokens)
@@ -816,27 +709,21 @@ class MaskedAutoEncoderViT(nn.Module):
             for layer in self.encoder_layers:
                 tokens = layer(tokens)
             preds = self.pooling_head(tokens)
-
         # Projection for the decoder and position embeddings
         decoder_tokens = self.encoder_to_decoder_proj(encoded_tokens)
         decoder_tokens = decoder_tokens + decoder_position_embeddings[unmasked_indices]
-
         # Fill in the masked patches
         mask_tokens = einops.repeat(self.mask_token, 'd -> b n d', b = B, n = num_masked)
         mask_tokens = mask_tokens + decoder_position_embeddings[masked_indices]
         decoder_tokens = torch.cat([decoder_tokens, mask_tokens], dim=1)
-
         # Run the decoder
         decoded_tokens = self.decoder_pre_layer_norm(decoder_tokens)
-
         for layer in self.decoder_layers:
             decoded_tokens = layer(decoded_tokens)
-
         # Only predict the masked patches
         # All the masked patches are at the end of the sequence
         decoded_tokens = decoded_tokens[:, -num_masked:]
         pred_pixel_values = self.decoder_to_pixel_values(decoded_tokens)
-
         # Calculate the mae loss
         if self.mae_normalize_targets:
             # Normalize each patch by its mean and variance. The ViCHA paper says this provides better results
@@ -847,7 +734,6 @@ class MaskedAutoEncoderViT(nn.Module):
         else:
             mae_loss = F.mse_loss(pred_pixel_values, masked_patches)
         mae_loss = mae_loss * self.mae_loss_weight
-
         return {
             'tags': preds,
             'mae_loss': mae_loss,
@@ -875,14 +761,12 @@ class StochDepth(nn.Module):
     def forward(self, x):
         if not self.training:
             return x
-
         batch_size = x.shape[0]
         r = torch.rand((batch_size, 1, 1), device=x.device)
         keep_prob = 1 - self.drop_rate
         binary_tensor = torch.floor(keep_prob + r)
         if self.scale_by_keep:
             x = x / keep_prob
-
         return x * binary_tensor
 
 
@@ -904,7 +788,6 @@ class PosEmbedding(nn.Module):
         self.max_len = max_len
         self.use_sine = use_sine
         self.patch_size = patch_size
-
         if not self.use_sine:
             self.embedding = nn.Embedding(max_len, d_model)
             nn.init.trunc_normal_(self.embedding.weight, std=0.02)
@@ -915,7 +798,6 @@ class PosEmbedding(nn.Module):
             position_embeddings = sinusoidal_position_embedding(width // self.patch_size, height // self.patch_size, self.d_model, x.dtype, x.device)
         else:
             position_embeddings = self.embedding(self.position_ids)
-
         return x + position_embeddings
 
 
@@ -944,16 +826,13 @@ class ViTBlock(nn.Module):
         super().__init__()
         self.num_heads = num_heads
         self.d_model = d_model
-
         assert d_model % num_heads == 0, "d_model must be divisible by num_heads"
-
         # MHA
         self.norm1 = nn.LayerNorm(d_model)
         self.qkv_proj = nn.Linear(d_model, d_model * 3)
         self.out_proj = nn.Linear(d_model, d_model)
         self.skip_init1 = SkipInitChannelwise(channels=d_model, init_val=layerscale_init)
         self.stochdepth1 = StochDepth(stochdepth_rate, scale_by_keep=True) if stochdepth_rate > 0 else None
-
         # MLP
         self.norm2 = nn.LayerNorm(d_model)
         self.mlp = MLPBlock(d_model, d_ff, stochdepth_rate)
@@ -962,35 +841,27 @@ class ViTBlock(nn.Module):
 
     def forward(self, x):
         bsz, src_len, embed_dim = x.shape
-
         out = x
         out = self.norm1(out)
-
         # MHA
         qkv_states = self.qkv_proj(out).split(self.d_model, dim=-1)
         q_states = qkv_states[0].view(bsz, src_len, self.num_heads, embed_dim // self.num_heads).transpose(1, 2)  # (bsz, num_heads, src_len, embed_dim // num_heads)
         k_states = qkv_states[1].view(bsz, src_len, self.num_heads, embed_dim // self.num_heads).transpose(1, 2)  # (bsz, num_heads, src_len, embed_dim // num_heads)
         v_states = qkv_states[2].view(bsz, src_len, self.num_heads, embed_dim // self.num_heads).transpose(1, 2)  # (bsz, num_heads, src_len, embed_dim // num_heads)
-
         with torch.backends.cuda.sdp_kernel(enable_math=False):
             out = F.scaled_dot_product_attention(q_states, k_states, v_states)   # (bsz, num_heads, tgt_len, head_dim)
             out = out.transpose(1, 2).contiguous().view(bsz, src_len, embed_dim)   # (bsz, tgt_len, embed_dim)
-
         out = self.out_proj(out)
-
         out = self.skip_init1(out)
         if self.stochdepth1 is not None:
             out = self.stochdepth1(out)
         x = out + x
-
         out = self.norm2(x)
         out = self.mlp(out)
         out = self.skip_init2(out)
         if self.stochdepth2 is not None:
             out = self.stochdepth2(out)
-
         out = out + x
-
         return out
 
 
@@ -1019,16 +890,13 @@ class CNNStem(nn.Module):
     def __init__(self, config: str):
         super().__init__()
         self.config = config
-
         layers = []
         channels = 3
-
         for line in config.split(";"):
             ty, line = line.split(":") if ":" in line else (line, "")
             options = line.split(",")
             options = [o.split("=") for o in options] if line else []
             options = {k: v for k, v in options} # noqa: C416
-
             if ty == 'conv':
                 layers.append(nn.Conv2d(
                     in_channels=channels,
@@ -1047,7 +915,6 @@ class CNNStem(nn.Module):
                 layers.append(nn.ReLU())
             elif ty == 'gelu':
                 layers.append(nn.GELU())
-
         self.conv = nn.Sequential(*layers)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -1072,17 +939,14 @@ class ViT(VisionModel):
         patch_dropout: float = 0.0,
     ):
         super().__init__(image_size, n_tags)
-
         #assert image_size % patch_size == 0, "image_size must be divisible by patch_size"
         assert d_model % num_heads == 0, "d_model must be divisible by num_heads"
-
         out_dim = n_tags
         self.n_tags = n_tags
         self.loss_type = loss_type
         self.patch_size = patch_size
         self.head_mean_after = head_mean_after
         self.patch_dropout = patch_dropout
-
         layerscale_init = CaiT_LayerScale_init(num_blocks) if layerscale_init is None else layerscale_init
         self.patch_embeddings = nn.Conv2d(
             in_channels=3,
@@ -1092,12 +956,10 @@ class ViT(VisionModel):
             bias=True,
         ) if cnn_stem is None else CNNStem(cnn_stem)
         self.pos_embedding = PosEmbedding(d_model, (image_size // patch_size) ** 2, use_sine=use_sine, patch_size=patch_size)
-
         self.blocks = nn.ModuleList([
             ViTBlock(num_heads, d_model, mlp_dim, layerscale_init, stochdepth_rate)
             for _ in range(num_blocks)
         ])
-
         self.norm = nn.LayerNorm(d_model)
         self.head = nn.Linear(d_model, out_dim)
 
@@ -1105,15 +967,12 @@ class ViT(VisionModel):
         B, _C, H, W = batch['image'].shape
         assert H % self.patch_size == 0, f"Input image height ({H}) needs to be divisible by the patch size ({self.patch_size})."
         assert W % self.patch_size == 0, f"Input image width ({W}) needs to be divisible by the patch size ({self.patch_size})."
-
         x = self.patch_embeddings(batch['image'])  # (bsz, d_model, patch_num, patch_num)
         x = x.flatten(2).transpose(1, 2)  # (bsz, patch_num ** 2, d_model)
         x = self.pos_embedding(x, W, H)   # (bsz, patch_num ** 2, d_model)
-
         # Patch dropout
         seq_len = x.shape[1]
         patch_dropout = int(math.ceil((1.0 - self.patch_dropout) * seq_len))
-
         if patch_dropout != seq_len:
             # Generate a matrix of random numbers between 0 and 1 of shape (B, seq_len)
             patch_mask = torch.rand(B, seq_len, device=x.device)
@@ -1121,19 +980,14 @@ class ViT(VisionModel):
             patch_mask = torch.argsort(patch_mask, dim=1)
             # Truncate
             patch_mask = patch_mask[:, :patch_dropout]
-
             x = x.gather(1, patch_mask.unsqueeze(-1).expand(-1, -1, x.shape[-1]))
-
             #indices = torch.randperm(seq_len, device=x.device)[:patch_dropout]
             #x = x[:, indices, :]
-
         # Transformer
         for block in self.blocks:
             x = block(x)
-
         # Head
         result = {}
-
         x = self.norm(x)
         if self.head_mean_after:
             x = self.head(x)
@@ -1143,12 +997,9 @@ class ViT(VisionModel):
             if return_embeddings:
                 result['embeddings'] = x
             x = self.head(x)
-
         result['tags'] = x
-
         if return_loss:
             result['loss'] = self.calculate_loss(result, batch, pos_weight)
-
         return result
 
     def calculate_loss(self, preds, batch, pos_weight):
@@ -1165,7 +1016,6 @@ class ViT(VisionModel):
             # Support old models which included 3 rating and 6 score dimensions
             state_dict['head.weight'] = state_dict['head.weight'][:self.n_tags]
             state_dict['head.bias'] = state_dict['head.bias'][:self.n_tags]
-
         self.load_state_dict(state_dict)
 
 
@@ -1189,15 +1039,17 @@ def predict(image: Image.Image):
     if model is None:
         folder = huggingface_hub.snapshot_download(MODEL_REPO, cache_dir=shared.opts.hfcache_dir)
         model = VisionModel.load_model(folder)
+        model = model.to(device=devices.device, dtype=devices.dtype)
         model.eval()
         with open(os.path.join(folder, 'top_tags.txt'), 'r', encoding='utf8') as f:
             tags = [line.strip() for line in f.readlines() if line.strip()]
         shared.log.info(f'Interrogate: type=vlm model="JoyCaption" repo="{MODEL_REPO}" tags={len(tags)}')
-    image_tensor = prepare_image(image, model.image_size)
-    batch = { 'image': image_tensor.unsqueeze(0) }
-    with torch.amp.autocast_mode.autocast('cpu', enabled=True), devices.inference_context():
-        preds = model(batch)
+    image_tensor = prepare_image(image, model.image_size).unsqueeze(0).to(device=devices.device, dtype=devices.dtype)
+    model = model.to(devices.device)
+    with devices.inference_context():
+        preds = model({ 'image': image_tensor })
         tag_preds = preds['tags'].sigmoid().cpu()
+    model = model.to(devices.cpu)
     scores = {tags[i]: tag_preds[0][i] for i in range(len(tags))}
     if shared.opts.interrogate_score:
         predicted_tags = [f'{tag}:{score:.2f}' for tag, score in scores.items() if score > THRESHOLD]

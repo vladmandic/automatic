@@ -11,6 +11,7 @@ We're back with another update with over 50 commits!
 - A lot of [outpainting](https://vladmandic.github.io/sdnext-docs/Outpaint/) goodies  
 - Support for new models: [AlphaVLLM Lumina 2](https://github.com/Alpha-VLLM/Lumina-Image-2.0) and [Ostris Flex.1-Alpha](https://huggingface.co/ostris/Flex.1-alpha)  
 - And new **Mixture-of-Diffusers** regional tiling pipeline  
+- Following last weeks **interrogate/captioning** rewrite, added **JoyTag** and **JoyCaption** to list of supported models  
 - Some changes to **prompt parsing** to allow more control as well as more flexibility when mouting SDNext server to custom URL  
 - Of course, cumulative fixes...
 
@@ -50,6 +51,10 @@ We're back with another update with over 50 commits!
   - [Automatic Color Inpaint]  
     Automatically creates mask based on selected color and triggers inpaint  
     simply select in *scripts -> automatic color inpaint* when in img2img mode  
+- **Interrogate/Captioning**
+  - [JoyTag](https://huggingface.co/fancyfeast/joytag)
+  - [JoyCaption](https://huggingface.co/fancyfeast/llama-joycaption-alpha-two-hf-llava)  
+    *note*: this is a very large model based on LLama 3.1
 - **Docker** 
   - updated **CUDA** receipe to `torch==2.6.0` with `cuda==12.6` and add prebuilt image  
   - added **ROCm** receipe and prebuilt image  

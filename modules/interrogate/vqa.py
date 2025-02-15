@@ -37,7 +37,8 @@ vlm_models = {
     "Microsoft GIT VQA Large": "microsoft/git-large-vqav2", # 1.6GB
     "ToriiGate 0.4 2B": "Minthy/ToriiGate-v0.4-2B",
     "ViLT Base": "dandelin/vilt-b32-finetuned-vqa", # 0.5GB
-    "JoyTag": "fancyfeast/joytag",
+    "JoyCaption": "fancyfeast/llama-joycaption-alpha-two-hf-llava", # 0.7GB
+    "JoyTag": "fancyfeast/joytag", # 17.4GB
 }
 vlm_prompts = [
     '<CAPTION>',
@@ -348,6 +349,9 @@ def interrogate(question, image, model_name):
         elif 'joytag' in vqa_model.lower():
             from modules.interrogate import joytag
             answer = joytag.predict(image)
+        elif 'joycaption' in vqa_model.lower():
+            from modules.interrogate import joycaption
+            answer = joycaption.predict(question, image)
         else:
             answer = 'unknown model'
     except Exception as e:
