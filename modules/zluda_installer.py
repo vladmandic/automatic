@@ -96,9 +96,12 @@ def get_blaslt_enabled() -> bool:
 
 def link_or_copy(src: os.PathLike, dst: os.PathLike):
     try:
-        os.link(src, dst)
+        os.symlink(src, dst)
     except Exception:
-        shutil.copyfile(src, dst)
+        try:
+            os.link(src, dst)
+        except Exception:
+            shutil.copyfile(src, dst)
 
 
 def make_copy() -> None:
