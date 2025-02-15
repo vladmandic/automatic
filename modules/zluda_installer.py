@@ -20,7 +20,6 @@ DLL_MAPPING = {
 HIPSDK_TARGETS = ['rocblas.dll', 'rocsolver.dll', 'hipfft.dll',]
 ZLUDA_TARGETS = ('nvcuda.dll', 'nvml.dll',)
 
-nvcuda: Optional[ctypes.WinDLL] = None
 hipBLASLt_available = False
 MIOpen_available = False
 
@@ -34,12 +33,14 @@ def set_default_agent(agent: rocm.Agent):
     global default_agent # pylint: disable=global-statement
     default_agent = agent
 
-    global nvcuda # pylint: disable=global-statement
-    if nvcuda is None:
+    is_nightly = False
+    try:
         nvcuda = ctypes.windll.LoadLibrary(os.path.join(path, 'nvcuda.dll'))
         nvcuda.zluda_get_nightly_flag.restype = ctypes.c_int
         nvcuda.zluda_get_nightly_flag.argtypes = []
-    is_nightly = nvcuda.zluda_get_nightly_flag() == 1
+        is_nightly = nvcuda.zluda_get_nightly_flag() == 1
+    except Exception:
+        pass
 
     global hipBLASLt_available, hipBLASLt_enabled # pylint: disable=global-statement
     hipBLASLt_available = is_nightly and os.path.exists(rocm.blaslt_tensile_libpath)
@@ -49,17 +50,8 @@ def set_default_agent(agent: rocm.Agent):
     MIOpen_available = is_nightly and agent.gfx_version in (0x908, 0x90a, 0x940, 0x941, 0x942, 0x1030, 0x1100, 0x1101, 0x1102,)
 
 
-def is_reinstall_needed() -> bool: # ZLUDA<3.8.8
-    if not os.path.exists(path):
-        return False
-    try:
-        global nvcuda # pylint: disable=global-statement
-        if nvcuda is None:
-            nvcuda = ctypes.windll.LoadLibrary(os.path.join(path, 'nvcuda.dll'))
-        nvcuda.zluda_get_nightly_flag()
-        return False
-    except Exception:
-        return True
+def is_reinstall_needed() -> bool: # ZLUDA<3.8.7
+    return not os.path.exists(os.path.join(path, 'cufftw.dll'))
 
 
 def install() -> None:
