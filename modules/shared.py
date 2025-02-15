@@ -910,12 +910,12 @@ options_templates.update(options_section(('control', "Control Options"), {
 options_templates.update(options_section(('interrogate', "Interrogate"), {
     "interrogate_default_type": OptionInfo("OpenCLiP", "Default type", gr.Radio, {"choices": ["OpenCLiP", "VLM", "DeepBooru"]}),
     "interrogate_offload": OptionInfo(True, "Interrogate: offload models "),
+    "interrogate_score": OptionInfo(False, "Include scores in results when available"),
 
     "interrogate_clip_sep": OptionInfo("<h2>OpenCLiP</h2>", "", gr.HTML),
     "interrogate_clip_model": OptionInfo("ViT-L-14/openai", "CLiP: default model", gr.Dropdown, lambda: {"choices": get_clip_models()}, refresh=refresh_clip_models),
     "interrogate_clip_mode": OptionInfo(caption_types[0], "CLiP: default mode", gr.Dropdown, {"choices": caption_types}),
     "interrogate_blip_model": OptionInfo(list(caption_models)[0], "CLiP: default captioner", gr.Dropdown, {"choices": list(caption_models)}),
-    "interrogate_clip_score": OptionInfo(False, "CLiP: include scores in results"),
     "interrogate_clip_num_beams": OptionInfo(1, "CLiP: num beams", gr.Slider, {"minimum": 1, "maximum": 16, "step": 1}),
     "interrogate_clip_min_length": OptionInfo(32, "CLiP: min length", gr.Slider, {"minimum": 1, "maximum": 128, "step": 1}),
     "interrogate_clip_max_length": OptionInfo(74, "CLiP: max length", gr.Slider, {"minimum": 1, "maximum": 512, "step": 1}),

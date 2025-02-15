@@ -213,8 +213,8 @@ class InterrogateModels:
                 for _name, topn, items in self.categories():
                     matches = self.rank(image_features, items, top_count=topn)
                     for match, score in matches:
-                        if shared.opts.interrogate_clip_score:
-                            res += f", ({match}:{score/100:.3f})"
+                        if shared.opts.interrogate_score:
+                            res += f", ({match}:{score/100:.2f})"
                         else:
                             res += f", {match}"
         except Exception as e:
