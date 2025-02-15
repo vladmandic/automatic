@@ -210,7 +210,7 @@ else:
     is_wsl: bool = os.environ.get('WSL_DISTRO_NAME', 'unknown' if spawn('wslpath -w /') else None) is not None
     version_torch = get_version_torch()
 path = find()
-blaslt_tensile_libpath = None
+blaslt_tensile_libpath = ""
 is_installed = False
 version = None
 if path is not None:
