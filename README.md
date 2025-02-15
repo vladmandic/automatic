@@ -36,6 +36,7 @@ All individual features are not listed here, instead check [ChangeLog](CHANGELOG
 - Optimized processing with latest `torch` developments with built-in support for model compile, quantize and compress  
   Compile backends: *Triton | StableFast | DeepCache | OneDiff | TeaCache | etc.*  
   Quantization and compression methods: *BitsAndBytes | TorchAO | Optimum-Quanto | NNCF*  
+- **Interrogate/Captioning** with 150+ **OpenCLiP** models and 20+ built-in **VLMs**  
 - Built-in queue management  
 - Built in installer with automatic updates and dependency management  
 - Mobile compatible  
