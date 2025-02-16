@@ -38,6 +38,7 @@ We're back with another update with over 50 commits!
     - [localization](https://vladmandic.github.io/sdnext-docs/Locale/) documentation  
   - **UI**  
     - force browser cache-invalidate on page load  
+    - configurable request timeout  
 - **Docs**  
   - New [Outpaint](https://vladmandic.github.io/sdnext-docs/Outpaint/) step-by-step guide  
   - Updated [Docker](https://github.com/vladmandic/sdnext/wiki/Docker) guide  

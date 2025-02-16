@@ -1,5 +1,3 @@
-const timeout = 30000;
-
 const scrollBottom = async (el) => {
   const lastChild = el.lastElementChild;
   if (lastChild) lastChild.scrollIntoView({ behavior: 'smooth' });
@@ -37,7 +35,7 @@ const error = async (...msg) => {
   // if (!txt.includes('asctime') && !txt.includes('xhr.')) xhrPost('/sdapi/v1/log', { error: txt }); // eslint-disable-line no-use-before-define
 };
 
-const xhrInternal = (xhrObj, data, handler = undefined, errorHandler = undefined, ignore = false, serverTimeout = timeout) => {
+const xhrInternal = (xhrObj, data, handler = undefined, errorHandler = undefined, ignore = false, serverTimeout = opts.ui_request_timeout || 30000) => {
   const err = (msg) => {
     if (!ignore) {
       error(`${msg}: state=${xhrObj.readyState} status=${xhrObj.status} response=${xhrObj.responseText}`);
@@ -46,7 +44,7 @@ const xhrInternal = (xhrObj, data, handler = undefined, errorHandler = undefined
   };
 
   xhrObj.setRequestHeader('Content-Type', 'application/json');
-  xhrObj.timeout = timeout;
+  xhrObj.timeout = opts.ui_request_timeout || 30000;
   xhrObj.ontimeout = () => err('xhr.ontimeout');
   xhrObj.onerror = () => err('xhr.onerror');
   xhrObj.onabort = () => err('xhr.onabort');
@@ -68,14 +66,14 @@ const xhrInternal = (xhrObj, data, handler = undefined, errorHandler = undefined
   xhrObj.send(req);
 };
 
-const xhrGet = (url, data, handler = undefined, errorHandler = undefined, ignore = false, serverTimeout = timeout) => {
+const xhrGet = (url, data, handler = undefined, errorHandler = undefined, ignore = false, serverTimeout = opts.ui_request_timeout || 30000) => {
   const xhr = new XMLHttpRequest();
   const args = Object.keys(data).map((k) => `${encodeURIComponent(k)}=${encodeURIComponent(data[k])}`).join('&');
   xhr.open('GET', `${url}?${args}`, true);
   xhrInternal(xhr, data, handler, errorHandler, ignore, serverTimeout);
 };
 
-function xhrPost(url, data, handler = undefined, errorHandler = undefined, ignore = false, serverTimeout = timeout) {
+function xhrPost(url, data, handler = undefined, errorHandler = undefined, ignore = false, serverTimeout = opts.ui_request_timeout || 30000) {
   const xhr = new XMLHttpRequest();
   xhr.open('POST', url, true);
   xhrInternal(xhr, data, handler, errorHandler, ignore, serverTimeout);

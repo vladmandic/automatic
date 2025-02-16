@@ -799,6 +799,7 @@ options_templates.update(options_section(('ui', "User Interface"), {
     "aspect_ratios": OptionInfo("1:1, 4:3, 3:2, 16:9, 16:10, 21:9, 2:3, 3:4, 9:16, 10:16, 9:21", "Allowed aspect ratios"),
     "logmonitor_show": OptionInfo(True, "Show log view"),
     "logmonitor_refresh_period": OptionInfo(5000, "Log view update period", gr.Slider, {"minimum": 0, "maximum": 30000, "step": 25}),
+    "ui_request_timeout": OptionInfo(30000, "UI request timeout", gr.Slider, {"minimum": 1000, "maximum": 120000, "step": 10}),
     "motd": OptionInfo(False, "Show MOTD"),
     "compact_view": OptionInfo(False, "Compact view"),
     "return_grid": OptionInfo(True, "Show grid in results"),
