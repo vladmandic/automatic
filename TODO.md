@@ -5,7 +5,6 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 ## Future Candidates
 
 - Redesign postprocessing  
-- Native FP8 compute  
 - Flux NF4 loader: <https://github.com/huggingface/diffusers/issues/9996>  
 - IPAdapter negative: <https://github.com/huggingface/diffusers/discussions/7167>  
 - Control API enhance scripts compatibility  
