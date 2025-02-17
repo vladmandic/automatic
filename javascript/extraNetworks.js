@@ -515,5 +515,6 @@ async function setupExtraNetworks() {
   registerPrompt('img2img', 'img2img_neg_prompt');
   registerPrompt('control', 'control_prompt');
   registerPrompt('control', 'control_neg_prompt');
-  log('initNetworks');
+  log('initNetworks', window.opts.extra_networks_card_size);
+  document.documentElement.style.setProperty('--card-size', `${window.opts.extra_networks_card_size}px`);
 }

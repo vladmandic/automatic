@@ -6,6 +6,7 @@
   --color-info: #D4D4D4;
   --color-warning: #FF9900;
   --color-error: #BE0000;
+  --card-size: 160px;
 }
 a { font-weight: bold; cursor: pointer; }
 h2 { margin-top: 1em !important; font-size: var(--text-xxl) !important; }

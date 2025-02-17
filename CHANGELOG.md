@@ -38,6 +38,9 @@ We're back with another update with over 50 commits!
   - **UI**  
     - force browser cache-invalidate on page load  
     - configurable request timeout  
+    - modernui improve gallery styling  
+    - modernui improve networks styling  
+    - modernui support variable card size  
 - **Docs**  
   - New [Outpaint](https://vladmandic.github.io/sdnext-docs/Outpaint/) step-by-step guide  
   - Updated [Docker](https://github.com/vladmandic/sdnext/wiki/Docker) guide  

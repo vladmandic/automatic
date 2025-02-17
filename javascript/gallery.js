@@ -23,19 +23,20 @@ class GalleryFolder extends HTMLElement {
   }
 
   connectedCallback() {
-    const style = document.createElement('style');
-    style.textContent = `
-      .gallery-folder {
-        cursor: pointer;
-        padding: 8px 6px 8px 6px;
-      }
-      .gallery-folder:hover {
-        background-color: var(--button-primary-background-fill-hover);
-      }
-      .gallery-folder-selected {
-        background-color: var(--button-primary-background-fill);
-      }
-    `;
+    const style = document.createElement('style'); // silly but necessasry since we're inside shadowdom
+    if (window.opts.theme_type === 'Modern') {
+      style.textContent = `
+        .gallery-folder { cursor: pointer; padding: 8px 6px 8px 6px; background-color: var(--sd-secondary-color); }
+        .gallery-folder:hover { background-color: var(--button-primary-background-fill-hover); }
+        .gallery-folder-selected { background-color: var(--sd-button-selected-color); color: var(--sd-button-selected-text-color); }
+      `;
+    } else {
+      style.textContent = `
+        .gallery-folder { cursor: pointer; padding: 8px 6px 8px 6px; }
+        .gallery-folder:hover { background-color: var(--button-primary-background-fill-hover); }
+        .gallery-folder-selected { background-color: var(--button-primary-background-fill); }
+      `;
+    }
     this.shadow.appendChild(style);
     const div = document.createElement('div');
     div.className = 'gallery-folder';
