@@ -227,6 +227,8 @@ class BatchWriter:
 
     def add(self, file, prompt):
         txt_file = os.path.splitext(file)[0] + ".txt"
+        if self.mode == 'a':
+            prompt = '\n' + prompt
         with open(os.path.join(self.folder, txt_file), self.mode, encoding='utf-8') as f:
             f.write(prompt)
 
@@ -339,14 +341,15 @@ def interrogate_image(image, clip_model, blip_model, mode):
     return prompt
 
 
-def interrogate_batch(batch_files, batch_folder, batch_str, clip_model, blip_model, mode, write, append):
+def interrogate_batch(batch_files, batch_folder, batch_str, clip_model, blip_model, mode, write, append, recursive):
     files = []
     if batch_files is not None:
         files += [f.name for f in batch_files]
     if batch_folder is not None:
         files += [f.name for f in batch_folder]
     if batch_str is not None and len(batch_str) > 0 and os.path.exists(batch_str) and os.path.isdir(batch_str):
-        files += [os.path.join(batch_str, f) for f in os.listdir(batch_str) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.webp'))]
+        from modules.files_cache import list_files
+        files += list(list_files(batch_str, ext_filter=['.png', '.jpg', '.jpeg', '.webp'], recursive=recursive))
     if len(files) == 0:
         shared.log.warning('Interrogate batch: type=clip no images')
         return ''
@@ -358,7 +361,7 @@ def interrogate_batch(batch_files, batch_folder, batch_str, clip_model, blip_mod
         file_mode = 'w' if not append else 'a'
         writer = BatchWriter(os.path.dirname(files[0]), mode=file_mode)
     import rich.progress as rp
-    pbar = rp.Progress(rp.TextColumn('[cyan]Caption:'), rp.BarColumn(), rp.TaskProgressColumn(), rp.TimeRemainingColumn(), rp.TimeElapsedColumn(), rp.TextColumn('[cyan]{task.description}'), console=shared.console)
+    pbar = rp.Progress(rp.TextColumn('[cyan]Caption:'), rp.BarColumn(), rp.MofNCompleteColumn(), rp.TaskProgressColumn(), rp.TimeRemainingColumn(), rp.TimeElapsedColumn(), rp.TextColumn('[cyan]{task.description}'), console=shared.console)
     with pbar:
         task = pbar.add_task(total=len(files), description='starting...')
         for file in files:

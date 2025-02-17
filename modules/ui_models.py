@@ -20,7 +20,6 @@ extra_ui = []
 
 def create_ui():
     dummy_component = gr.Label(visible=False)
-
     with gr.Row(elem_id="models_tab"):
         with gr.Column(elem_id='models_output_container', scale=1):
             # models_output = gr.Text(elem_id="models_output", value="", show_label=False)

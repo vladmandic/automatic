@@ -1,13 +1,13 @@
 # Change Log for SD.Next
 
-## Update for 2025-02-16
+## Update for 2025-02-17
 
 ### TODO
 
 - VLM ModernUI support  
 - CogView4  
 
-### Highlight for 2025-02-16
+### Highlight for 2025-02-17
 
 We're back with another update with over 50 commits!  
 - Starting with massive UI update with full [localization](https://vladmandic.github.io/sdnext-docs/Locale/) for 8 languages 
@@ -24,7 +24,7 @@ We're back with another update with over 50 commits!
 
 *...and more* - see [changelog](https://github.com/vladmandic/sdnext/blob/dev/CHANGELOG.md) for full details!  
 
-### Details for 2025-02-16
+### Details for 2025-02-17
 
 - **User Interface**  
   - **Hints**  
@@ -72,6 +72,7 @@ We're back with another update with over 50 commits!
   - Batch processing: VLM and CLiP  
     for example, can be used to caption your training dataset in one go  
     add option to append to captions file, can be used to run multiple captioning models in sequence  
+    add option to run recursively on all subfolders  
     add progress bar  
   - Add additional VLM models:  
     [JoyTag](https://huggingface.co/fancyfeast/joytag)  

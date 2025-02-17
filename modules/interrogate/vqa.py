@@ -457,7 +457,7 @@ def interrogate(question, prompt, image, model_name, quiet:bool=False):
     return answer
 
 
-def batch(model_name, batch_files, batch_folder, batch_str, question, prompt, write, append):
+def batch(model_name, batch_files, batch_folder, batch_str, question, prompt, write, append, recursive):
     class BatchWriter:
         def __init__(self, folder, mode='w'):
             self.folder = folder
@@ -467,6 +467,8 @@ def batch(model_name, batch_files, batch_folder, batch_str, question, prompt, wr
 
         def add(self, file, prompt):
             txt_file = os.path.splitext(file)[0] + ".txt"
+            if self.mode == 'a':
+                prompt = '\n' + prompt
             with open(os.path.join(self.folder, txt_file), self.mode, encoding='utf-8') as f:
                 f.write(prompt)
 
@@ -480,7 +482,8 @@ def batch(model_name, batch_files, batch_folder, batch_str, question, prompt, wr
     if batch_folder is not None:
         files += [f.name for f in batch_folder]
     if batch_str is not None and len(batch_str) > 0 and os.path.exists(batch_str) and os.path.isdir(batch_str):
-        files += [os.path.join(batch_str, f) for f in os.listdir(batch_str) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.webp'))]
+        from modules.files_cache import list_files
+        files += list(list_files(batch_str, ext_filter=['.png', '.jpg', '.jpeg', '.webp'], recursive=recursive))
     if len(files) == 0:
         shared.log.warning('Interrogate batch: type=vlm no images')
         return ''
@@ -492,7 +495,7 @@ def batch(model_name, batch_files, batch_folder, batch_str, question, prompt, wr
     orig_offload = shared.opts.interrogate_offload
     shared.opts.interrogate_offload = False
     import rich.progress as rp
-    pbar = rp.Progress(rp.TextColumn('[cyan]Caption:'), rp.BarColumn(), rp.TaskProgressColumn(), rp.TimeRemainingColumn(), rp.TimeElapsedColumn(), rp.TextColumn('[cyan]{task.description}'), console=shared.console)
+    pbar = rp.Progress(rp.TextColumn('[cyan]Caption:'), rp.BarColumn(), rp.MofNCompleteColumn(), rp.TaskProgressColumn(), rp.TimeRemainingColumn(), rp.TimeElapsedColumn(), rp.TextColumn('[cyan]{task.description}'), console=shared.console)
     with pbar:
         task = pbar.add_task(total=len(files), description='starting...')
         for file in files:
