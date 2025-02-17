@@ -37,7 +37,7 @@ card_full = '''
             <span class='details' title="Get details" onclick="showCardDetails(event)">&#x1f6c8;</span>
             <div class='additional'><ul></ul></div>
         </div>
-        <img class='preview' src='{preview}' style='width: {width}px; height: {height}px; object-fit: {fit}' loading='lazy'></img>
+        <img class='preview' src='{preview}' style='width: {width}; height: {height}; object-fit: {fit}' loading='lazy'></img>
     </div>
 '''
 card_list = '''
