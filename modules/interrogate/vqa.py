@@ -7,7 +7,7 @@ import torch
 import transformers
 import transformers.dynamic_module_utils
 from PIL import Image
-from modules import shared, devices, errors
+from modules import shared, devices, errors, sd_models
 
 processor = None
 model = None
@@ -37,6 +37,9 @@ vlm_models = {
     "Google PaliGemma 2 3B": "google/paligemma2-3b-pt-224",
     "JoyCaption": "fancyfeast/llama-joycaption-alpha-two-hf-llava", # 0.7GB
     "JoyTag": "fancyfeast/joytag", # 17.4GB
+    "AIDC Ovis2 1B": "AIDC-AI/Ovis2-1B",
+    "AIDC Ovis2 2B": "AIDC-AI/Ovis2-2B",
+    "AIDC Ovis2 4B": "AIDC-AI/Ovis2-4B",
     # "DeepSeek VL2 Tiny": "deepseek-ai/deepseek-vl2-tiny", # broken
     # "nVidia Eagle 2 1B": "nvidia/Eagle2-1B", # not compatible with latest transformers
 }
@@ -74,7 +77,7 @@ def clean(response, question):
         response = json.dumps(response)
     if isinstance(response, list):
         response = response[0]
-    question = question.replace('<', '').replace('>', '')
+    question = question.replace('<', '').replace('>', '').replace('_', ' ')
     if question in response:
         response = response.split(question, 1)[1]
     response = response.replace('\n', '').replace('\r', '').replace('\t', '').strip()
@@ -110,9 +113,7 @@ def qwen(question: str, image: Image.Image, repo: str = None):
         processor = transformers.AutoProcessor.from_pretrained(repo, cache_dir=shared.opts.hfcache_dir)
         loaded = repo
     model = model.to(devices.device, devices.dtype)
-    if len(question) < 2:
-        question = "Describe the image."
-    question = question.replace('<', '').replace('>', '')
+    question = question.replace('<', '').replace('>', '').replace('_', ' ')
     conversation = [
         {
             "role": "system",
@@ -152,9 +153,7 @@ def paligemma(question: str, image: Image.Image, repo: str = None):
         model = transformers.PaliGemmaForConditionalGeneration.from_pretrained(repo, cache_dir=shared.opts.hfcache_dir, torch_dtype=devices.dtype)
         loaded = repo
     model = model.to(devices.device, devices.dtype)
-    if len(question) < 2:
-        question = "Describe the image."
-    question = question.replace('<', '').replace('>', '')
+    question = question.replace('<', '').replace('>', '').replace('_', ' ')
     model_inputs = processor(text=question, images=image, return_tensors="pt").to(devices.device, devices.dtype)
     input_len = model_inputs["input_ids"].shape[-1]
     with devices.inference_context():
@@ -164,6 +163,45 @@ def paligemma(question: str, image: Image.Image, repo: str = None):
         )
     generation = generation[0][input_len:]
     response = processor.decode(generation, skip_special_tokens=True)
+    return response
+
+
+def ovis(question: str, image: Image.Image, repo: str = None):
+    try:
+        import flash_attn # pylint: disable=unused-import
+    except Exception:
+        shared.log.error(f'Interrogate: vlm="{repo}" flash-attn is not available')
+        return ''
+    global model, loaded # pylint: disable=global-statement
+    if model is None or loaded != repo:
+        shared.log.debug(f'Interrogate load: vlm="{repo}"')
+        model = transformers.AutoModelForCausalLM.from_pretrained(repo, torch_dtype=devices.dtype, multimodal_max_length=32768, trust_remote_code=True)
+        loaded = repo
+    model = model.to(devices.device, devices.dtype)
+    text_tokenizer = model.get_text_tokenizer()
+    visual_tokenizer = model.get_visual_tokenizer()
+    max_partition = 9
+    question = question.replace('<', '').replace('>', '').replace('_', ' ')
+    question = f'<image>\n{question}'
+    _prompt, input_ids, pixel_values = model.preprocess_inputs(question, [image], max_partition=max_partition)
+    attention_mask = torch.ne(input_ids, text_tokenizer.pad_token_id)
+    input_ids = input_ids.unsqueeze(0).to(device=model.device)
+    attention_mask = attention_mask.unsqueeze(0).to(device=model.device)
+    if pixel_values is not None:
+        pixel_values = pixel_values.to(dtype=visual_tokenizer.dtype, device=visual_tokenizer.device)
+    pixel_values = [pixel_values]
+    with devices.inference_context():
+        output_ids = model.generate(
+            input_ids,
+            pixel_values=pixel_values,
+            attention_mask=attention_mask,
+            repetition_penalty=None,
+            eos_token_id=model.generation_config.eos_token_id,
+            pad_token_id=text_tokenizer.pad_token_id,
+            use_cache=True,
+            **get_kwargs())
+        response = text_tokenizer.decode(output_ids[0], skip_special_tokens=True)
+        print(f'Output:\n{response}')
     return response
 
 
@@ -180,9 +218,7 @@ def smol(question: str, image: Image.Image, repo: str = None):
         processor = transformers.AutoProcessor.from_pretrained(repo, cache_dir=shared.opts.hfcache_dir)
         loaded = repo
     model.to(devices.device, devices.dtype)
-    if len(question) < 2:
-        question = "Describe the image."
-    question = question.replace('<', '').replace('>', '')
+    question = question.replace('<', '').replace('>', '').replace('_', ' ')
     conversation = [
         {
             "role": "system",
@@ -298,9 +334,7 @@ def moondream(question: str, image: Image.Image, repo: str = None):
         loaded = repo
         model.eval()
     model.to(devices.device, devices.dtype)
-    if len(question) < 2:
-        question = "Describe the image."
-    question = question.replace('<', '').replace('>', '')
+    question = question.replace('<', '').replace('>', '').replace('_', ' ')
     encoded = model.encode_image(image)
     with devices.inference_context():
         response = model.answer_question(encoded, question, processor)
@@ -331,7 +365,6 @@ def florence(question: str, image: Image.Image, repo: str = None, revision: str 
         task = question.split('>', 1)[0] + '>'
     else:
         task = '<MORE_DETAILED_CAPTION>'
-        # question = task + question
     inputs = processor(text=task, images=image, return_tensors="pt")
     input_ids = inputs['input_ids'].to(devices.device)
     pixel_values = inputs['pixel_values'].to(devices.device, devices.dtype)
@@ -348,7 +381,7 @@ def florence(question: str, image: Image.Image, repo: str = None, revision: str 
 
 def interrogate(question, prompt, image, model_name, quiet:bool=False):
     if not quiet:
-        shared.state.begin('Caption')
+        shared.state.begin('Interrogate')
     t0 = time.time()
     if isinstance(image, list):
         image = image[0] if len(image) > 0 else None
@@ -362,6 +395,10 @@ def interrogate(question, prompt, image, model_name, quiet:bool=False):
         image = image.convert('RGB')
     if prompt is not None and len(prompt) > 0:
         question = prompt
+    if len(question) < 2:
+        question = "Describe the image."
+    if shared.native and shared.sd_loaded:
+        sd_models.apply_balanced_offload(shared.sd_model)
     from modules import modelloader
     modelloader.hf_login()
     try:
@@ -402,6 +439,8 @@ def interrogate(question, prompt, image, model_name, quiet:bool=False):
             answer = deepseek.predict(question, image, vqa_model)
         elif 'paligemma' in vqa_model.lower():
             answer = paligemma(question, image, vqa_model)
+        elif 'ovis' in vqa_model.lower():
+            answer = ovis(question, image, vqa_model)
         else:
             answer = 'unknown model'
     except Exception as e:
@@ -443,16 +482,16 @@ def batch(model_name, batch_files, batch_folder, batch_str, question, prompt, wr
     if batch_str is not None and len(batch_str) > 0 and os.path.exists(batch_str) and os.path.isdir(batch_str):
         files += [os.path.join(batch_str, f) for f in os.listdir(batch_str) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.webp'))]
     if len(files) == 0:
-        shared.log.error('Interrogate batch no images')
+        shared.log.warning('Interrogate batch: type=vlm no images')
         return ''
-    shared.state.begin('Caption batch')
+    shared.state.begin('Interrogate batch')
     prompts = []
     if write:
         mode = 'w' if not append else 'a'
         writer = BatchWriter(os.path.dirname(files[0]), mode=mode)
-    import rich.progress as rp
     orig_offload = shared.opts.interrogate_offload
     shared.opts.interrogate_offload = False
+    import rich.progress as rp
     pbar = rp.Progress(rp.TextColumn('[cyan]Caption:'), rp.BarColumn(), rp.TaskProgressColumn(), rp.TimeRemainingColumn(), rp.TimeElapsedColumn(), rp.TextColumn('[cyan]{task.description}'), console=shared.console)
     with pbar:
         task = pbar.add_task(total=len(files), description='starting...')

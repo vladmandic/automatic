@@ -1,14 +1,12 @@
 # Change Log for SD.Next
 
-## Update for 2025-02-14
+## Update for 2025-02-16
 
 ### TODO
 
 - VLM ModernUI support
-- CLiP Move settings
-- CLiP Batch progress bar
 
-### Highlight for 2025-02-14
+### Highlight for 2025-02-16
 
 We're back with another update with over 50 commits!  
 - Starting with massive UI update with full [localization](https://vladmandic.github.io/sdnext-docs/Locale/) for 8 languages 
@@ -19,13 +17,13 @@ We're back with another update with over 50 commits!
 - And new **Mixture-of-Diffusers** regional tiling pipeline  
 - Follow-up to last weeks **interrogate/captioning** rewrite  
   now with redesigned captioning UI and  
-  added **JoyTag**, **JoyCaption**, **Google PaliGemma**, **ToriiGate 0.4** to list of supported models  
+  added **JoyTag**, **JoyCaption**, **PaliGemma**, **ToriiGate**, **Ovis2** to list of supported models  
 - Some changes to **prompt parsing** to allow more control as well as more flexibility when mouting SDNext server to custom URL  
 - Of course, cumulative fixes...
 
 *...and more* - see [changelog](https://github.com/vladmandic/sdnext/blob/dev/CHANGELOG.md) for full details!  
 
-### Details for 2025-02-14
+### Details for 2025-02-16
 
 - **User Interface**  
   - **Hints**  
@@ -64,19 +62,25 @@ We're back with another update with over 50 commits!
   - Redesigned captioning UI  
     split from Process tab into separate tab  
     split `clip` vs `vlm` models processing  
-    direct *send-to* buttons on all tabs  
-  - Add VLM advanced params: max-tokens, num-beams, temperature, top-k, top-p, do-sample  
-    params are saved in `config.json` and used when using quick interrogate  
+    direct *send-to* buttons on all tabs: txt/img/ctrl->process/caption, process/caption->txt/img/ctrl  
+  - Advanced params:
+    VLM: *max-tokens, num-beams, temperature, top-k, top-p, do-sample*  
+    CLiP: *min-length, max-length, chunk-size, min-flavors, max-flavors, flavor-count, num-beams*  
+    params are auto-saved in `config.json` and used when using quick interrogate  
     params that are set to 0 mean use model defaults  
-  - Add VLM batch processing  
+  - Batch processing: VLM and CLiP  
     for example, can be used to caption your training dataset in one go  
     add option to append to captions file, can be used to run multiple captioning models in sequence  
     add progress bar  
   - Add additional VLM models:  
     [JoyTag](https://huggingface.co/fancyfeast/joytag)  
     [JoyCaption 2](https://huggingface.co/fancyfeast/llama-joycaption-alpha-two-hf-llava)  
-    [Google PaliGemma 2](https://huggingface.co/google/paligemma2-3b-pt-224)  
-    [ToriiGate 0.4 7B](https://huggingface.co/Minthy/ToriiGate-v0.4-7B)  
+    [Google PaliGemma 2](https://huggingface.co/google/paligemma2-3b-pt-224) 3B  
+    [ToriiGate 0.4](https://huggingface.co/Minthy/ToriiGate-v0.4-7B) 7B  
+    [AIDC Ovis2](https://huggingface.co/AIDC-AI/Ovis2-1B) 1B/2B/4B  
+  - *Note* some models require `flash-attn` to be installed  
+    due to binary/build dependencies, it should not be done automatically,  
+    see [flash-attn](https://github.com/Dao-AILab/flash-attention) for installation instructions  
 - **Docker**  
   - updated **CUDA** receipe to `torch==2.6.0` with `cuda==12.6` and add prebuilt image  
   - added **ROCm** receipe and prebuilt image  
