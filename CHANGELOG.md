@@ -4,7 +4,6 @@
 
 ### TODO
 
-- VLM ModernUI support  
 - CogView4  
 
 ### Highlight for 2025-02-17
