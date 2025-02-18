@@ -40,6 +40,7 @@ vlm_models = {
     "AIDC Ovis2 1B": "AIDC-AI/Ovis2-1B",
     "AIDC Ovis2 2B": "AIDC-AI/Ovis2-2B",
     "AIDC Ovis2 4B": "AIDC-AI/Ovis2-4B",
+    # "OpenGVLab InternVL 2.5 1B": "OpenGVLab/InternVL2_5-1B"
     # "DeepSeek VL2 Tiny": "deepseek-ai/deepseek-vl2-tiny", # broken
     # "nVidia Eagle 2 1B": "nvidia/Eagle2-1B", # not compatible with latest transformers
 }

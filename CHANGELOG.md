@@ -1,12 +1,8 @@
 # Change Log for SD.Next
 
-## Update for 2025-02-17
+## Update for 2025-02-18
 
-### TODO
-
-- CogView4  
-
-### Highlight for 2025-02-17
+### Highlight for 2025-02-18
 
 We're back with another update with over 50 commits!  
 - Starting with massive UI update with full [localization](https://vladmandic.github.io/sdnext-docs/Locale/) for 8 languages 
@@ -23,7 +19,7 @@ We're back with another update with over 50 commits!
 
 *...and more* - see [changelog](https://github.com/vladmandic/sdnext/blob/dev/CHANGELOG.md) for full details!  
 
-### Details for 2025-02-17
+### Details for 2025-02-18
 
 - **User Interface**  
   - **Hints**  

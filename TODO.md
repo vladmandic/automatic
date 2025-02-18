@@ -8,6 +8,7 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 - Flux NF4 loader: <https://github.com/huggingface/diffusers/issues/9996>  
 - IPAdapter negative: <https://github.com/huggingface/diffusers/discussions/7167>  
 - Control API enhance scripts compatibility  
+- CogView4  
 
 ## Code TODO
 
@@ -24,4 +25,3 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 - sana: fails when quantized (fixme)
 - support scripts via api (fixme)
 - transformer from-single-file with quant (fixme)
-- vlm: add additional models (fixme)
