@@ -5,7 +5,7 @@ import numpy as np
 import torch
 import torchvision.transforms.functional as TF
 from PIL import Image
-from modules import shared, devices, processing, sd_models, errors, sd_hijack_hypertile, processing_vae, sd_models_compile, hidiffusion, timer, modelstats, extra_networks
+from modules import shared, devices, processing, sd_models, errors, sd_hijack_hypertile, processing_vae, sd_models_compile, hidiffusion, timer, modelstats, extra_networks, ras
 from modules.processing_helpers import resize_hires, calculate_base_steps, calculate_hires_steps, calculate_refiner_steps, save_intermediate, update_sampler, is_txt2img, is_refiner_enabled, get_job_name
 from modules.processing_args import set_pipeline_args
 from modules.onnx_impl import preprocess_pipeline as preprocess_onnx_pipeline, check_parameters_changed as olive_check_parameters_changed
@@ -93,6 +93,7 @@ def process_base(p: processing.StableDiffusionProcessing):
             sd_models.move_model(shared.sd_model.transformer, devices.device)
         extra_networks.activate(p, exclude=['text_encoder', 'text_encoder_2', 'text_encoder_3'])
         hidiffusion.apply(p, shared.sd_model_type)
+        ras.apply(shared.sd_model, p)
         timer.process.record('move')
         if hasattr(shared.sd_model, 'tgate') and getattr(p, 'gate_step', -1) > 0:
             base_args['gate_step'] = p.gate_step
@@ -106,6 +107,7 @@ def process_base(p: processing.StableDiffusionProcessing):
         if hasattr(output, 'images'):
             shared.history.add(output.images, info=processing.create_infotext(p), ops=p.ops)
         timer.process.record('pipeline')
+        ras.unapply(shared.sd_model)
         hidiffusion.unapply()
         sd_models_compile.openvino_post_compile(op="base") # only executes on compiled vino models
         sd_models_compile.check_deepcache(enable=False)

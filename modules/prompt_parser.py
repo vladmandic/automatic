@@ -354,7 +354,7 @@ def parse_prompt_attention(text):
             # log.trace(f'Prompt: text="{text[m.start():m.end()]}" section="{section}" weight="{weight}"')
             if len(section) == 0:
                 continue
-            elif section.startswith('\\'):
+            if section.startswith('\\'):
                 if len(res) > 0 and text[m.start()-1] != ' ':
                     res[-1][0] += section[1:] # append literal character to the last section
                 else:

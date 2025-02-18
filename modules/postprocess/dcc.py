@@ -1,8 +1,8 @@
 import numpy as np
 
 
-def DetectDirect(A, type, k, T):
-    if type == 1:
+def DetectDirect(A, dcc_type, k, T):
+    if dcc_type == 1:
         # 45 degree diagonal direction
         t1 = abs(A[2,0]-A[0,2])
         t2 = abs(A[4,0]-A[2,2])+abs(A[2,2]-A[0,4])

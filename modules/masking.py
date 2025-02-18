@@ -408,7 +408,6 @@ def run_mask(input_image: Image.Image, input_mask: Image.Image = None, return_ty
         debug(f'Mask args legacy: blur={mask_blur} padding={mask_padding}')
     if invert is not None:
         opts.invert = invert
-    print('HERE', opts.mask_blur, mask_blur)
     if mask_blur is not None: # compatibility with old img2img values which uses px values
         opts.mask_blur = round(4 * mask_blur / size, 3)
     if mask_padding is not None: # compatibility with old img2img values which uses px values

@@ -50,13 +50,16 @@ We're back with another update with nearly 100 commits!
     result is model smaller than *Flux.1-Dev*, but with similar capabilities  
     fully supports offloading and on-the-fly quantization  
     simply select from *networks -> models -> reference*  
-- **Pipelines**  
+- **Functions**  
   - [Mixture-of-Diffusers](https://huggingface.co/posts/elismasilva/251775641926329)  
     Regional tiling type of a solution for SDXL models  
     select from *scripts -> mixture of diffusers*  
   - [Automatic Color Inpaint]  
     Automatically creates mask based on selected color and triggers inpaint  
     simply select in *scripts -> automatic color inpaint* when in img2img mode  
+  - [RAS: Region-Adaptive Sampling](https://github.com/microsoft/RAS) *experimental*  
+    Speeds up SD3.5 models by sampling only regions of interest  
+    Enable in *settings -> pipeline modifiers -> ras*  
 - **Interrogate/Captioning**  
   - Redesigned captioning UI  
     split from Process tab into separate tab  

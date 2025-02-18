@@ -20,7 +20,7 @@ vl_gpt = None
 vl_chat_processor = None
 
 
-class fake_attrdict(object):
+class fake_attrdict():
     class AttrDict(dict): # dot notation access to dictionary attributes
         __getattr__ = dict.get
         __setattr__ = dict.__setitem__

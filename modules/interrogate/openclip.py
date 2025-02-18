@@ -239,11 +239,11 @@ class BatchWriter:
 
 def update_interrogate_params():
     if ci is not None:
-        ci.caption_max_length=shared.opts.interrogate_clip_max_length,
-        ci.chunk_size=shared.opts.interrogate_clip_chunk_size,
-        ci.flavor_intermediate_count=shared.opts.interrogate_clip_flavor_count,
-        ci.clip_offload=shared.opts.interrogate_offload,
-        ci.caption_offload=shared.opts.interrogate_offload,
+        ci.caption_max_length=shared.opts.interrogate_clip_max_length
+        ci.chunk_size=shared.opts.interrogate_clip_chunk_size
+        ci.flavor_intermediate_count=shared.opts.interrogate_clip_flavor_count
+        ci.clip_offload=shared.opts.interrogate_offload
+        ci.caption_offload=shared.opts.interrogate_offload
 
 
 def get_clip_models():

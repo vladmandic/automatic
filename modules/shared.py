@@ -662,6 +662,9 @@ options_templates.update(options_section(('advanced', "Pipeline Modifiers"), {
     "linfusion_sep": OptionInfo("<h2>Batch</h2>", "", gr.HTML),
     "enable_linfusion": OptionInfo(False, "Apply LinFusion distillation on load"),
 
+    "ras_sep": OptionInfo("<h2>RAS: Region-Adaptive Sampling</h2>", "", gr.HTML),
+    "ras_enable": OptionInfo(False, "RAS enabled"),
+
     "inference_batch_sep": OptionInfo("<h2>Batch</h2>", "", gr.HTML),
     "sequential_seed": OptionInfo(True, "Batch mode uses sequential seeds"),
     "batch_frame_mode": OptionInfo(False, "Parallel process images in batch"),

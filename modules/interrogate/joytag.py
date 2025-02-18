@@ -896,7 +896,7 @@ class CNNStem(nn.Module):
             ty, line = line.split(":") if ":" in line else (line, "")
             options = line.split(",")
             options = [o.split("=") for o in options] if line else []
-            options = {k: v for k, v in options} # noqa: C416
+            options = {k: v for k, v in options} # pylint: disable=unnecessary-comprehension # noqa: C416
             if ty == 'conv':
                 layers.append(nn.Conv2d(
                     in_channels=channels,
