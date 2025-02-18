@@ -4,18 +4,18 @@
 
 ### Highlight for 2025-02-18
 
-We're back with another update with over 50 commits!  
-- Starting with massive UI update with full [localization](https://vladmandic.github.io/sdnext-docs/Locale/) for 8 languages 
+We're back with another update with nearly 100 commits!  
+- Starting with massive UI update with full [localization](https://vladmandic.github.io/sdnext-docs/Locale/) for 8 languages  
   and 100+ new [hints](https://vladmandic.github.io/sdnext-docs/Hints/)  
 - Big update to [Docker](https://vladmandic.github.io/sdnext-docs/Docker/) containers with support for all major compute platforms  
 - A lot of [outpainting](https://vladmandic.github.io/sdnext-docs/Outpaint/) goodies  
 - Support for new models: [AlphaVLLM Lumina 2](https://github.com/Alpha-VLLM/Lumina-Image-2.0) and [Ostris Flex.1-Alpha](https://huggingface.co/ostris/Flex.1-alpha)  
 - And new **Mixture-of-Diffusers** regional tiling pipeline  
 - Follow-up to last weeks **interrogate/captioning** rewrite  
-  now with redesigned captioning UI and  
-  added **JoyTag**, **JoyCaption**, **PaliGemma**, **ToriiGate**, **Ovis2** to list of supported models  
+  now with redesigned captioning UI, batch support, and much more  
+  plus **JoyTag**, **JoyCaption**, **PaliGemma**, **ToriiGate**, **Ovis2** added to list of supported models  
 - Some changes to **prompt parsing** to allow more control as well as more flexibility when mouting SDNext server to custom URL  
-- Of course, cumulative fixes...
+- Of course, cumulative fixes...  
 
 *...and more* - see [changelog](https://github.com/vladmandic/sdnext/blob/dev/CHANGELOG.md) for full details!  
 
