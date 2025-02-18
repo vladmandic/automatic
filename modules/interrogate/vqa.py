@@ -110,7 +110,10 @@ def qwen(question: str, image: Image.Image, repo: str = None):
     global processor, model, loaded # pylint: disable=global-statement
     if model is None or loaded != repo:
         shared.log.debug(f'Interrogate load: vlm="{repo}"')
-        model = transformers.Qwen2VLForConditionalGeneration.from_pretrained(repo, cache_dir=shared.opts.hfcache_dir)
+        model = transformers.Qwen2VLForConditionalGeneration.from_pretrained(
+            repo,
+            cache_dir=shared.opts.hfcache_dir
+        )
         processor = transformers.AutoProcessor.from_pretrained(repo, cache_dir=shared.opts.hfcache_dir)
         loaded = repo
     model = model.to(devices.device, devices.dtype)
@@ -151,7 +154,11 @@ def paligemma(question: str, image: Image.Image, repo: str = None):
     if model is None or loaded != repo:
         shared.log.debug(f'Interrogate load: vlm="{repo}"')
         processor = transformers.PaliGemmaProcessor.from_pretrained(repo, cache_dir=shared.opts.hfcache_dir)
-        model = transformers.PaliGemmaForConditionalGeneration.from_pretrained(repo, cache_dir=shared.opts.hfcache_dir, torch_dtype=devices.dtype)
+        model = transformers.PaliGemmaForConditionalGeneration.from_pretrained(
+            repo,
+            cache_dir=shared.opts.hfcache_dir,
+            torch_dtype=devices.dtype,
+        )
         loaded = repo
     model = model.to(devices.device, devices.dtype)
     question = question.replace('<', '').replace('>', '').replace('_', ' ')
@@ -176,7 +183,13 @@ def ovis(question: str, image: Image.Image, repo: str = None):
     global model, loaded # pylint: disable=global-statement
     if model is None or loaded != repo:
         shared.log.debug(f'Interrogate load: vlm="{repo}"')
-        model = transformers.AutoModelForCausalLM.from_pretrained(repo, torch_dtype=devices.dtype, multimodal_max_length=32768, trust_remote_code=True)
+        model = transformers.AutoModelForCausalLM.from_pretrained(
+            repo,
+            torch_dtype=devices.dtype,
+            multimodal_max_length=32768,
+            trust_remote_code=True,
+            cache_dir=shared.opts.hfcache_dir,
+        )
         loaded = repo
     model = model.to(devices.device, devices.dtype)
     text_tokenizer = model.get_text_tokenizer()
@@ -251,7 +264,10 @@ def git(question: str, image: Image.Image, repo: str = None):
     global processor, model, loaded # pylint: disable=global-statement
     if model is None or loaded != repo:
         shared.log.debug(f'Interrogate load: vlm="{repo}"')
-        model = transformers.GitForCausalLM.from_pretrained(repo, cache_dir=shared.opts.hfcache_dir)
+        model = transformers.GitForCausalLM.from_pretrained(
+            repo,
+            cache_dir=shared.opts.hfcache_dir,
+        )
         processor = transformers.GitProcessor.from_pretrained(repo, cache_dir=shared.opts.hfcache_dir)
         loaded = repo
     model.to(devices.device, devices.dtype)
@@ -273,7 +289,10 @@ def blip(question: str, image: Image.Image, repo: str = None):
     global processor, model, loaded # pylint: disable=global-statement
     if model is None or loaded != repo:
         shared.log.debug(f'Interrogate load: vlm="{repo}"')
-        model = transformers.BlipForQuestionAnswering.from_pretrained(repo, cache_dir=shared.opts.hfcache_dir)
+        model = transformers.BlipForQuestionAnswering.from_pretrained(
+            repo,
+            cache_dir=shared.opts.hfcache_dir,
+        )
         processor = transformers.BlipProcessor.from_pretrained(repo, cache_dir=shared.opts.hfcache_dir)
         loaded = repo
     model.to(devices.device, devices.dtype)
@@ -289,7 +308,10 @@ def vilt(question: str, image: Image.Image, repo: str = None):
     global processor, model, loaded # pylint: disable=global-statement
     if model is None or loaded != repo:
         shared.log.debug(f'Interrogate load: vlm="{repo}"')
-        model = transformers.ViltForQuestionAnswering.from_pretrained(repo, cache_dir=shared.opts.hfcache_dir)
+        model = transformers.ViltForQuestionAnswering.from_pretrained(
+            repo,
+            cache_dir=shared.opts.hfcache_dir,
+        )
         processor = transformers.ViltProcessor.from_pretrained(repo, cache_dir=shared.opts.hfcache_dir)
         loaded = repo
     model.to(devices.device)
@@ -307,7 +329,10 @@ def pix(question: str, image: Image.Image, repo: str = None):
     global processor, model, loaded # pylint: disable=global-statement
     if model is None or loaded != repo:
         shared.log.debug(f'Interrogate load: vlm="{repo}"')
-        model = transformers.Pix2StructForConditionalGeneration.from_pretrained(repo, cache_dir=shared.opts.hfcache_dir)
+        model = transformers.Pix2StructForConditionalGeneration.from_pretrained(
+            repo,
+            cache_dir=shared.opts.hfcache_dir,
+        )
         processor = transformers.Pix2StructProcessor.from_pretrained(repo, cache_dir=shared.opts.hfcache_dir)
         loaded = repo
     model.to(devices.device)
@@ -356,7 +381,12 @@ def florence(question: str, image: Image.Image, repo: str = None, revision: str 
     if model is None or loaded != repo:
         shared.log.debug(f'Interrogate load: vlm="{repo}" path="{shared.opts.hfcache_dir}"')
         transformers.dynamic_module_utils.get_imports = get_imports
-        model = transformers.AutoModelForCausalLM.from_pretrained(repo, trust_remote_code=True, revision=revision, cache_dir=shared.opts.hfcache_dir)
+        model = transformers.AutoModelForCausalLM.from_pretrained(
+            repo,
+            trust_remote_code=True,
+            revision=revision,
+            cache_dir=shared.opts.hfcache_dir,
+        )
         processor = transformers.AutoProcessor.from_pretrained(repo, trust_remote_code=True, revision=revision, cache_dir=shared.opts.hfcache_dir)
         transformers.dynamic_module_utils.get_imports = _get_imports
         loaded = repo

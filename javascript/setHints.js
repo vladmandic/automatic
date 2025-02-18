@@ -63,18 +63,18 @@ async function tooltipHide(e) {
 async function validateHints(json, elements) {
   json.missing = [];
   const data = Object.values(json).flat().filter((e) => e.hint.length > 0);
-  for (const e of data) e.label = e.label.toLowerCase().trim();
-  let original = elements.map((e) => e.textContent.toLowerCase().trim()).sort();
-  let duplicateUI = original.filter((e, i, a) => a.indexOf(e) !== i).sort();
+  for (const e of data) e.label = e.label.trim();
+  let original = elements.map((e) => e.textContent.toLowerCase().trim()).sort(); // should be case sensitive
+  let duplicateUI = original.filter((e, i, a) => a.indexOf(e.toLowerCase()) !== i).sort();
   original = [...new Set(original)]; // remove duplicates
   duplicateUI = [...new Set(duplicateUI)]; // remove duplicates
-  const current = data.map((e) => e.label.toLowerCase().trim()).sort();
+  const current = data.map((e) => e.label.toLowerCase().trim()).sort(); // should be case sensitive
   log('all elements:', original);
   log('all hints:', current);
   log('hints-differences', { elements: original.length, hints: current.length });
-  const missingHints = original.filter((e) => !current.includes(e)).sort();
-  const orphanedHints = current.filter((e) => !original.includes(e)).sort();
-  const duplicateHints = current.filter((e, i, a) => a.indexOf(e) !== i).sort();
+  const missingHints = original.filter((e) => !current.includes(e.toLowerCase())).sort();
+  const orphanedHints = current.filter((e) => !original.includes(e.toLowerCase())).sort();
+  const duplicateHints = current.filter((e, i, a) => a.indexOf(e.toLowerCase()) !== i).sort();
   log('duplicate hints:', duplicateHints);
   log('duplicate labels:', duplicateUI);
   return [missingHints, orphanedHints];
@@ -93,8 +93,8 @@ async function addMissingHints(json, missingHints) {
 
 async function removeOrphanedHints(json, orphanedHints) {
   const data = Object.values(json).flat().filter((e) => e.hint.length > 0);
-  for (const e of data) e.label = e.label.toLowerCase().trim();
-  const orphaned = data.filter((e) => orphanedHints.includes(e.label));
+  for (const e of data) e.label = e.label.trim();
+  const orphaned = data.filter((e) => orphanedHints.includes(e.label.toLowerCase()));
   log('orphaned hints:', { orphaned });
 }
 
@@ -168,7 +168,6 @@ async function setHints(analyze = false) {
     overrideData = Object.values(json.override || {}).flat().filter((e) => e.hint.length > 0);
     const jsonData = Object.values(json).flat().filter((e) => e.hint.length > 0);
     localeData.data = [...overrideData, ...jsonData];
-    for (const e of localeData.data) e.label = e.label.toLowerCase().trim();
   }
   if (!localeData.hint) tooltipCreate();
   let localized = 0;
@@ -176,8 +175,8 @@ async function setHints(analyze = false) {
   const t0 = performance.now();
   for (const el of elements) {
     let found;
-    if (el.dataset.original) found = localeData.data.find((l) => l.label === el.dataset.original.toLowerCase().trim());
-    else found = localeData.data.find((l) => l.label === el.textContent.toLowerCase().trim());
+    if (el.dataset.original) found = localeData.data.find((l) => l.label.toLowerCase().trim() === el.dataset.original.toLowerCase().trim());
+    else found = localeData.data.find((l) => l.label.toLowerCase().trim() === el.textContent.toLowerCase().trim());
     if (found?.localized?.length > 0) {
       if (!el.dataset.original) el.dataset.original = el.textContent;
       localized++;

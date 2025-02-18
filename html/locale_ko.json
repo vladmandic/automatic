@@ -3,127 +3,127 @@
     {
       "id": "",
       "label": "🎲️",
-      "localized": "",
-      "hint": "임의 시드 사용"
+      "localized": "🎲️",
+      "hint": "무작위 시드 사용"
     },
     {
       "id": "",
       "label": "🔄",
-      "localized": "",
+      "localized": "🔄",
       "hint": "값 초기화"
     },
     {
       "id": "",
       "label": "⬆️",
-      "localized": "",
+      "localized": "⬆️",
       "hint": "이미지 업로드"
     },
     {
       "id": "",
       "label": "⬅️",
-      "localized": "",
+      "localized": "⬅️",
       "hint": "이미지 재사용"
     },
     {
       "id": "",
       "label": "⇅",
-      "localized": "",
+      "localized": "⇅",
       "hint": "값 교환"
     },
     {
       "id": "",
       "label": "⇨",
-      "localized": "",
-      "hint": "수동 블록 병합 탭에 프리셋 적용"
+      "localized": "⇨",
+      "hint": "수동 블록 병합 탭에 사전 설정 적용"
     },
     {
       "id": "",
       "label": "🕮",
-      "localized": "",
-      "hint": "마지막 생성된 이미지의 파라미터를 스타일 템플릿으로 저장"
+      "localized": "🕮",
+      "hint": "마지막으로 생성된 이미지의 파라미터를 스타일 템플릿으로 저장"
     },
     {
       "id": "",
       "label": "⇕",
-      "localized": "",
-      "hint": "정렬 기준: 이름 오름/내림차순, 크기 큰/작은 순, 시간 최신/오래된 순"
+      "localized": "⇕",
+      "hint": "정렬 기준: 이름 오름차순/내림차순, 크기 가장 큼/작음, 시간 최신/오래된 순"
     },
     {
       "id": "",
       "label": "⟲",
-      "localized": "",
+      "localized": "⟲",
       "hint": "새로 고침"
     },
     {
       "id": "",
       "label": "✕",
-      "localized": "",
+      "localized": "✕",
       "hint": "닫기"
     },
     {
       "id": "",
       "label": "⊜",
-      "localized": "",
+      "localized": "⊜",
       "hint": "채우기"
     },
     {
       "id": "",
       "label": "⌾",
-      "localized": "",
+      "localized": "⌾",
       "hint": "선택 시 리파이너 모델로, 그렇지 않으면 기본 모델로 로드"
     },
     {
       "id": "",
       "label": "🔎︎",
-      "localized": "",
+      "localized": "🔎︎",
       "hint": "누락된 메타데이터 및 미리보기를 위해 CivitAI 스캔"
     },
     {
       "id": "",
       "label": "☲",
-      "localized": "",
+      "localized": "☲",
       "hint": "보기 유형 변경"
     },
     {
       "id": "",
       "label": "📐",
-      "localized": "",
+      "localized": "📐",
       "hint": "측정"
     },
     {
       "id": "",
       "label": "🔍",
-      "localized": "",
+      "localized": "🔍",
       "hint": "검색"
     },
     {
       "id": "",
       "label": "🖌️",
-      "localized": "",
-      "hint": "LaMa로 이미지에서 선택한 객체 제거"
+      "localized": "🖌️",
+      "hint": "LaMa를 사용하여 이미지에서 선택한 객체 제거"
     },
     {
       "id": "",
       "label": "🖼️",
-      "localized": "",
+      "localized": "🖼️",
       "hint": "미리보기 표시"
     },
     {
       "id": "",
       "label": "♻",
-      "localized": "",
+      "localized": "♻",
       "hint": "이미지 정보 분석"
     },
     {
       "id": "",
       "label": "↶",
-      "localized": "",
+      "localized": "↶",
       "hint": "선택한 스타일을 프롬프트에 적용"
     },
     {
       "id": "",
       "label": "↷",
-      "localized": "",
+      "localized": "↷",
       "hint": "현재 프롬프트를 스타일로 저장"
     }
   ],
@@ -144,43 +144,43 @@
       "id": "",
       "label": "Text",
       "localized": "텍스트",
-      "hint": "텍스트로부터 이미지 생성"
+      "hint": "텍스트에서 이미지를 생성합니다"
     },
     {
       "id": "",
       "label": "Image",
       "localized": "이미지",
-      "hint": "이미지로부터 이미지 생성"
+      "hint": "이미지에서 이미지를 생성합니다"
     },
     {
       "id": "",
       "label": "Control",
       "localized": "컨트롤",
-      "hint": "추가 컨트롤을 사용하여 이미지 생성"
+      "hint": "추가적인 컨트롤로 이미지를 생성합니다"
     },
     {
       "id": "",
       "label": "Process",
       "localized": "처리",
-      "hint": "기존 이미지 처리"
+      "hint": "기존 이미지를 처리합니다"
     },
     {
       "id": "",
       "label": "Interrogate",
       "localized": "심문",
-      "hint": "이미지 설명을 얻기 위해 심문 실행"
+      "hint": "이미지에 대한 설명을 얻기 위해 심문을 실행합니다"
     },
     {
       "id": "",
       "label": "Models",
       "localized": "모델",
-      "hint": "모델 다운로드, 변환 또는 병합 및 모델 메타데이터 관리"
+      "hint": "모델을 다운로드, 변환 또는 병합하고 모델 메타데이터를 관리합니다"
     },
     {
       "id": "",
       "label": "Agent Scheduler",
       "localized": "에이전트 스케줄러",
-      "hint": "생성 요청을 대기열에 넣고 백그라운드에서 실행"
+      "hint": "생성 요청을 대기열에 넣고 백그라운드에서 실행합니다"
     },
     {
       "id": "",
@@ -210,49 +210,49 @@
       "id": "",
       "label": "Generate",
       "localized": "생성",
-      "hint": "처리 시작"
+      "hint": "처리를 시작합니다"
     },
     {
       "id": "",
       "label": "Enqueue",
       "localized": "대기열에 추가",
-      "hint": "에이전트 스케줄러에서 백그라운드 대기열에 작업 추가"
+      "hint": "에이전트 스케줄러의 백그라운드 큐에 작업을 추가합니다"
     },
     {
       "id": "",
       "label": "Reprocess",
       "localized": "재처리",
-      "hint": "다른 매개변수를 사용하여 이전 생성 재처리"
+      "hint": "다른 매개변수를 사용하여 이전 생성을 재처리합니다"
     },
     {
       "id": "",
       "label": "Stop",
       "localized": "중지",
-      "hint": "처리 중지"
+      "hint": "처리를 중지합니다"
     },
     {
       "id": "",
       "label": "Skip",
       "localized": "건너뛰기",
-      "hint": "현재 작업 처리를 중지하고 계속 처리"
+      "hint": "현재 작업을 중지하고 처리를 계속합니다"
     },
     {
       "id": "",
       "label": "Pause",
       "localized": "일시 중지",
-      "hint": "처리 일시 중지"
+      "hint": "처리를 일시 중지합니다"
     },
     {
       "id": "",
       "label": "Restore",
       "localized": "복원",
-      "hint": "현재 프롬프트 또는 마지막으로 알려진 생성된 이미지에서 매개변수 복원"
+      "hint": "현재 프롬프트 또는 마지막으로 알려진 생성된 이미지에서 매개변수를 복원합니다"
     },
     {
       "id": "",
       "label": "Clear",
       "localized": "지우기",
-      "hint": "프롬프트 지우기"
+      "hint": "프롬프트를 지웁니다"
     },
     {
       "id": "",
@@ -264,7 +264,13 @@
       "id": "",
       "label": "Default strength",
       "localized": "기본 강도",
-      "hint": "LoRA와 같은 추가 네트워크를 프롬프트에 추가할 때 이 승수를 사용하십시오."
+      "hint": "LoRA와 같은 추가 네트워크를 프롬프트에 추가할 때 이를 위한 승수를 사용합니다"
+    },
+    {
+      "id": "",
+      "label": "Upscale",
+      "localized": "확대",
+      "hint": "이미지 확대"
     },
     {
       "id": "",
@@ -287,14 +293,14 @@
     {
       "id": "",
       "label": "Lora",
-      "localized": "Lora",
+      "localized": "로라",
       "hint": "LoRA: Low-Rank Adaptation. 로드된 모델 위에 적용되는 미세 조정된 모델"
     },
     {
       "id": "",
       "label": "Embedding",
       "localized": "임베딩",
-      "hint": "텍스트 반전 임베딩은 주제에 대한 훈련된 임베디드 정보입니다."
+      "hint": "텍스트 반전 임베딩은 주제에 대한 훈련된 임베디드 정보입니다"
     },
     {
       "id": "",
@@ -304,39 +310,51 @@
     },
     {
       "id": "",
+      "label": "VLM Caption",
+      "localized": "VLM 캡션",
+      "hint": "비전 언어 모델을 사용하여 이미지를 분석합니다"
+    },
+    {
+      "id": "",
+      "label": "CLiP Interrogate",
+      "localized": "CLiP 심문",
+      "hint": "CLiP 모델을 사용하여 이미지를 분석합니다"
+    },
+    {
+      "id": "",
       "label": "VAE",
       "localized": "VAE",
-      "hint": "Variable Auto Encoder: 생성 마지막에 이미지 디코드를 실행하는 데 사용되는 모델"
+      "hint": "Variable Auto Encoder: 생성 종료 시 이미지 디코드를 실행하는 데 사용되는 모델"
     },
     {
       "id": "",
       "label": "History",
-      "localized": "히스토리",
+      "localized": "기록",
       "hint": "추가로 재처리할 수 있는 이전 생성 목록"
     },
     {
       "id": "",
       "label": "UI disable variable aspect ratio",
-      "localized": "UI 가변 종횡비 비활성화",
-      "hint": "비활성화되면 모든 썸네일이 정사각형 이미지로 나타납니다."
+      "localized": "UI 가변 가로 세로 비율 비활성화",
+      "hint": "비활성화하면 모든 썸네일이 정사각형 이미지로 나타납니다"
     },
     {
       "id": "",
       "label": "Build info on first access",
       "localized": "첫 액세스 시 빌드 정보",
-      "hint": "서버 시작 시 서버에서 EN 페이지를 빌드하는 것을 방지하고 대신 요청 시 빌드합니다."
+      "hint": "서버 시작 시 서버에서 EN 페이지를 빌드하는 것을 방지하고 대신 요청 시 빌드합니다"
     },
     {
       "id": "",
       "label": "Show reference styles",
       "localized": "참조 스타일 표시",
-      "hint": "내장 스타일 표시 또는 숨기기"
+      "hint": "빌드된 스타일을 표시하거나 숨깁니다"
     },
     {
       "id": "",
       "label": "LoRA load using Diffusers method",
       "localized": "Diffusers 메서드를 사용하여 LoRA 로드",
-      "hint": "대체 방법은 기본 SD.Next 구현 대신 diffusers 내장 LoRA 기능을 사용합니다(LoRA 호환성이 줄어들 수 있음)."
+      "hint": "대체 방법은 기본 SD.Next 구현 대신 diffusers 내장 LoRA 기능을 사용합니다 (LoRA 호환성이 감소할 수 있음)"
     },
     {
       "id": "",
@@ -348,13 +366,19 @@
       "id": "",
       "label": "LoRA memory cache",
       "localized": "LoRA 메모리 캐시",
-      "hint": "저장소에서 다시 로드하기 전에 향후 사용을 위해 네트워크에 보관할 LoRA 수"
+      "hint": "저장에서 다시 로드하기 전에 향후 사용을 위해 네트워크에 보관할 LoRA 수"
     },
     {
       "id": "",
       "label": "Local",
       "localized": "로컬",
       "hint": "다운로드되어 사용할 준비가 된 모델"
+    },
+    {
+      "id": "",
+      "label": "Gallery",
+      "localized": "갤러리",
+      "hint": "이미지 갤러리"
     },
     {
       "id": "",
@@ -384,13 +408,13 @@
       "id": "",
       "label": "Corrections",
       "localized": "수정",
-      "hint": "생성 프로세스 동안 이미지 색상/선명도/밝기 수정 제어"
+      "hint": "생성 프로세스 동안 이미지 색상/선명도/밝기 수정을 제어합니다"
     },
     {
       "id": "",
       "label": "Refine",
-      "localized": "정제",
-      "hint": "업스케일, HiRes 및 정제 처리와 관련된 설정"
+      "localized": "세분화",
+      "hint": "업스케일, HiRes 및 세분화 처리 관련 설정"
     },
     {
       "id": "",
@@ -402,7 +426,7 @@
       "id": "",
       "label": "Resize",
       "localized": "크기 조정",
-      "hint": "이미지 크기 조정, 크기에 따라 고정 해상도 사용 가능"
+      "hint": "이미지 크기 조정, 스케일을 기반으로 고정 해상도 사용 가능"
     },
     {
       "id": "",
@@ -414,13 +438,13 @@
       "id": "",
       "label": "Denoise",
       "localized": "디노이즈",
-      "hint": "디노이징 설정. 디노이즈가 높을수록 생성 중 기존 이미지 콘텐츠가 더 많이 변경될 수 있습니다."
+      "hint": "디노이징 설정. 디노이즈가 높을수록 기존 이미지 콘텐츠가 생성 중에 더 많이 변경될 수 있습니다."
     },
     {
       "id": "",
       "label": "Mask",
       "localized": "마스크",
-      "hint": "이미지 마스크 및 마스크 옵션"
+      "hint": "이미지 마스킹 및 마스크 옵션"
     },
     {
       "id": "",
@@ -438,13 +462,13 @@
       "id": "",
       "label": "Control elements",
       "localized": "컨트롤 요소",
-      "hint": "컨트롤 요소는 원하는 결과로 생성을 안내할 수 있는 고급 모델입니다."
+      "hint": "컨트롤 요소는 원하는 결과로 생성을 안내할 수 있는 고급 모델입니다"
     },
     {
       "id": "",
       "label": "IP adapters",
       "localized": "IP 어댑터",
-      "hint": "IP 어댑터는 원하는 결과로 생성을 안내할 수 있는 플러그인 모델입니다."
+      "hint": "IP 어댑터는 원하는 결과로 생성을 안내할 수 있는 플러그인 모델입니다"
     },
     {
       "id": "",
@@ -456,237 +480,249 @@
       "id": "",
       "label": "XYZ Grid",
       "localized": "XYZ 그리드",
-      "hint": "XYZ 그리드는 다양한 다중 생성 매개변수를 기반으로 이미지 그리드를 만드는 강력한 모듈입니다."
+      "hint": "XYZ 그리드는 여러 생성 매개변수를 다양하게 변경하여 이미지 그리드를 만드는 강력한 모듈입니다"
     },
     {
       "id": "",
-      "label": "cover",
-      "localized": "커버",
-      "hint": "전체 영역 커버"
+      "label": "Cover",
+      "localized": "덮개",
+      "hint": "전체 영역 덮기"
     },
     {
       "id": "",
-      "label": "inline",
+      "label": "Inline",
       "localized": "인라인",
       "hint": "모든 추가 요소와 인라인 (스크롤 가능)"
     },
     {
       "id": "",
-      "label": "sidebar",
+      "label": "Sidebar",
       "localized": "사이드바",
       "hint": "화면 오른쪽에 있는 사이드바"
     },
     {
       "id": "",
-      "label": "sd15",
-      "localized": "sd15",
+      "label": "SD15",
+      "localized": "SD15",
       "hint": "StableDiffusion 1.5"
     },
     {
       "id": "",
-      "label": "sd21",
-      "localized": "sd21",
+      "label": "SD21",
+      "localized": "SD21",
       "hint": "StableDiffusion 2.1"
     },
     {
       "id": "",
-      "label": "sd35",
-      "localized": "sd35",
+      "label": "SD35",
+      "localized": "SD35",
       "hint": "StableDiffusion 3.5"
     },
     {
       "id": "",
-      "label": "sdxl",
-      "localized": "sdxl",
+      "label": "SDXL",
+      "localized": "SDXL",
       "hint": "StableDiffusion XL"
     },
     {
       "id": "",
-      "label": "sc",
-      "localized": "sc",
+      "label": "SC",
+      "localized": "SC",
       "hint": "StableCascade"
     },
     {
       "id": "",
-      "label": "flux",
-      "localized": "flux",
+      "label": "Flux",
+      "localized": "Flux",
       "hint": "FLUX.1"
     },
     {
       "id": "",
-      "label": "show",
+      "label": "Show",
       "localized": "표시",
       "hint": "이미지 위치 표시"
     },
     {
       "id": "",
-      "label": "save",
+      "label": "Save",
       "localized": "저장",
       "hint": "이미지 저장"
     },
     {
       "id": "",
-      "label": "delete",
+      "label": "Delete",
       "localized": "삭제",
       "hint": "이미지 삭제"
     },
     {
       "id": "",
-      "label": "replace",
-      "localized": "바꾸기",
-      "hint": "이미지 바꾸기"
+      "label": "Replace",
+      "localized": "교체",
+      "hint": "이미지 교체"
     },
     {
       "id": "",
-      "label": "➠ text",
+      "label": "➠ Text",
       "localized": "➠ 텍스트",
       "hint": "이미지를 텍스트 인터페이스로 전송"
     },
     {
       "id": "",
-      "label": "➠ image",
+      "label": "➠ Image",
       "localized": "➠ 이미지",
       "hint": "이미지를 이미지 인터페이스로 전송"
     },
     {
       "id": "",
-      "label": "➠ inpaint",
+      "label": "➠ Inpaint",
       "localized": "➠ 인페인트",
       "hint": "이미지를 인페인트 인터페이스로 전송"
     },
     {
       "id": "",
-      "label": "➠ sketch",
+      "label": "➠ Sketch",
       "localized": "➠ 스케치",
       "hint": "이미지를 스케치 인터페이스로 전송"
     },
     {
       "id": "",
-      "label": "➠ composite",
+      "label": "➠ Composite",
       "localized": "➠ 컴포지트",
       "hint": "이미지를 인페인트 스케치 인터페이스로 전송"
     },
     {
       "id": "",
-      "label": "➠ process",
+      "label": "➠ Process",
       "localized": "➠ 처리",
       "hint": "이미지를 처리 인터페이스로 전송"
+    },
+    {
+      "id": "",
+      "label": "➠ Control",
+      "localized": "➠ 컨트롤",
+      "hint": "이미지를 컨트롤 인터페이스로 전송"
+    },
+    {
+      "id": "",
+      "label": "➠ Caption",
+      "localized": "➠ 캡션",
+      "hint": "이미지를 캡션 인터페이스로 전송"
     }
   ],
   "generate": [
     {
       "id": "",
       "label": "Sampling method",
-      "localized": "샘플링 방식",
+      "localized": "샘플링 방법",
       "hint": "이미지를 생성하는 데 사용할 알고리즘"
     },
     {
       "id": "",
       "label": "Steps",
       "localized": "단계",
-      "hint": "생성된 이미지를 반복적으로 개선하는 횟수입니다. 값이 높을수록 시간이 더 오래 걸립니다. 값이 너무 낮으면 결과가 좋지 않을 수 있습니다."
+      "hint": "생성된 이미지를 반복적으로 개선하는 횟수입니다. 값이 높을수록 시간이 오래 걸립니다. 값이 매우 낮으면 결과가 좋지 않을 수 있습니다."
     },
     {
       "id": "",
       "label": "Tiling",
       "localized": "타일링",
-      "hint": "타일 형태로 반복될 수 있는 이미지를 생성합니다."
+      "hint": "타일로 사용할 수 있는 이미지를 생성합니다."
     },
     {
       "id": "",
-      "label": "full quality",
-      "localized": "최대 품질",
-      "hint": "잠재 샘플을 디코딩하는 데 최대 품질 VAE를 사용합니다."
+      "label": "Full quality",
+      "localized": "최고 품질",
+      "hint": "잠재 샘플을 디코딩하는 데 최고 품질 VAE를 사용합니다."
     },
     {
       "id": "",
-      "label": "hidiffusion",
+      "label": "HiDiffusion",
       "localized": "HiDiffusion",
-      "hint": "HiDiffusion을 사용하면 중복/왜곡 없이 표준 모델을 사용하여 고해상도 이미지를 생성하고 성능을 향상시킬 수 있습니다."
+      "hint": "HiDiffusion을 사용하면 중복/왜곡 없이 표준 모델을 사용하여 고해상도 이미지를 만들 수 있으며 성능이 향상됩니다."
     },
     {
       "id": "",
       "label": "HDR Clamp",
       "localized": "HDR 클램프",
-      "hint": "분포 평균에서 크게 벗어나는 값을 제거하여 무의미한 디테일 수준을 조정합니다. 특히 높은 안내 스케일에서 생성을 향상시키고, 프로세스 초기에 이상값을 식별하고, 범위(경계) 및 임계값 설정을 기반으로 수학적 조정을 적용하는 데 유용합니다. 이미지 값에 원하는 범위를 설정하고 임계값을 조정하여 해당 범위로 다시 가져올 값을 결정한다고 생각하십시오."
+      "hint": "분포 평균에서 크게 벗어나는 값을 잘라내어 무의미한 세부 사항의 수준을 조정합니다. 특히 높은 가이던스 스케일에서 생성을 향상시키고, 프로세스 초기에 이상값을 식별하고, 범위(경계) 및 임계값 설정을 기반으로 수학적 조정을 적용하는 데 유용합니다. 이미지 값에 대해 원하는 범위를 설정하고, 임계값을 조정하여 해당 범위로 다시 가져올 값을 결정하는 것으로 생각하십시오."
     },
     {
       "id": "",
       "label": "HDR Maximize",
       "localized": "HDR 최대화",
-      "hint": "최대 텐서 값을 지정된 범위에 4를 곱한 값으로 나누어 '정규화 계수'를 계산합니다. 그런 다음 이 계수를 사용하여 주어진 경계 내에서 채널을 이동시켜 후속 처리를 위해 최대 동적 범위를 보장합니다. 목표는 특히 레벨, 대비 및 밝기를 조정하기 위해 Photoshop과 같은 외부 애플리케이션의 동적 범위를 최적화하는 것입니다."
+      "hint": "최대 텐서 값을 지정된 범위에 4를 곱한 값으로 나누어 '정규화 계수'를 계산합니다. 그런 다음 이 계수를 사용하여 주어진 경계 내에서 채널을 이동시켜 후속 처리를 위한 최대 동적 범위를 보장합니다. 목표는 특히 레벨, 대비 및 밝기를 조정하기 위해 Photoshop과 같은 외부 애플리케이션에 대한 동적 범위를 최적화하는 것입니다."
     },
     {
       "id": "",
       "label": "Enable refine pass",
-      "localized": "정제 패스 활성화",
-      "hint": "이미지-이미지와 유사한 프로세스를 사용하여 최종 이미지를 업스케일링하거나 디테일을 추가합니다. 선택적으로 리파이너 모델을 사용하여 이미지 디테일을 향상시킵니다."
+      "localized": "세련화 패스 활성화",
+      "hint": "이미지-이미지와 유사한 프로세스를 사용하여 최종 이미지를 업스케일하거나 디테일을 추가합니다. 선택적으로 리파이너 모델을 사용하여 이미지 디테일을 향상시킵니다."
     },
     {
       "id": "",
-      "label": "enable detailer pass",
+      "label": "Enable detailer pass",
       "localized": "디테일러 패스 활성화",
       "hint": "얼굴과 같은 대상 객체를 감지하고 더 높은 해상도로 다시 처리합니다."
     },
     {
       "id": "",
       "label": "Denoising strength",
-      "localized": "디노이즈 강도",
-      "hint": "알고리즘이 이미지 콘텐츠를 얼마나 무시해야 하는지 결정합니다. 0에서는 아무것도 변경되지 않고 1에서는 관련 없는 이미지를 얻게 됩니다. 1.0 미만의 값에서는 처리가 샘플링 단계 슬라이더에 지정된 것보다 적은 단계를 거칩니다."
+      "localized": "디노이징 강도",
+      "hint": "알고리즘이 이미지 콘텐츠를 얼마나 무시해야 하는지를 결정합니다. 0에서는 아무것도 변경되지 않고 1에서는 관련 없는 이미지를 얻게 됩니다. 1.0 미만의 값을 사용하면 처리가 샘플링 단계 슬라이더에서 지정하는 것보다 적은 단계로 수행됩니다."
     },
     {
       "id": "",
       "label": "Denoise start",
       "localized": "디노이즈 시작",
-      "hint": "기본 모델이 언제 완료되어야 하고 리파이너가 언제 시작되어야 하는지 명시하여 디노이즈 강도를 재정의합니다. 리파이너 사용에만 적용됩니다. 0 또는 1로 설정하면 디노이즈 강도가 사용됩니다."
+      "hint": "기본 모델이 언제 완료되어야 하고 리파이너가 언제 시작되어야 하는지를 명시하여 디노이즈 강도를 재정의합니다. 리파이너 사용에만 적용됩니다. 0 또는 1로 설정하면 디노이징 강도가 사용됩니다."
     },
     {
       "id": "",
       "label": "Hires steps",
       "localized": "고해상도 단계",
-      "hint": "업스케일링된 사진의 샘플링 단계 수입니다. 0이면 원본과 동일하게 사용합니다."
+      "hint": "업스케일된 사진의 샘플링 단계 수입니다. 0이면 원본과 동일하게 사용합니다."
     },
     {
       "id": "",
-      "label": "strength",
+      "label": "Strength",
       "localized": "강도",
-      "hint": "이미지 작업 중 디노이즈 강도는 생성 중에 원본 이미지가 얼마나 많이 변경될 수 있는지를 제어합니다."
+      "hint": "이미지 작업 중 디노이징 강도는 생성 중에 원래 이미지가 얼마나 많이 변경될 수 있는지를 제어합니다."
     },
     {
       "id": "",
       "label": "Upscaler",
       "localized": "업스케일러",
-      "hint": "업스케일링 프로세스에 사용할 미리 훈련된 모델입니다."
+      "hint": "업스케일링 프로세스에 사용할 사전 훈련된 모델입니다."
     },
     {
       "id": "",
       "label": "Force Hires",
-      "localized": "고해상도 강제",
-      "hint": "잠재적 업스케일이 선택되면 고해상도가 자동으로 실행되지만, 비 잠재적 업스케일러를 사용할 때는 건너뜁니다. 고해상도 강제를 활성화하여 비 잠재적 업스케일러로 고해상도를 실행합니다."
+      "localized": "고해상도 강제 실행",
+      "hint": "잠재적 업스케일이 선택되면 고해상도가 자동으로 실행되지만 비 잠재적 업스케일러를 사용하면 건너뜁니다. 비 잠재적 업스케일러로 고해상도를 실행하려면 고해상도 강제 실행을 활성화합니다."
     },
     {
       "id": "",
       "label": "Resize width",
-      "localized": "너비 조정",
-      "hint": "이미지 너비를 이 너비로 조정합니다. 0이면 근처의 두 슬라이더 중 하나에서 너비를 유추합니다."
+      "localized": "가로 크기 조정",
+      "hint": "이미지 가로 크기를 이 크기로 조정합니다. 0이면 근처의 두 슬라이더 중 하나에서 가로 크기가 추론됩니다."
     },
     {
       "id": "",
       "label": "Resize height",
-      "localized": "높이 조정",
-      "hint": "이미지 높이를 이 높이로 조정합니다. 0이면 근처의 두 슬라이더 중 하나에서 높이를 유추합니다."
+      "localized": "세로 크기 조정",
+      "hint": "이미지 세로 크기를 이 크기로 조정합니다. 0이면 근처의 두 슬라이더 중 하나에서 세로 크기가 추론됩니다."
     },
     {
       "id": "",
       "label": "Refine sampler",
-      "localized": "정제 샘플러",
-      "hint": "특정 작업에 대해 기본 샘플러가 지원되지 않는 경우 특정 샘플러를 대체 샘플러로 사용합니다."
+      "localized": "세련화 샘플러",
+      "hint": "특정 작업에 대해 기본 샘플러가 지원되지 않는 경우 특정 샘플러를 폴백 샘플러로 사용합니다."
     },
     {
       "id": "",
       "label": "Refiner start",
       "localized": "리파이너 시작",
-      "hint": "기본 모델이 이만큼 완료되면 리파이너 패스가 시작됩니다(0보다 크고 1보다 작게 설정하여 전체 기본 모델 실행 후에 실행)."
+      "hint": "기본 모델이 이만큼 완료되면 리파이너 패스가 시작됩니다(전체 기본 모델 실행 후에 실행하려면 0보다 크고 1보다 작게 설정)."
     },
     {
       "id": "",
@@ -697,37 +733,37 @@
     {
       "id": "",
       "label": "Refine guidance",
-      "localized": "정제 안내",
+      "localized": "세련화 가이던스",
       "hint": "리파이너 패스에 사용되는 CFG 스케일입니다."
     },
     {
       "id": "",
       "label": "Attention guidance",
-      "localized": "어텐션 안내",
-      "hint": "PAG(Perturbed-Attention Guidance)와 함께 사용되는 CFG 스케일입니다."
+      "localized": "어텐션 가이던스",
+      "hint": "PAG(Perturbed-Attention Guidance)에 사용되는 CFG 스케일입니다."
     },
     {
       "id": "",
       "label": "Adaptive scaling",
       "localized": "적응형 스케일링",
-      "hint": "어텐션 안내 스케일에 대한 적응형 수정자입니다."
+      "hint": "어텐션 가이던스 스케일의 적응형 수정자입니다."
     },
     {
       "id": "",
       "label": "Rescale guidance",
-      "localized": "안내 재조정",
-      "hint": "노출 과다된 이미지를 피하기 위해 CFG 생성 노이즈를 재조정합니다."
+      "localized": "가이던스 재조정",
+      "hint": "과다 노출된 이미지를 방지하기 위해 CFG 생성 노이즈를 재조정합니다."
     },
     {
       "id": "",
       "label": "Refine Prompt",
-      "localized": "정제 프롬프트",
+      "localized": "세련화 프롬프트",
       "hint": "기본 모델의 두 번째 인코더(있는 경우)와 리파이너 패스(활성화된 경우) 모두에 사용되는 프롬프트입니다."
     },
     {
       "id": "",
       "label": "Refine negative prompt",
-      "localized": "정제 부정적 프롬프트",
+      "localized": "세련화 부정적 프롬프트",
       "hint": "기본 모델의 두 번째 인코더(있는 경우)와 리파이너 패스(활성화된 경우) 모두에 사용되는 부정적 프롬프트입니다."
     },
     {
@@ -745,44 +781,44 @@
     {
       "id": "",
       "label": "Batch count",
-      "localized": "배치 수",
-      "hint": "생성할 이미지 배치 수입니다(생성 성능 또는 VRAM 사용량에 영향을 미치지 않음)."
+      "localized": "배치 횟수",
+      "hint": "만들 이미지 배치의 수입니다(생성 성능 또는 VRAM 사용량에 영향을 미치지 않음)."
     },
     {
       "id": "",
       "label": "Batch size",
       "localized": "배치 크기",
-      "hint": "단일 배치에서 생성할 이미지 수입니다(VRAM 사용량이 높아지는 대신 생성 성능이 향상됨)."
+      "hint": "단일 배치에서 만들 이미지 수입니다(더 높은 VRAM 사용량으로 생성 성능을 향상시킴)."
     },
     {
       "id": "",
       "label": "guidance scale",
-      "localized": "안내 스케일",
-      "hint": "Classifier Free Guidance 스케일: 이미지가 프롬프트에 얼마나 강하게 부합해야 하는지입니다. 값이 낮을수록 더 창의적인 결과를 생성하고, 값이 높을수록 프롬프트를 더 엄격하게 따릅니다. 5-10 사이의 값을 권장합니다."
+      "localized": "가이던스 스케일",
+      "hint": "Classifier Free Guidance 스케일: 이미지가 프롬프트에 얼마나 강하게 부합해야 하는지입니다. 값이 낮을수록 더 창의적인 결과가 생성되고, 값이 높을수록 프롬프트를 더 엄격하게 따릅니다. 5-10 사이의 값을 권장합니다."
     },
     {
       "id": "",
       "label": "Guidance End",
-      "localized": "안내 종료",
-      "hint": "CFG 및 PAG 효과를 일찍 종료합니다. 1 값은 정상적으로 작동하고, 0.5는 단계의 50%에서 안내를 중지합니다."
+      "localized": "가이던스 종료",
+      "hint": "CFG 및 PAG 효과를 조기에 종료합니다. 1 값은 정상적으로 작동하고 0.5는 단계의 50%에서 가이던스를 중지합니다."
     },
     {
       "id": "",
       "label": "Initial seed",
       "localized": "초기 시드",
-      "hint": "난수 생성기의 출력을 결정하는 값입니다. 다른 이미지와 동일한 매개변수와 시드를 사용하여 이미지를 생성하면 동일한 결과를 얻을 수 있습니다."
+      "hint": "난수 생성기의 출력을 결정하는 값입니다. 동일한 매개변수와 시드로 이미지를 만들면 동일한 결과를 얻을 수 있습니다."
     },
     {
       "id": "",
       "label": "Variation",
       "localized": "변형",
-      "hint": "기본 시드와 혼합할 두 번째 시드입니다."
+      "hint": "기본 시드와 혼합될 두 번째 시드입니다."
     },
     {
       "id": "",
       "label": "Variation strength",
       "localized": "변형 강도",
-      "hint": "생성할 변형의 강도입니다. 0에서는 아무런 효과가 없습니다. 1에서는 변형 시드가 있는 완전한 사진을 얻을 수 있습니다(조상 샘플러는 예외)."
+      "hint": "생성할 변형의 강도입니다. 0에서는 아무런 효과가 없습니다. 1에서는 변형 시드로 전체 그림을 얻게 됩니다(ancestral 샘플러는 제외하고, 뭔가만 얻게 됩니다)."
     },
     {
       "id": "",
@@ -800,13 +836,13 @@
       "id": "",
       "label": "Fixed",
       "localized": "고정",
-      "hint": "이미지 크기를 대상 해상도로 조정합니다. 높이와 너비가 일치하지 않으면 잘못된 가로 세로 비율이 나타납니다."
+      "hint": "이미지 크기를 대상 해상도로 조정합니다. 높이와 너비가 일치하지 않으면 잘못된 가로 세로 비율을 얻게 됩니다."
     },
     {
       "id": "",
       "label": "scale",
-      "localized": "비율",
-      "hint": "이미지 크기를 대상 비율로 조정합니다. 크기 조정 고정 너비/높이가 설정된 경우 이 옵션은 무시됩니다."
+      "localized": "스케일",
+      "hint": "이미지 크기를 대상 스케일로 조정합니다. 크기 조정 고정 너비/높이가 설정되면 이 옵션은 무시됩니다."
     },
     {
       "id": "",
@@ -824,49 +860,49 @@
       "id": "",
       "label": "Mask blur",
       "localized": "마스크 흐림",
-      "hint": "처리 전에 마스크를 흐리게 처리하는 정도(픽셀 단위)."
+      "hint": "처리하기 전에 마스크를 흐리게 할 정도(픽셀 단위)."
     },
     {
       "id": "",
-      "label": "latent noise",
+      "label": "Latent noise",
       "localized": "잠재 노이즈",
       "hint": "잠재 공간 노이즈로 채웁니다."
     },
     {
       "id": "",
-      "label": "latent nothing",
-      "localized": "잠재적 없음",
+      "label": "Latent nothing",
+      "localized": "잠재 없음",
       "hint": "잠재 공간 0으로 채웁니다."
     },
     {
       "id": "",
       "label": "Guess Mode",
       "localized": "추측 모드",
-      "hint": "ControlNet에 프롬프트를 제공해야 하는 요구 사항을 제거합니다. Controlnet 인코더가 입력 제어 맵의 내용을 기반으로 '최상의 추측'을 하도록 강제합니다."
+      "hint": "ControlNet에 프롬프트를 제공할 필요성을 제거합니다. ControlNet 인코더가 입력 제어 맵의 내용을 기반으로 '최상의 추측'을 수행하도록 강제합니다."
     },
     {
       "id": "",
       "label": "Control Only",
       "localized": "컨트롤만",
-      "hint": "이것은 아래의 Control 입력을 다양한 옵션을 기반으로 하는 모든 ControlNet 또는 IP 어댑터 유형 작업의 소스로만 사용합니다."
+      "hint": "다양한 옵션을 기반으로 ControlNet 또는 IP 어댑터 유형 작업의 소스로 아래의 컨트롤 입력만 사용합니다."
     },
     {
       "id": "",
       "label": "Init Image Same As Control",
       "localized": "초기 이미지와 컨트롤 동일",
-      "hint": "Control 입력 창에 배치된 모든 이미지를 img2img 유형 작업의 소스로 추가로 취급합니다(예: 수정할 이미지)."
+      "hint": "또한 컨트롤 입력 창에 배치된 이미지를 img2img 유형 작업의 소스(예: 수정할 이미지)로 취급합니다."
     },
     {
       "id": "",
       "label": "Separate Init Image",
-      "localized": "개별 초기 이미지",
-      "hint": "Control 입력 옆에 Init 입력이라고 표시된 추가 창을 만들어 Control 작업과 초기 소스 모두에 대해 별도의 이미지를 가질 수 있습니다."
+      "localized": "분리된 초기 이미지",
+      "hint": "컨트롤 작업과 초기 소스 모두에 대해 별도의 이미지를 가질 수 있도록 컨트롤 입력 옆에 초기 입력이라는 추가 창을 만듭니다."
     },
     {
       "id": "",
       "label": "Override settings",
       "localized": "설정 덮어쓰기",
-      "hint": "생성 매개변수가 시스템 설정과 다른 경우 해당 설정으로 채워진 덮어쓰기 설정을 사용하여 이 워크플로우에 대한 시스템 구성을 덮어씁니다."
+      "hint": "생성 매개변수가 시스템 설정과 다른 경우 해당 설정으로 채워진 덮어쓰기 설정을 사용하여 이 워크플로에 대한 시스템 구성을 덮어씁니다."
     }
   ],
   "other": [
@@ -898,402 +934,462 @@
       "id": "",
       "label": "Manual install",
       "localized": "수동 설치",
-      "hint": "수동으로 확장 기능 설치"
+      "hint": "확장 기능을 수동으로 설치합니다."
     },
     {
       "id": "",
       "label": "Extension GIT repository URL",
       "localized": "확장 기능 GIT 저장소 URL",
-      "hint": "GitHub의 확장 기능 저장소 URL을 지정하세요"
+      "hint": "GitHub에서 확장 기능 저장소 URL을 지정합니다."
     },
     {
       "id": "",
       "label": "Specific branch name",
       "localized": "특정 브랜치 이름",
-      "hint": "확장 기능 브랜치 이름을 지정하세요. 기본값은 공백으로 두세요"
+      "hint": "확장 기능 브랜치 이름을 지정합니다. 기본값을 사용하려면 비워 두세요."
     },
     {
       "id": "",
       "label": "Local directory name",
-      "localized": "로컬 디렉터리 이름",
-      "hint": "확장 기능을 설치할 디렉터리입니다. 기본값은 공백으로 두세요"
+      "localized": "로컬 디렉토리 이름",
+      "hint": "확장 기능을 설치할 디렉토리를 지정합니다. 기본값을 사용하려면 비워 두세요."
     },
     {
       "id": "",
       "label": "Refresh extension list",
       "localized": "확장 기능 목록 새로 고침",
-      "hint": "사용 가능한 확장 기능 목록을 새로 고칩니다"
+      "hint": "사용 가능한 확장 기능 목록을 새로 고칩니다."
     },
     {
       "id": "",
       "label": "Update all installed",
-      "localized": "설치된 모든 항목 업데이트",
-      "hint": "설치된 확장 기능을 사용 가능한 최신 버전으로 업데이트합니다"
+      "localized": "설치된 모든 확장 기능 업데이트",
+      "hint": "설치된 확장 기능을 최신 버전으로 업데이트합니다."
     },
     {
       "id": "",
       "label": "Apply changes",
       "localized": "변경 사항 적용",
-      "hint": "모든 변경 사항을 적용하고 서버를 다시 시작합니다"
+      "hint": "모든 변경 사항을 적용하고 서버를 다시 시작합니다."
     },
     {
       "id": "",
-      "label": "uninstall",
+      "label": "Uninstall",
       "localized": "제거",
-      "hint": "이 확장 기능을 제거합니다"
+      "hint": "이 확장 기능을 제거합니다."
     },
     {
       "id": "",
       "label": "User interface",
       "localized": "사용자 인터페이스",
-      "hint": "사용자 인터페이스 기본 설정을 검토하고 설정합니다"
+      "hint": "사용자 인터페이스 기본 설정을 검토하고 설정합니다."
     },
     {
       "id": "",
-      "label": "Set ui defaults",
+      "label": "Set UI defaults",
       "localized": "UI 기본값 설정",
-      "hint": "현재 값을 사용자 인터페이스의 기본값으로 설정합니다"
+      "hint": "현재 값을 사용자 인터페이스의 기본값으로 설정합니다."
     },
     {
       "id": "",
       "label": "Benchmark",
       "localized": "벤치마크",
-      "hint": "벤치마크 실행"
+      "hint": "벤치마크를 실행합니다."
     },
     {
       "id": "",
       "label": "Models & Networks",
-      "localized": "모델 및 네트워크",
-      "hint": "사용 가능한 모든 모델 및 네트워크 목록을 봅니다"
+      "localized": "모델 & 네트워크",
+      "hint": "사용 가능한 모든 모델 및 네트워크 목록을 봅니다."
     },
     {
       "id": "",
       "label": "Restore UI defaults",
       "localized": "UI 기본값 복원",
-      "hint": "기본 사용자 인터페이스 값을 복원합니다"
+      "hint": "기본 사용자 인터페이스 값으로 복원합니다."
     },
     {
       "id": "",
-      "label": "detailer classes",
+      "label": "Detailer classes",
       "localized": "디테일러 클래스",
-      "hint": "선택한 디테일러 모델이 다중 클래스 모델인 경우 사용할 특정 클래스를 지정합니다"
+      "hint": "선택된 디테일러 모델이 멀티 클래스 모델인 경우 사용할 특정 클래스를 지정합니다."
     },
     {
       "id": "",
-      "label": "detailer models",
+      "label": "Detailer models",
       "localized": "디테일러 모델",
-      "hint": "디테일링에 사용할 감지 모델을 선택합니다"
+      "hint": "디테일링에 사용할 감지 모델을 선택합니다."
     },
     {
       "id": "",
-      "label": "detailer negative prompt",
+      "label": "Detailer negative prompt",
       "localized": "디테일러 네거티브 프롬프트",
-      "hint": "디테일러에 대한 별도의 네거티브 프롬프트를 사용합니다. 없는 경우 기본 네거티브 프롬프트를 사용합니다"
+      "hint": "디테일러에 별도의 네거티브 프롬프트를 사용합니다. 없는 경우 기본 네거티브 프롬프트를 사용합니다."
     },
     {
       "id": "",
-      "label": "detailer prompt",
+      "label": "Detailer prompt",
       "localized": "디테일러 프롬프트",
-      "hint": "디테일러에 대한 별도의 프롬프트를 사용합니다. 없는 경우 기본 프롬프트를 사용합니다"
+      "hint": "디테일러에 별도의 프롬프트를 사용합니다. 없는 경우 기본 프롬프트를 사용합니다."
     },
     {
       "id": "",
-      "label": "detailer steps",
-      "localized": "디테일러 단계",
-      "hint": "디테일러 프로세스를 실행할 단계 수"
+      "label": "Detailer steps",
+      "localized": "디테일러 스텝",
+      "hint": "디테일러 프로세스를 실행할 스텝 수입니다."
     },
     {
       "id": "",
-      "label": "detailer strength",
+      "label": "Detailer strength",
       "localized": "디테일러 강도",
-      "hint": "디테일러 프로세스의 디노이징 강도"
+      "hint": "디테일러 프로세스의 디노이징 강도입니다."
     },
     {
       "id": "",
-      "label": "detailer use model augment",
+      "label": "Detailer use model augment",
       "localized": "디테일러 모델 증강 사용",
-      "hint": "디테일러 감지 모델을 더 높은 정밀도로 실행합니다"
+      "hint": "디테일러 감지 모델을 추가 정밀도로 실행합니다."
     },
     {
       "id": "",
-      "label": "max detected",
-      "localized": "최대 감지 개수",
-      "hint": "디테일러를 실행할 최대 감지 객체 수"
+      "label": "Max detected",
+      "localized": "최대 감지 수",
+      "hint": "디테일러를 실행할 최대 감지 객체 수입니다."
     },
     {
       "id": "",
-      "label": "edge blur",
-      "localized": "가장자리 흐림",
-      "hint": "마스크된 영역의 가장자리를 이 백분율만큼 흐리게 합니다"
+      "label": "Edge blur",
+      "localized": "엣지 블러",
+      "hint": "마스크 영역의 가장자리를 이 백분율만큼 흐리게 처리합니다."
     },
     {
       "id": "",
-      "label": "edge padding",
-      "localized": "가장자리 패딩",
-      "hint": "마스크된 영역의 가장자리를 이 백분율만큼 확장합니다"
+      "label": "Edge padding",
+      "localized": "엣지 패딩",
+      "hint": "마스크 영역의 가장자리를 이 백분율만큼 확장합니다."
     },
     {
       "id": "",
-      "label": "min confidence",
+      "label": "Min confidence",
       "localized": "최소 신뢰도",
-      "hint": "감지된 항목의 최소 신뢰도"
+      "hint": "감지된 항목의 최소 신뢰도입니다."
     },
     {
       "id": "",
-      "label": "max overlap",
-      "localized": "최대 겹침",
-      "hint": "두 감지된 항목 간의 최대 겹침 (하나가 삭제되기 전)"
+      "label": "Max overlap",
+      "localized": "최대 중복",
+      "hint": "두 감지된 항목 간의 최대 중복입니다. 이 값을 초과하면 하나가 삭제됩니다."
     },
     {
       "id": "",
-      "label": "min size",
+      "label": "Min size",
       "localized": "최소 크기",
-      "hint": "전체 이미지 대비 감지된 객체의 최소 크기 비율"
+      "hint": "전체 이미지 대비 감지된 객체의 최소 크기(백분율)입니다."
     },
     {
       "id": "",
-      "label": "max size",
+      "label": "Max size",
       "localized": "최대 크기",
-      "hint": "전체 이미지 대비 감지된 객체의 최대 크기 비율"
+      "hint": "전체 이미지 대비 감지된 객체의 최대 크기(백분율)입니다."
     },
     {
       "id": "",
       "label": "Process Image",
       "localized": "이미지 처리",
-      "hint": "단일 이미지 처리"
+      "hint": "단일 이미지를 처리합니다."
     },
     {
       "id": "",
       "label": "Process Batch",
       "localized": "배치 처리",
-      "hint": "이미지 배치 처리"
+      "hint": "이미지 배치를 처리합니다."
     },
     {
       "id": "",
       "label": "Process Folder",
       "localized": "폴더 처리",
-      "hint": "폴더 내의 모든 이미지 처리"
+      "hint": "폴더의 모든 이미지를 처리합니다."
+    },
+    {
+      "id": "",
+      "label": "Current",
+      "localized": "현재",
+      "hint": "현재 로드된 모델 내부의 모듈을 분석합니다."
+    },
+    {
+      "id": "",
+      "label": "Merge",
+      "localized": "병합",
+      "hint": "두 개 이상의 모델을 새 모델로 병합합니다."
+    },
+    {
+      "id": "",
+      "label": "Modules",
+      "localized": "모듈",
+      "hint": "기존 모델에 모듈을 병합 및/또는 교체합니다."
+    },
+    {
+      "id": "",
+      "label": "Validate",
+      "localized": "검증",
+      "hint": "모든 로컬 모델을 검증합니다."
+    },
+    {
+      "id": "",
+      "label": "CivitAI",
+      "localized": "CivitAI",
+      "hint": "CitivAI에서 모델을 검색하고 다운로드합니다."
     },
     {
       "id": "",
       "label": "Scale by",
-      "localized": "비율 조정",
-      "hint": "선택한 비율로 소스 이미지의 크기를 조정하려면 이 탭을 사용하세요"
+      "localized": "확대 비율",
+      "hint": "선택한 비율로 소스 이미지의 크기를 조정하려면 이 탭을 사용하십시오."
     },
     {
       "id": "",
       "label": "Scale to",
-      "localized": "크기 조정",
-      "hint": "선택한 대상 크기로 소스 이미지의 크기를 조정하려면 이 탭을 사용하세요"
+      "localized": "확대 대상",
+      "hint": "선택한 대상 크기로 소스 이미지의 크기를 조정하려면 이 탭을 사용하십시오."
     },
     {
       "id": "",
       "label": "Input directory",
-      "localized": "입력 디렉터리",
-      "hint": "처리하려는 이미지가 있는 폴더"
+      "localized": "입력 디렉토리",
+      "hint": "처리하려는 이미지가 있는 폴더입니다."
     },
     {
       "id": "",
       "label": "Output directory",
-      "localized": "출력 디렉터리",
-      "hint": "처리된 이미지를 저장할 폴더"
+      "localized": "출력 디렉토리",
+      "hint": "처리된 이미지를 저장해야 하는 폴더입니다."
     },
     {
       "id": "",
       "label": "Show result images",
       "localized": "결과 이미지 표시",
-      "hint": "이미지 창에 처리된 이미지를 표시하도록 활성화합니다"
+      "hint": "이미지 창에 처리된 이미지를 표시하도록 활성화합니다."
     },
     {
       "id": "",
       "label": "Crop to fit",
       "localized": "맞춤 자르기",
-      "hint": "소스 이미지의 크기 (예 : 512x510)가 대상 크기 (예 : 1024x768)와 다른 경우이 함수는 업 스케일 된 이미지를 대상 크기 이미지에 맞 춥니 다. 초과분은 잘립니다"
+      "hint": "소스 이미지의 크기(예: 512x510)가 대상 크기(예: 1024x768)와 다른 경우 이 기능은 업스케일된 이미지를 대상 크기 이미지에 맞춥니다. 초과분은 잘립니다."
     },
     {
       "id": "",
       "label": "Refine Upscaler",
       "localized": "업스케일러 개선",
-      "hint": "초기 업스케일러 실행 후 실행할 보조 업스케일러를 선택합니다"
+      "hint": "초기 업스케일러 실행 후 실행할 보조 업스케일러를 선택합니다."
     },
     {
       "id": "",
       "label": "Upscaler 2 visibility",
       "localized": "업스케일러 2 가시성",
-      "hint": "보조 업스케일러의 강도"
+      "hint": "보조 업스케일러의 강도입니다."
     },
     {
       "id": "",
       "label": "Calculate hash for all models",
       "localized": "모든 모델에 대한 해시 계산",
-      "hint": "사용 가능한 모든 모델에 대한 해시를 계산하며 시간이 오래 걸릴 수 있습니다"
+      "hint": "사용 가능한 모든 모델에 대한 해시를 계산하며, 시간이 오래 걸릴 수 있습니다."
     },
     {
       "id": "",
       "label": "Weights Clip",
       "localized": "가중치 클립",
-      "hint": "강제로 병합된 가중치가 원래 모델보다 무거워지는 것을 방지하여 번인 및 과도하게 채도가 높은 모델을 방지합니다"
+      "hint": "강제로 병합된 가중치가 원래 모델보다 무겁지 않도록 하여 번인 및 과도하게 채워진 모델을 방지합니다."
     },
     {
       "id": "",
       "label": "ReBasin",
       "localized": "리베이신",
-      "hint": "두 모델에서 더 많은 기능을 유지하기 위해 순열과 함께 여러 번 병합을 수행합니다"
+      "hint": "두 모델에서 더 많은 기능을 유지하기 위해 순열과 함께 여러 번 병합을 수행합니다."
     },
     {
       "id": "",
       "label": "Number of ReBasin Iterations",
       "localized": "리베이신 반복 횟수",
-      "hint": "저장하기 전에 모델을 병합하고 순열하는 횟수"
+      "hint": "모델을 저장하기 전에 병합하고 순열할 횟수입니다."
     },
     {
       "id": "",
-      "label": "cpu",
+      "label": "CPU",
       "localized": "CPU",
-      "hint": "CPU 및 RAM만 사용: 가장 느리지만 OOM 가능성이 가장 적습니다"
+      "hint": "CPU 및 RAM만 사용합니다. 가장 느리지만 OOM이 발생할 가능성이 가장 적습니다."
     },
     {
       "id": "",
-      "label": "shuffle",
+      "label": "Shuffle",
       "localized": "셔플",
-      "hint": "전체 모델을 RAM에 로드하고 VRAM에서 계산: 속도 향상 감소, SDXL 병합에 권장"
+      "hint": "전체 모델을 RAM에 로드하고 VRAM에서 계산합니다. 속도 향상은 적으며 SDXL 병합에 권장됩니다."
     },
     {
       "id": "",
       "label": "In Blocks",
       "localized": "인 블록",
-      "hint": "UNet의 다운샘플링 블록 (SD1.5의 경우 12개 값, SDXL의 경우 9개 값)"
+      "hint": "UNet의 다운샘플링 블록(SD1.5의 경우 12개 값, SDXL의 경우 9개 값)"
     },
     {
       "id": "",
       "label": "Mid Block",
       "localized": "미드 블록",
-      "hint": "UNet의 중앙 블록 (1개 값)"
+      "hint": "UNet의 중앙 블록(1개 값)"
     },
     {
       "id": "",
       "label": "Out Block",
       "localized": "아웃 블록",
-      "hint": "UNet의 업샘플링 블록 (SD1.5의 경우 12개 값, SDXL의 경우 9개 값)"
+      "hint": "UNet의 업샘플링 블록(SD1.5의 경우 12개 값, SDXL의 경우 9개 값)"
     },
     {
       "id": "",
       "label": "Preset Interpolation Ratio",
       "localized": "사전 설정 보간 비율",
-      "hint": "두 개의 사전 설정이 선택된 경우 그 사이를 보간합니다"
+      "hint": "두 개의 사전 설정이 선택된 경우, 그 사이를 보간합니다."
     },
     {
       "id": "",
-      "label": "adapter",
+      "label": "Adapter",
       "localized": "어댑터",
       "hint": "IP 어댑터 모델"
     },
     {
       "id": "",
-      "label": "active ip adapters",
+      "label": "Active ip adapters",
       "localized": "활성 IP 어댑터",
       "hint": "활성 IP 어댑터 수"
     },
     {
       "id": "",
-      "label": "unload adapter",
+      "label": "Unload adapter",
       "localized": "어댑터 언로드",
-      "hint": "생성 후 즉시 IP 어댑터를 언로드합니다. 그렇지 않으면 IP 어댑터가 다음 생성 프로세스에서 더 빠르게 사용하기 위해 로드된 상태로 유지됩니다"
+      "hint": "생성 후 즉시 IP 어댑터를 언로드합니다. 그렇지 않으면 IP 어댑터가 다음 생성 프로세스에서 더 빠르게 사용될 수 있도록 로드된 상태로 유지됩니다."
     },
     {
       "id": "",
-      "label": "crop to portrait",
-      "localized": "세로 자르기",
-      "hint": "IP 어댑터 입력으로 사용하기 전에 입력 이미지를 세로 전용으로 자릅니다"
+      "label": "Crop to portrait",
+      "localized": "세로로 자르기",
+      "hint": "IP 어댑터 입력으로 사용하기 전에 입력 이미지를 세로 전용으로 자릅니다."
     },
     {
       "id": "",
-      "label": "layer options",
+      "label": "Layer options",
       "localized": "레이어 옵션",
-      "hint": "IP 어댑터 고급 레이어 옵션을 수동으로 지정합니다"
+      "hint": "IP 어댑터 고급 레이어 옵션을 수동으로 지정합니다."
     },
     {
       "id": "",
       "label": "X values",
       "localized": "X 값",
-      "hint": "쉼표를 사용하여 X축에 대한 값을 분리합니다"
+      "hint": "쉼표를 사용하여 X축에 대한 값을 구분합니다."
     },
     {
       "id": "",
       "label": "Y values",
       "localized": "Y 값",
-      "hint": "쉼표를 사용하여 Y축에 대한 값을 분리합니다"
+      "hint": "쉼표를 사용하여 Y축에 대한 값을 구분합니다."
     },
     {
       "id": "",
       "label": "Z values",
       "localized": "Z 값",
-      "hint": "쉼표를 사용하여 Z축에 대한 값을 분리합니다"
+      "hint": "쉼표를 사용하여 Z축에 대한 값을 구분합니다."
     },
     {
       "id": "",
       "label": "Loops",
-      "localized": "루프",
-      "hint": "이미지를 처리하는 횟수. 각 출력은 다음 루프의 입력으로 사용됩니다. 1로 설정하면 이 스크립트를 사용하지 않은 것처럼 동작합니다"
+      "localized": "반복",
+      "hint": "이미지를 처리할 횟수입니다. 각 출력은 다음 루프의 입력으로 사용됩니다. 1로 설정하면 이 스크립트가 사용되지 않은 것처럼 동작합니다."
     },
     {
       "id": "",
       "label": "Final denoising strength",
       "localized": "최종 디노이징 강도",
-      "hint": "배치의 각 이미지의 마지막 루프에 대한 디노이징 강도"
+      "hint": "배치의 각 이미지의 최종 루프에 대한 디노이징 강도입니다."
     },
     {
       "id": "",
       "label": "Denoising strength curve",
       "localized": "디노이징 강도 곡선",
-      "hint": "디노이징 곡선은 각 루프마다 디노이징 강도 변화율을 제어합니다. 공격적: 대부분의 변화가 루프의 시작 부분에서 발생합니다. 선형: 변화는 모든 루프에서 일정합니다. 느림: 대부분의 변화가 루프의 끝 부분에서 발생합니다"
+      "hint": "디노이징 곡선은 각 루프의 디노이징 강도 변화율을 제어합니다. 적극적: 대부분의 변화가 루프 시작 부분에서 발생합니다. 선형: 모든 루프에서 변화가 일정합니다. 느림: 대부분의 변화가 루프 끝 부분에서 발생합니다."
     },
     {
       "id": "",
       "label": "Tile overlap",
-      "localized": "타일 겹침",
-      "hint": "SD 업스케일의 경우 타일 사이에 얼마나 많은 픽셀이 겹쳐야 하는지. 타일은 겹쳐서 하나의 그림으로 다시 병합될 때 눈에 띄는 이음매가 없도록 합니다"
+      "localized": "타일 오버랩",
+      "hint": "SD 업스케일의 경우 타일 사이에 얼마나 많은 픽셀이 겹쳐야 하는지입니다. 타일은 다시 하나의 그림으로 병합될 때 명확하게 보이는 이음매가 없도록 겹칩니다."
+    },
+    {
+      "id": "",
+      "label": "ACI: Color to Mask",
+      "localized": "ACI: 마스크할 색상",
+      "hint": "마스크 및 인페인트하려는 색상을 선택하십시오. 이미지에서 색상을 클릭하여 자동으로 선택합니다. 정확한 결과를 얻으려면 녹색 화면과 같은 이미지를 사용하는 것이 좋습니다."
+    },
+    {
+      "id": "",
+      "label": "ACI: Color Tolerance",
+      "localized": "ACI: 색상 허용 오차",
+      "hint": "마스크에 유사한 색상을 포함하도록 허용 오차를 조정합니다. 값이 낮을수록 매우 유사한 색상만 마스크합니다. 높을수록 더 넓은 범위의 유사한 색상을 마스크합니다."
+    },
+    {
+      "id": "",
+      "label": "ACI: Mask Erode",
+      "localized": "ACI: 마스크 침식",
+      "hint": "마스크에 내부 오프셋을 적용하도록 패딩을 조정합니다. (가장자리에 남은 부분을 제거하려면 권장 값 = 2)"
+    },
+    {
+      "id": "",
+      "label": "ACI: Mask Blur",
+      "localized": "ACI: 마스크 흐림",
+      "hint": "이미지와 인페인트 영역 사이의 부드러운 전환을 적용하도록 흐림을 조정합니다. (선명도를 위해서는 권장 값 = 0)"
+    },
+    {
+      "id": "",
+      "label": "ACI: Denoising Strength",
+      "localized": "ACI: 디노이징 강도",
+      "hint": "원하는 인페인트 양을 얻기 위해 디노이징 강도를 변경합니다."
     }
   ],
   "settings": [
     {
-      "id": "settings_submit",
+      "id": "",
       "label": "Apply settings",
       "localized": "설정 적용",
       "hint": "현재 설정을 저장합니다. 서버 재시작을 권장합니다."
     },
     {
-      "id": "restart_submit",
+      "id": "",
       "label": "Restart server",
       "localized": "서버 재시작",
       "hint": "서버를 재시작합니다."
     },
     {
-      "id": "shutdown_submit",
+      "id": "",
       "label": "Shutdown server",
       "localized": "서버 종료",
       "hint": "서버를 종료합니다."
     },
     {
-      "id": "settings_preview_theme",
+      "id": "",
       "label": "Preview theme",
       "localized": "테마 미리보기",
-      "hint": "테마 미리보기를 표시합니다."
+      "hint": "테마 미리보기를 보여줍니다."
     },
     {
-      "id": "defaults_submit",
+      "id": "",
       "label": "Restore defaults",
       "localized": "기본값 복원",
       "hint": "서버 설정을 기본값으로 복원합니다."
     },
     {
-      "id": "sett_unload_sd_model",
+      "id": "",
       "label": "Unload model",
       "localized": "모델 언로드",
       "hint": "현재 로드된 모델을 언로드합니다."
     },
     {
-      "id": "sett_reload_sd_model",
+      "id": "",
       "label": "Reload model",
       "localized": "모델 재로드",
       "hint": "현재 선택된 모델을 재로드합니다."
@@ -1302,163 +1398,163 @@
       "id": "",
       "label": "Models & Loading",
       "localized": "모델 및 로딩",
-      "hint": "기본 모델, 기본 백엔드 및 모델 로드 동작 관련 설정"
+      "hint": "기본 모델, 주요 백엔드 및 모델 로드 동작과 관련된 설정입니다."
     },
     {
       "id": "",
       "label": "Variable Auto Encoder",
       "localized": "Variable Auto Encoder",
-      "hint": "생성 중 가변 자동 인코더 및 이미지 디코딩 프로세스와 관련된 설정"
+      "hint": "가변 자동 인코더 및 생성 중 이미지 디코딩 프로세스와 관련된 설정입니다."
     },
     {
       "id": "",
       "label": "Text encoder",
       "localized": "텍스트 인코더",
-      "hint": "생성 중 텍스트 인코더 및 프롬프트 인코딩 처리 관련 설정"
+      "hint": "텍스트 인코더 및 생성 중 프롬프트 인코딩 프로세스와 관련된 설정입니다."
     },
     {
       "id": "",
       "label": "Compute Settings",
-      "localized": "컴퓨팅 설정",
-      "hint": "컴퓨팅 플랫폼에 대한 컴퓨팅 정밀도, 교차 어텐션 및 최적화 관련 설정"
+      "localized": "계산 설정",
+      "hint": "계산 플랫폼에 대한 계산 정확도, 교차 어텐션 및 최적화와 관련된 설정입니다."
     },
     {
       "id": "",
       "label": "Backend Settings",
       "localized": "백엔드 설정",
-      "hint": "torch, onnx 및 olive와 같은 컴퓨팅 백엔드 관련 설정"
+      "hint": "torch, onnx 및 olive와 같은 계산 백엔드와 관련된 설정입니다."
     },
     {
       "id": "",
       "label": "Quantization Settings",
       "localized": "양자화 설정",
-      "hint": "모델 양자화 관련 설정"
+      "hint": "모델 양자화와 관련된 설정입니다."
     },
     {
       "id": "",
       "label": "Pipeline modifiers",
       "localized": "파이프라인 수정자",
-      "hint": "생성 중에 활성화할 수 있는 추가 기능"
+      "hint": "생성 중에 활성화할 수 있는 추가 기능입니다."
     },
     {
       "id": "",
       "label": "Model compile",
       "localized": "모델 컴파일",
-      "hint": "다양한 모델 컴파일 방법 관련 설정"
+      "hint": "다양한 모델 컴파일 방법과 관련된 설정입니다."
     },
     {
       "id": "",
       "label": "System Paths",
       "localized": "시스템 경로",
-      "hint": "다양한 모델 디렉토리 위치 관련 설정"
+      "hint": "다양한 모델 디렉토리의 위치와 관련된 설정입니다."
     },
     {
       "id": "",
       "label": "Image Options",
       "localized": "이미지 옵션",
-      "hint": "이미지 형식, 메타데이터 및 이미지 그리드 관련 설정"
+      "hint": "이미지 형식, 메타데이터 및 이미지 그리드와 관련된 설정입니다."
     },
     {
       "id": "",
-      "label": "image Paths",
+      "label": "Image Paths",
       "localized": "이미지 경로",
-      "hint": "이미지 파일 이름 및 출력 디렉토리 관련 설정"
+      "hint": "이미지 파일 이름 및 출력 디렉토리와 관련된 설정입니다."
     },
     {
       "id": "",
       "label": "Live Previews",
-      "localized": "실시간 미리보기",
-      "hint": "실시간 미리보기, 오디오 알림 관련 설정"
+      "localized": "라이브 미리보기",
+      "hint": "라이브 미리보기, 오디오 알림과 관련된 설정입니다."
     },
     {
       "id": "",
       "label": "Sampler Settings",
       "localized": "샘플러 설정",
-      "hint": "샘플러 선택 및 구성, 디퓨저 특정 샘플러 구성 관련 설정"
+      "hint": "샘플러 선택 및 구성, 디퓨저 특정 샘플러 구성과 관련된 설정입니다."
     },
     {
       "id": "",
       "label": "Postprocessing",
       "localized": "후처리",
-      "hint": "이미지 생성 후 처리, 얼굴 복원 및 업스케일링 관련 설정"
+      "hint": "이미지 생성 후 처리, 얼굴 복원 및 업스케일링과 관련된 설정입니다."
     },
     {
       "id": "",
       "label": "Control Options",
       "localized": "컨트롤 옵션",
-      "hint": "컨트롤 탭 관련 설정"
+      "hint": "Control 탭과 관련된 설정입니다."
     },
     {
       "id": "",
       "label": "Huggingface",
       "localized": "Huggingface",
-      "hint": "Huggingface 액세스 관련 설정"
+      "hint": "Huggingface 액세스와 관련된 설정입니다."
     },
     {
       "id": "",
       "label": "Show all pages",
       "localized": "모든 페이지 표시",
-      "hint": "모든 설정 페이지 표시"
+      "hint": "모든 설정 페이지를 표시합니다."
     },
     {
       "id": "",
-      "label": "base model",
+      "label": "Base model",
       "localized": "기본 모델",
-      "hint": "모든 작업에 사용되는 기본 모델"
+      "hint": "모든 작업에 사용되는 메인 모델입니다."
     },
     {
       "id": "",
-      "label": "refiner model",
+      "label": "Refiner model",
       "localized": "리파이너 모델",
-      "hint": "두 번째 패스 작업에 사용되는 리파이너 모델"
+      "hint": "두 번째 패스 작업에 사용되는 리파이너 모델입니다."
     },
     {
       "id": "",
       "label": "Cached models",
       "localized": "캐시된 모델",
-      "hint": "빠른 액세스를 위해 RAM에 저장할 모델 수"
+      "hint": "빠른 액세스를 위해 RAM에 저장할 모델 수입니다."
     },
     {
       "id": "",
       "label": "VAE model",
       "localized": "VAE 모델",
-      "hint": "VAE는 최종 이미지의 미세한 디테일을 돕고 색상을 변경할 수도 있습니다."
+      "hint": "VAE는 최종 이미지의 세밀한 디테일을 돕고 색상을 변경할 수도 있습니다."
     },
     {
       "id": "",
       "label": "Model load using streams",
       "localized": "스트림을 사용하여 모델 로드",
-      "hint": "모델을 로드할 때 느리거나 네트워크 스토리지에 최적화된 스트림 로드를 시도합니다."
+      "hint": "모델 로드 시 느린 또는 네트워크 저장소에 최적화된 스트림 로드를 시도합니다."
     },
     {
       "id": "",
       "label": "xFormers",
       "localized": "xFormers",
-      "hint": "메모리 최적화. 비결정적 (매번 다른 결과)"
+      "hint": "메모리 최적화. 비결정적 (매번 다른 결과)."
     },
     {
       "id": "",
       "label": "Scaled-Dot-Product",
       "localized": "Scaled-Dot-Product",
-      "hint": "메모리 최적화. SDP 메모리 어텐션이 비활성화되지 않는 한 비결정적입니다."
+      "hint": "메모리 최적화. SDP 메모리 어텐션이 비활성화되지 않는 한 비결정적."
     },
     {
       "id": "",
       "label": "Prompt padding",
       "localized": "프롬프트 패딩",
-      "hint": "75개 이상의 토큰을 사용할 때 마지막 쉼표로부터 n개 토큰 내에서 패딩하여 일관성을 높입니다."
+      "hint": "75개 이상의 토큰을 사용하는 경우 마지막 쉼표에서 n개의 토큰 내에서 패딩하여 일관성을 높입니다."
     },
     {
       "id": "",
       "label": "Original",
       "localized": "원본",
-      "hint": "원본 LDM 백엔드"
+      "hint": "원본 LDM 백엔드."
     },
     {
       "id": "",
       "label": "Autocast",
       "localized": "Autocast",
-      "hint": "런타임 중에 정밀도를 자동으로 결정합니다."
+      "hint": "런타임 중 자동으로 정밀도를 결정합니다."
     },
     {
       "id": "",
@@ -1488,25 +1584,25 @@
       "id": "",
       "label": "Full precision (--no-half-vae)",
       "localized": "전체 정밀도 (--no-half-vae)",
-      "hint": "VAE에 FP32를 사용합니다. 더 많은 VRAM을 사용하고 생성 속도가 느리지만 더 나은 결과를 얻을 수 있습니다."
+      "hint": "VAE에 FP32를 사용합니다. 더 많은 VRAM을 사용하고 생성 속도가 느려지지만 더 나은 결과를 생성할 수 있습니다."
     },
     {
       "id": "",
       "label": "Force full precision (--no-half)",
       "localized": "전체 정밀도 강제 (--no-half)",
-      "hint": "모델에 FP32를 사용합니다. 더 많은 VRAM을 사용하고 생성 속도가 느리지만 더 나은 결과를 얻을 수 있습니다."
+      "hint": "모델에 FP32를 사용합니다. 더 많은 VRAM을 사용하고 생성 속도가 느려지지만 더 나은 결과를 생성할 수 있습니다."
     },
     {
       "id": "",
       "label": "Upcast sampling",
       "localized": "업캐스트 샘플링",
-      "hint": "일반적으로 --no-half와 유사한 결과를 더 나은 성능과 적은 메모리 사용량으로 생성합니다."
+      "hint": "일반적으로 메모리 사용량을 줄이면서 더 나은 성능으로 --no-half와 유사한 결과를 생성합니다."
     },
     {
       "id": "",
       "label": "Attempt VAE roll back for NaN values",
       "localized": "NaN 값에 대한 VAE 롤백 시도",
-      "hint": "Torch 2.1 및 NaN 검사가 활성화되어 있어야 합니다."
+      "hint": "Torch 2.1 및 NaN 검사가 활성화되어야 합니다."
     },
     {
       "id": "",
@@ -1517,14 +1613,14 @@
     {
       "id": "",
       "label": "Olive force FP32 for VAE Encoder",
-      "localized": "VAE 인코더에 대한 Olive FP32 강제",
-      "hint": "출력 모델의 VAE 인코더에 32비트 부동 소수점 정밀도를 사용합니다. 이는 '최적화 시 FP16 사용' 옵션을 재정의합니다. Img2Img에서 NaN 또는 검은색 빈 이미지가 발생하는 경우 이 옵션을 활성화하고 캐시를 제거하십시오."
+      "localized": "Olive VAE 인코더에 FP32 강제 사용",
+      "hint": "출력 모델의 VAE 인코더에 대해 32비트 부동 소수점 정밀도를 사용합니다. '최적화 시 FP16 사용' 옵션을 재정의합니다. Img2Img에서 NaN 또는 검은색 빈 이미지가 나타나는 경우 이 옵션을 활성화하고 캐시를 제거하십시오."
     },
     {
       "id": "",
       "label": "Olive use static dimensions",
       "localized": "Olive 정적 크기 사용",
-      "hint": "Olive 최적화 모델을 사용하여 추론을 훨씬 빠르게 만듭니다. (OrtTransformersOptimization)"
+      "hint": "Olive 최적화 모델을 사용한 추론을 훨씬 빠르게 만듭니다. (OrtTransformersOptimization)"
     },
     {
       "id": "",
@@ -1542,85 +1638,85 @@
       "id": "",
       "label": "Include metadata",
       "localized": "메타데이터 포함",
-      "hint": "이미지 생성 매개변수를 이미지 파일 내부에 메타데이터 태그로 저장합니다."
+      "hint": "이미지 생성 매개변수를 이미지 파일 내의 메타데이터 태그로 저장합니다."
     },
     {
       "id": "",
       "label": "Images filename pattern",
       "localized": "이미지 파일 이름 패턴",
-      "hint": "다음 태그를 사용하여 이미지 파일 이름을 선택하는 방법을 정의합니다.:<br><pre>seq, uuid<br>date, datetime, job_timestamp<br>generation_number, batch_number<br>model, model_shortname<br>model_hash, model_name<br>sampler, seed, steps, cfg<br>clip_skip, denoising<br>hasprompt, prompt, styles<br>prompt_hash, prompt_no_styles<br>prompt_spaces, prompt_words<br>height, width, image_hash<br></pre>"
+      "hint": "다음 태그를 사용하여 이미지 파일 이름을 선택하는 방법을 정의하십시오:<br><pre>seq, uuid<br>date, datetime, job_timestamp<br>generation_number, batch_number<br>model, model_shortname<br>model_hash, model_name<br>sampler, seed, steps, cfg<br>clip_skip, denoising<br>hasprompt, prompt, styles<br>prompt_hash, prompt_no_styles<br>prompt_spaces, prompt_words<br>height, width, image_hash<br></pre>"
     },
     {
       "id": "",
       "label": "Row count",
       "localized": "행 수",
-      "hint": "자동 감지를 위해 -1을 사용하고 배치 크기와 동일하게 하려면 0을 사용합니다."
+      "hint": "자동 감지를 위해 -1을 사용하고, 배치 크기와 동일하게 하려면 0을 사용하십시오."
     },
     {
       "id": "",
       "label": "Directory name pattern",
       "localized": "디렉토리 이름 패턴",
-      "hint": "다음 태그를 사용하여 이미지 및 그리드에 대한 하위 디렉토리를 선택하는 방법을 정의합니다.: [steps], [cfg],[prompt_hash], [prompt], [prompt_no_styles], [prompt_spaces], [width], [height], [styles], [sampler], [seed], [model_hash], [model_name], [prompt_words], [date], [datetime], [datetime<Format>], [datetime<Format><Time Zone>], [job_timestamp]; 기본값을 사용하려면 비워 둡니다."
+      "hint": "다음 태그를 사용하여 이미지 및 그리드에 대한 하위 디렉토리를 선택하는 방법을 정의하십시오: [steps], [cfg],[prompt_hash], [prompt], [prompt_no_styles], [prompt_spaces], [width], [height], [styles], [sampler], [seed], [model_hash], [model_name], [prompt_words], [date], [datetime], [datetime<Format>], [datetime<Format><Time Zone>], [job_timestamp]; 기본값은 비워 두십시오."
     },
     {
       "id": "",
       "label": "Inpainting conditioning mask strength",
-      "localized": "인페인팅 컨디셔닝 마스크 강도",
-      "hint": "인페인팅 및 img2img에 대해 원본 이미지를 얼마나 강하게 마스킹할지 결정합니다. 1.0은 완전히 마스킹됨(기본값)을 의미합니다. 0.0은 완전히 마스킹되지 않은 컨디셔닝을 의미합니다. 값이 낮을수록 이미지의 전체 구성을 보존하는 데 도움이 되지만 큰 변경에는 어려움을 겪습니다."
+      "localized": "Inpainting 컨디셔닝 마스크 강도",
+      "hint": "인페인팅 및 img2img에 대해 원래 이미지를 마스크 오프하는 강도를 결정합니다. 1.0은 완전히 마스크됨(기본값)을 의미합니다. 0.0은 완전히 마스크 해제된 컨디셔닝을 의미합니다. 낮은 값은 이미지의 전체 구성을 보존하는 데 도움이 되지만 큰 변경에는 어려움을 겪습니다."
     },
     {
       "id": "",
       "label": "Clip skip",
       "localized": "Clip skip",
-      "hint": "CLIP 모델의 초기 중단 매개변수; 1은 평소와 같이 마지막 레이어에서 중단하고, 2는 끝에서 두 번째 레이어에서 중단하는 식입니다."
+      "hint": "CLIP 모델의 초기 중단 매개변수; 1은 평소와 같이 마지막 레이어에서 중지하고, 2는 끝에서 두 번째 레이어에서 중지하는 식입니다."
     },
     {
       "id": "",
       "label": "Images folder",
       "localized": "이미지 폴더",
-      "hint": "비어 있는 경우 아래 세 개의 디렉토리로 기본 설정됩니다."
+      "hint": "비어 있으면 아래 3개의 디렉토리로 기본 설정됩니다."
     },
     {
       "id": "",
       "label": "Grids folder",
       "localized": "그리드 폴더",
-      "hint": "비어 있는 경우 아래 두 개의 디렉토리로 기본 설정됩니다."
+      "hint": "비어 있으면 아래 2개의 디렉토리로 기본 설정됩니다."
     },
     {
       "id": "",
       "label": "Quicksettings list",
       "localized": "빠른 설정 목록",
-      "hint": "설정 탭 대신 상단의 빠른 액세스 바에 표시될 설정에 대한 설정 이름의 쉼표로 구분된 목록입니다."
+      "hint": "설정 탭 대신 상단의 빠른 액세스 막대로 이동해야 하는 설정에 대한 쉼표로 구분된 설정 이름 목록입니다."
     },
     {
       "id": "",
       "label": "Live preview display period",
-      "localized": "실시간 미리보기 표시 주기",
-      "hint": "n 단계마다 미리보기 이미지를 요청합니다. 사용하지 않으려면 0으로 설정합니다."
+      "localized": "라이브 미리보기 표시 주기",
+      "hint": "n단계마다 미리보기 이미지를 요청합니다. 비활성화하려면 0으로 설정하십시오."
     },
     {
       "id": "",
       "label": "Approximate",
       "localized": "대략적",
-      "hint": "저렴한 신경망 근사. VAE에 비해 매우 빠르지만 가로/세로 해상도가 4배 작고 품질이 낮은 사진을 생성합니다."
+      "hint": "저렴한 신경망 근사. VAE에 비해 매우 빠르지만 수평/수직 해상도가 4배 작고 품질이 낮은 사진을 생성합니다."
     },
     {
       "id": "",
       "label": "Simple",
-      "localized": "단순",
-      "hint": "매우 저렴한 근사. VAE에 비해 매우 빠르지만 가로/세로 해상도가 8배 작고 품질이 매우 낮은 사진을 생성합니다."
+      "localized": "간단한",
+      "hint": "매우 저렴한 근사. VAE에 비해 매우 빠르지만 수평/수직 해상도가 8배 작고 품질이 매우 낮은 사진을 생성합니다."
     },
     {
       "id": "",
       "label": "Progress update period",
       "localized": "진행률 업데이트 주기",
-      "hint": "UI 진행률 막대 및 미리보기 확인을 위한 업데이트 주기(밀리초 단위)"
+      "hint": "UI 진행률 막대 및 미리보기 검사에 대한 업데이트 주기 (밀리초 단위)."
     },
     {
       "id": "",
       "label": "Euler a",
       "localized": "Euler a",
-      "hint": "Euler Ancestral - 매우 창의적이며 단계 수에 따라 완전히 다른 그림을 얻을 수 있으며 30-40단계보다 높게 설정하는 것은 도움이 되지 않습니다."
+      "hint": "Euler Ancestral - 매우 창의적이며 단계 수에 따라 완전히 다른 그림을 얻을 수 있으며, 30-40단계 이상으로 설정해도 도움이 되지 않습니다."
     },
     {
       "id": "",
@@ -1632,13 +1728,13 @@
       "id": "",
       "label": "UniPC",
       "localized": "UniPC",
-      "hint": "확산 모델의 빠른 샘플링을 위한 통합 예측기-수정자 프레임워크"
+      "hint": "Diffusion 모델의 빠른 샘플링을 위한 통합 예측기-수정기 프레임워크"
     },
     {
       "id": "",
-      "label": "sigma negative guidance minimum",
-      "localized": "시그마 음수 지침 최소값",
-      "hint": "이미지가 거의 준비되었을 때 일부 단계에 대한 음수 프롬프트를 건너뜁니다. 0=비활성화"
+      "label": "Sigma negative guidance minimum",
+      "localized": "시그마 음수 가이던스 최소값",
+      "hint": "이미지가 거의 준비되면 일부 단계에 대해 음수 프롬프트를 건너뜁니다. 0=비활성화"
     },
     {
       "id": "",
@@ -1650,7 +1746,7 @@
       "id": "",
       "label": "Upscaler tile overlap",
       "localized": "업스케일러 타일 겹침",
-      "hint": "낮은 값 = 보이는 이음새"
+      "hint": "낮은 값 = 보이는 솔기"
     },
     {
       "id": "",
@@ -1660,33 +1756,39 @@
     },
     {
       "id": "",
+      "label": "CodeFormer",
+      "localized": "CodeFormer",
+      "hint": "CodeFormer 신경망을 사용하여 저품질 얼굴을 복원합니다."
+    },
+    {
+      "id": "",
       "label": "CodeFormer weight parameter",
-      "localized": "CodeFormer 가중치 매개변수",
+      "localized": "CodeFormer 가중치 파라미터",
       "hint": "0 = 최대 효과; 1 = 최소 효과"
     },
     {
       "id": "",
       "label": "ToMe token merging ratio",
       "localized": "ToMe 토큰 병합 비율",
-      "hint": "속도 및 메모리 개선을 위해 tomesd를 통해 중복 토큰 병합을 활성화합니다. 0=비활성화"
+      "hint": "속도 및 메모리 향상을 위해 tomesd를 통해 중복 토큰 병합을 활성화합니다. 0=비활성화"
     },
     {
       "id": "",
       "label": "Todo token merging ratio",
       "localized": "Todo 토큰 병합 비율",
-      "hint": "속도 및 메모리 개선을 위해 todo를 통해 중복 토큰 병합을 활성화합니다. 0=비활성화"
+      "hint": "속도 및 메모리 향상을 위해 todo를 통해 중복 토큰 병합을 활성화합니다. 0=비활성화"
     },
     {
       "id": "",
       "label": "Model pipeline",
       "localized": "모델 파이프라인",
-      "hint": "자동 감지가 모델을 자동으로 감지하지 못하는 경우 모델을 로드하기 전에 모델 유형을 선택합니다."
+      "hint": "자동 감지가 모델을 자동으로 감지하지 못하면 모델을 로드하기 전에 모델 유형을 선택하십시오."
     },
     {
       "id": "",
       "label": "VAE slicing",
       "localized": "VAE 슬라이싱",
-      "hint": "제한된 VRAM으로 배치 잠재적 변수를 한 번에 하나의 이미지로 디코딩합니다. 다중 이미지 배치에서 VAE 디코딩의 성능이 약간 향상됩니다."
+      "hint": "제한된 VRAM으로 배치의 잠재 공간을 한 번에 하나의 이미지로 디코딩합니다. 다중 이미지 배치에서 VAE 디코딩 시 약간의 성능 향상."
     },
     {
       "id": "",
@@ -1710,7 +1812,7 @@
       "id": "",
       "label": "ONNX allow fallback to CPU",
       "localized": "ONNX CPU로 폴백 허용",
-      "hint": "선택한 실행 공급자가 실패할 때 CPU로 폴백을 허용합니다."
+      "hint": "선택한 실행 공급자가 실패한 경우 CPU로 폴백을 허용합니다."
     },
     {
       "id": "",
@@ -1726,27 +1828,27 @@
     },
     {
       "id": "",
-      "label": "inference-mode",
-      "localized": "inference-mode",
-      "hint": "torch.inference_mode를 사용합니다."
+      "label": "Inference-mode",
+      "localized": "추론 모드",
+      "hint": "torch.inference_mode 사용"
     },
     {
       "id": "",
       "label": "no-grad",
       "localized": "no-grad",
-      "hint": "torch.no_grad를 사용합니다."
+      "hint": "torch.no_grad 사용"
     },
     {
       "id": "",
-      "label": "model compile precompile",
+      "label": "Model compile precompile",
       "localized": "모델 컴파일 사전 컴파일",
-      "hint": "처음 사용할 때 대신 모델 로드 시 즉시 모델 컴파일을 실행합니다."
+      "hint": "처음 사용 시가 아닌 모델 로드 시 모델 컴파일을 즉시 실행합니다."
     },
     {
       "id": "",
       "label": "Use zeros for prompt padding",
       "localized": "프롬프트 패딩에 0 사용",
-      "hint": "프롬프트가 비어 있을 때 잔류 노이즈를 제거하기 위해 전체 0 텐서를 강제로 적용합니다."
+      "hint": "프롬프트가 비어 있을 때 잔류 노이즈를 제거하기 위해 완전한 제로 텐서를 강제합니다."
     },
     {
       "id": "",
@@ -1763,14 +1865,14 @@
     {
       "id": "",
       "label": "show log view",
-      "localized": "로그 보기 표시",
-      "hint": "메인 창 하단에 로그 보기를 표시합니다."
+      "localized": "로그 뷰 보기",
+      "hint": "메인 창 하단에 로그 뷰를 표시합니다."
     },
     {
       "id": "",
       "label": "Log view update period",
-      "localized": "로그 보기 업데이트 주기",
-      "hint": "로그 보기 업데이트 주기(밀리초 단위)"
+      "localized": "로그 뷰 업데이트 주기",
+      "hint": "로그 뷰 업데이트 주기 (밀리초 단위)."
     },
     {
       "id": "",
@@ -1780,18 +1882,6 @@
     }
   ],
   "missing": [
-    {
-      "id": "",
-      "label": "1 day",
-      "localized": "1일",
-      "hint": "1일"
-    },
-    {
-      "id": "",
-      "label": "14 days",
-      "localized": "14일",
-      "hint": "14일"
-    },
     {
       "id": "",
       "label": "1st stage",
@@ -1842,18 +1932,6 @@
     },
     {
       "id": "",
-      "label": "3 days",
-      "localized": "3일",
-      "hint": "3일"
-    },
-    {
-      "id": "",
-      "label": "30 days",
-      "localized": "30일",
-      "hint": "30일"
-    },
-    {
-      "id": "",
       "label": "3rd restart step",
       "localized": "3차 재시작 단계",
       "hint": "3차 재시작 단계"
@@ -1890,18 +1968,6 @@
     },
     {
       "id": "",
-      "label": "7 days",
-      "localized": "7일",
-      "hint": "7일"
-    },
-    {
-      "id": "",
-      "label": "90 days",
-      "localized": "90일",
-      "hint": "90일"
-    },
-    {
-      "id": "",
       "label": "a1111",
       "localized": "a1111",
       "hint": "a1111"
@@ -1911,6 +1977,12 @@
       "label": "accuracy",
       "localized": "정확도",
       "hint": "정확도"
+    },
+    {
+      "id": "",
+      "label": "aci: mask dilate",
+      "localized": "aci: 마스크 확장",
+      "hint": "aci: 마스크 확장"
     },
     {
       "id": "",
@@ -1951,8 +2023,8 @@
     {
       "id": "",
       "label": "adaptive restore",
-      "localized": "적응적 복원",
-      "hint": "적응적 복원"
+      "localized": "적응형 복원",
+      "hint": "적응형 복원"
     },
     {
       "id": "",
@@ -1980,6 +2052,12 @@
     },
     {
       "id": "",
+      "label": "advanced options",
+      "localized": "고급 옵션",
+      "hint": "고급 옵션"
+    },
+    {
+      "id": "",
       "label": "after",
       "localized": "후",
       "hint": "후"
@@ -1987,8 +2065,8 @@
     {
       "id": "",
       "label": "aggressive at step",
-      "localized": "단계에서 적극적",
-      "hint": "단계에서 적극적"
+      "localized": "단계별 공격성",
+      "hint": "단계별 공격성"
     },
     {
       "id": "",
@@ -1999,8 +2077,8 @@
     {
       "id": "",
       "label": "all",
-      "localized": "모두",
-      "hint": "모두"
+      "localized": "전체",
+      "hint": "전체"
     },
     {
       "id": "",
@@ -2017,8 +2095,8 @@
     {
       "id": "",
       "label": "alpha block weight preset",
-      "localized": "알파 블록 가중치 사전 설정",
-      "hint": "알파 블록 가중치 사전 설정"
+      "localized": "알파 블록 가중치 프리셋",
+      "hint": "알파 블록 가중치 프리셋"
     },
     {
       "id": "",
@@ -2037,12 +2115,6 @@
       "label": "alpha ratio",
       "localized": "알파 비율",
       "hint": "알파 비율"
-    },
-    {
-      "id": "",
-      "label": "alt",
-      "localized": "대체",
-      "hint": "대체"
     },
     {
       "id": "",
@@ -2065,8 +2137,8 @@
     {
       "id": "",
       "label": "animateddiff",
-      "localized": "애니메이션 확산",
-      "hint": "애니메이션 확산"
+      "localized": "AnimatedDiff",
+      "hint": "AnimatedDiff"
     },
     {
       "id": "",
@@ -2088,6 +2160,12 @@
     },
     {
       "id": "",
+      "label": "append caption files",
+      "localized": "캡션 파일 추가",
+      "hint": "캡션 파일 추가"
+    },
+    {
+      "id": "",
       "label": "append image info json file",
       "localized": "이미지 정보 JSON 파일 추가",
       "hint": "이미지 정보 JSON 파일 추가"
@@ -2095,14 +2173,8 @@
     {
       "id": "",
       "label": "append interrogated prompt at each iteration",
-      "localized": "각 반복 시마다 질의된 프롬프트 추가",
-      "hint": "각 반복 시마다 질의된 프롬프트 추가"
-    },
-    {
-      "id": "",
-      "label": "append to main ui",
-      "localized": "메인 UI에 추가",
-      "hint": "메인 UI에 추가"
+      "localized": "각 반복 시 프롬프트 추가",
+      "hint": "각 반복 시 프롬프트 추가"
     },
     {
       "id": "",
@@ -2131,8 +2203,8 @@
     {
       "id": "",
       "label": "apply msw-msa",
-      "localized": "MSW-MSA 적용",
-      "hint": "MSW-MSA 적용"
+      "localized": "msw-msa 적용",
+      "hint": "msw-msa 적용"
     },
     {
       "id": "",
@@ -2151,12 +2223,6 @@
       "label": "artists",
       "localized": "아티스트",
       "hint": "아티스트"
-    },
-    {
-      "id": "",
-      "label": "as a tab",
-      "localized": "탭으로",
-      "hint": "탭으로"
     },
     {
       "id": "",
@@ -2185,8 +2251,8 @@
     {
       "id": "",
       "label": "attention chunking threshold",
-      "localized": "어텐션 청크 임계값",
-      "hint": "어텐션 청크 임계값"
+      "localized": "어텐션 청킹 임계값",
+      "hint": "어텐션 청킹 임계값"
     },
     {
       "id": "",
@@ -2214,15 +2280,9 @@
     },
     {
       "id": "",
-      "label": "auto requeue failed tasks",
-      "localized": "실패한 작업 자동 재대기열",
-      "hint": "실패한 작업 자동 재대기열"
-    },
-    {
-      "id": "",
       "label": "auto-convert sd15 embeddings to sdxl",
-      "localized": "SD1.5 임베딩을 SDXL로 자동 변환",
-      "hint": "SD1.5 임베딩을 SDXL로 자동 변환"
+      "localized": "SD15 임베딩을 SDXL로 자동 변환",
+      "hint": "SD15 임베딩을 SDXL로 자동 변환"
     },
     {
       "id": "",
@@ -2269,8 +2329,8 @@
     {
       "id": "",
       "label": "backend storage",
-      "localized": "백엔드 스토리지",
-      "hint": "백엔드 스토리지"
+      "localized": "백엔드 저장소",
+      "hint": "백엔드 저장소"
     },
     {
       "id": "",
@@ -2287,20 +2347,20 @@
     {
       "id": "",
       "label": "balanced offload cpu high watermark",
-      "localized": "균형 잡힌 오프로드 CPU High Watermark",
-      "hint": "균형 잡힌 오프로드 CPU High Watermark"
+      "localized": "균형 오프로드 CPU 최대 워터마크",
+      "hint": "균형 오프로드 CPU 최대 워터마크"
     },
     {
       "id": "",
       "label": "balanced offload gpu high watermark",
-      "localized": "균형 잡힌 오프로드 GPU High Watermark",
-      "hint": "균형 잡힌 오프로드 GPU High Watermark"
+      "localized": "균형 오프로드 GPU 최대 워터마크",
+      "hint": "균형 오프로드 GPU 최대 워터마크"
     },
     {
       "id": "",
       "label": "balanced offload gpu low watermark",
-      "localized": "균형 잡힌 오프로드 GPU Low Watermark",
-      "hint": "균형 잡힌 오프로드 GPU Low Watermark"
+      "localized": "균형 오프로드 GPU 최소 워터마크",
+      "hint": "균형 오프로드 GPU 최소 워터마크"
     },
     {
       "id": "",
@@ -2310,9 +2370,27 @@
     },
     {
       "id": "",
+      "label": "batch caption",
+      "localized": "배치 캡션",
+      "hint": "배치 캡션"
+    },
+    {
+      "id": "",
       "label": "batch input directory",
       "localized": "배치 입력 디렉토리",
       "hint": "배치 입력 디렉토리"
+    },
+    {
+      "id": "",
+      "label": "batch interogate",
+      "localized": "배치 이미지 설명",
+      "hint": "배치 이미지 설명"
+    },
+    {
+      "id": "",
+      "label": "batch interrogate",
+      "localized": "배치 이미지 정보 분석",
+      "hint": "배치 이미지 정보 분석"
     },
     {
       "id": "",
@@ -2329,8 +2407,8 @@
     {
       "id": "",
       "label": "batch mode uses sequential seeds",
-      "localized": "배치 모드에서 순차적 시드 사용",
-      "hint": "배치 모드에서 순차적 시드 사용"
+      "localized": "배치 모드는 순차적 시드 사용",
+      "hint": "배치 모드는 순차적 시드 사용"
     },
     {
       "id": "",
@@ -2341,14 +2419,14 @@
     {
       "id": "",
       "label": "batch uses original name",
-      "localized": "배치에서 원본 이름 사용",
-      "hint": "배치에서 원본 이름 사용"
+      "localized": "배치는 원본 이름 사용",
+      "hint": "배치는 원본 이름 사용"
     },
     {
       "id": "",
       "label": "bdia ddim",
-      "localized": "BDIA DDIM",
-      "hint": "BDIA DDIM"
+      "localized": "bdia ddim",
+      "hint": "bdia ddim"
     },
     {
       "id": "",
@@ -2371,8 +2449,8 @@
     {
       "id": "",
       "label": "beta block weight preset",
-      "localized": "베타 블록 가중치 사전 설정",
-      "hint": "베타 블록 가중치 사전 설정"
+      "localized": "베타 블록 가중치 프리셋",
+      "hint": "베타 블록 가중치 프리셋"
     },
     {
       "id": "",
@@ -2397,12 +2475,6 @@
       "label": "beta start",
       "localized": "베타 시작",
       "hint": "베타 시작"
-    },
-    {
-      "id": "",
-      "label": "between prompt and generate button",
-      "localized": "프롬프트와 생성 버튼 사이",
-      "hint": "프롬프트와 생성 버튼 사이"
     },
     {
       "id": "",
@@ -2437,8 +2509,8 @@
     {
       "id": "",
       "label": "body",
-      "localized": "본문",
-      "hint": "본문"
+      "localized": "몸체",
+      "hint": "몸체"
     },
     {
       "id": "",
@@ -2472,6 +2544,12 @@
     },
     {
       "id": "",
+      "label": "caption",
+      "localized": "캡션",
+      "hint": "캡션"
+    },
+    {
+      "id": "",
       "label": "caption model",
       "localized": "캡션 모델",
       "hint": "캡션 모델"
@@ -2497,8 +2575,8 @@
     {
       "id": "",
       "label": "change rate",
-      "localized": "변경 비율",
-      "hint": "변경 비율"
+      "localized": "변경 속도",
+      "hint": "변경 속도"
     },
     {
       "id": "",
@@ -2521,8 +2599,8 @@
     {
       "id": "",
       "label": "channels last",
-      "localized": "채널 라스트",
-      "hint": "채널 라스트"
+      "localized": "채널 마지막",
+      "hint": "채널 마지막"
     },
     {
       "id": "",
@@ -2550,12 +2628,6 @@
     },
     {
       "id": "",
-      "label": "civitai",
-      "localized": "Civitai",
-      "hint": "Civitai"
-    },
-    {
-      "id": "",
       "label": "civitai model type",
       "localized": "Civitai 모델 유형",
       "hint": "Civitai 모델 유형"
@@ -2565,6 +2637,12 @@
       "label": "civitai token",
       "localized": "Civitai 토큰",
       "hint": "Civitai 토큰"
+    },
+    {
+      "id": "",
+      "label": "ck flash attention",
+      "localized": "CK 플래시 어텐션",
+      "hint": "CK 플래시 어텐션"
     },
     {
       "id": "",
@@ -2580,15 +2658,15 @@
     },
     {
       "id": "",
-      "label": "clip batch model",
-      "localized": "CLIP 배치 모델",
-      "hint": "CLIP 배치 모델"
-    },
-    {
-      "id": "",
       "label": "clip model",
       "localized": "CLIP 모델",
       "hint": "CLIP 모델"
+    },
+    {
+      "id": "",
+      "label": "clip: chunk size",
+      "localized": "CLIP: 청크 크기",
+      "hint": "CLIP: 청크 크기"
     },
     {
       "id": "",
@@ -2610,9 +2688,9 @@
     },
     {
       "id": "",
-      "label": "clip: include scores in results",
-      "localized": "CLIP: 결과에 점수 포함",
-      "hint": "CLIP: 결과에 점수 포함"
+      "label": "clip: intermediate flavors",
+      "localized": "CLIP: 중간 플레이버",
+      "hint": "CLIP: 중간 플레이버"
     },
     {
       "id": "",
@@ -2641,8 +2719,8 @@
     {
       "id": "",
       "label": "clip: num beams",
-      "localized": "CLIP: 빔 개수",
-      "hint": "CLIP: 빔 개수"
+      "localized": "CLIP: 빔 수",
+      "hint": "CLIP: 빔 수"
     },
     {
       "id": "",
@@ -2689,14 +2767,8 @@
     {
       "id": "",
       "label": "coarse",
-      "localized": "거친",
-      "hint": "거친"
-    },
-    {
-      "id": "",
-      "label": "codeformer",
-      "localized": "CodeFormer",
-      "hint": "CodeFormer"
+      "localized": "대략적인",
+      "hint": "대략적인"
     },
     {
       "id": "",
@@ -2743,8 +2815,8 @@
     {
       "id": "",
       "label": "comma separated list with optional strength per lora",
-      "localized": "쉼표로 구분된 Lora 목록 (강도 선택 사항)",
-      "hint": "쉼표로 구분된 Lora 목록 (강도 선택 사항)"
+      "localized": "쉼표로 구분된 목록 (선택적으로 로라당 강도 지정)",
+      "hint": "쉼표로 구분된 목록 (선택적으로 로라당 강도 지정)"
     },
     {
       "id": "",
@@ -2755,8 +2827,8 @@
     {
       "id": "",
       "label": "compel",
-      "localized": "Compel",
-      "hint": "Compel"
+      "localized": "compel",
+      "hint": "compel"
     },
     {
       "id": "",
@@ -2827,26 +2899,26 @@
     {
       "id": "",
       "label": "control-lllite unit 1",
-      "localized": "Control-lllite 유닛 1",
-      "hint": "Control-lllite 유닛 1"
+      "localized": "control-lllite 유닛 1",
+      "hint": "control-lllite 유닛 1"
     },
     {
       "id": "",
       "label": "control-lllite unit 2",
-      "localized": "Control-lllite 유닛 2",
-      "hint": "Control-lllite 유닛 2"
+      "localized": "control-lllite 유닛 2",
+      "hint": "control-lllite 유닛 2"
     },
     {
       "id": "",
       "label": "control-lllite unit 3",
-      "localized": "Control-lllite 유닛 3",
-      "hint": "Control-lllite 유닛 3"
+      "localized": "control-lllite 유닛 3",
+      "hint": "control-lllite 유닛 3"
     },
     {
       "id": "",
       "label": "control-lllite unit 4",
-      "localized": "Control-lllite 유닛 4",
-      "hint": "Control-lllite 유닛 4"
+      "localized": "control-lllite 유닛 4",
+      "hint": "control-lllite 유닛 4"
     },
     {
       "id": "",
@@ -2970,27 +3042,15 @@
     },
     {
       "id": "",
-      "label": "ctrl",
-      "localized": "Ctrl",
-      "hint": "Ctrl"
-    },
-    {
-      "id": "",
       "label": "cudagraphs",
-      "localized": "CUDA 그래프",
-      "hint": "CUDA 그래프"
+      "localized": "Cuda 그래프",
+      "hint": "Cuda 그래프"
     },
     {
       "id": "",
       "label": "cudamallocasync",
       "localized": "cudamallocasync",
       "hint": "cudamallocasync"
-    },
-    {
-      "id": "",
-      "label": "current",
-      "localized": "현재",
-      "hint": "현재"
     },
     {
       "id": "",
@@ -3037,62 +3097,62 @@
     {
       "id": "",
       "label": "deep-cache",
-      "localized": "딥 캐시",
-      "hint": "딥 캐시"
+      "localized": "딥-캐시",
+      "hint": "딥-캐시"
     },
     {
       "id": "",
       "label": "deepbooru",
-      "localized": "Deepbooru",
-      "hint": "Deepbooru"
+      "localized": "딥부루",
+      "hint": "딥부루"
     },
     {
       "id": "",
       "label": "deepbooru: escape brackets",
-      "localized": "Deepbooru: 괄호 이스케이프",
-      "hint": "Deepbooru: 괄호 이스케이프"
+      "localized": "딥부루: 괄호 이스케이프",
+      "hint": "딥부루: 괄호 이스케이프"
     },
     {
       "id": "",
       "label": "deepbooru: exclude tags",
-      "localized": "Deepbooru: 태그 제외",
-      "hint": "Deepbooru: 태그 제외"
+      "localized": "딥부루: 태그 제외",
+      "hint": "딥부루: 태그 제외"
     },
     {
       "id": "",
       "label": "deepbooru: include scores in results",
-      "localized": "Deepbooru: 결과에 점수 포함",
-      "hint": "Deepbooru: 결과에 점수 포함"
+      "localized": "딥부루: 결과에 점수 포함",
+      "hint": "딥부루: 결과에 점수 포함"
     },
     {
       "id": "",
       "label": "deepbooru: max tags",
-      "localized": "Deepbooru: 최대 태그 수",
-      "hint": "Deepbooru: 최대 태그 수"
+      "localized": "딥부루: 최대 태그 수",
+      "hint": "딥부루: 최대 태그 수"
     },
     {
       "id": "",
       "label": "deepbooru: score threshold",
-      "localized": "Deepbooru: 점수 임계값",
-      "hint": "Deepbooru: 점수 임계값"
+      "localized": "딥부루: 점수 임계값",
+      "hint": "딥부루: 점수 임계값"
     },
     {
       "id": "",
       "label": "deepbooru: sort alphabetically",
-      "localized": "Deepbooru: 알파벳순 정렬",
-      "hint": "Deepbooru: 알파벳순 정렬"
+      "localized": "딥부루: 알파벳 순으로 정렬",
+      "hint": "딥부루: 알파벳 순으로 정렬"
     },
     {
       "id": "",
       "label": "deepbooru: use spaces for tags",
-      "localized": "Deepbooru: 태그에 공백 사용",
-      "hint": "Deepbooru: 태그에 공백 사용"
+      "localized": "딥부루: 태그에 공백 사용",
+      "hint": "딥부루: 태그에 공백 사용"
     },
     {
       "id": "",
       "label": "deepcache cache interval",
-      "localized": "Deepcache 캐시 간격",
-      "hint": "Deepcache 캐시 간격"
+      "localized": "딥캐시 캐시 간격",
+      "hint": "딥캐시 캐시 간격"
     },
     {
       "id": "",
@@ -3103,8 +3163,8 @@
     {
       "id": "",
       "label": "deis",
-      "localized": "Deis",
-      "hint": "Deis"
+      "localized": "deis",
+      "hint": "deis"
     },
     {
       "id": "",
@@ -3175,26 +3235,26 @@
     {
       "id": "",
       "label": "dilate",
-      "localized": "확장",
-      "hint": "확장"
+      "localized": "팽창",
+      "hint": "팽창"
     },
     {
       "id": "",
       "label": "dilate tau",
-      "localized": "확장 Tau",
-      "hint": "확장 Tau"
+      "localized": "팽창 Tau",
+      "hint": "팽창 Tau"
     },
     {
       "id": "",
       "label": "directml retry ops for nan",
-      "localized": "NaN에 대한 DirectML 재시도 연산",
-      "hint": "NaN에 대한 DirectML 재시도 연산"
+      "localized": "DirectML NaN에 대한 작업 재시도",
+      "hint": "DirectML NaN에 대한 작업 재시도"
     },
     {
       "id": "",
       "label": "directory for temporary images; leave empty for default",
-      "localized": "임시 이미지 디렉토리; 기본값을 사용하려면 비워두세요",
-      "hint": "임시 이미지를 위한 디렉토리, 기본값을 사용하려면 비워 두세요."
+      "localized": "임시 이미지 디렉토리; 기본값은 비워 두세요.",
+      "hint": "임시 이미지 디렉토리; 기본값은 비워 두세요."
     },
     {
       "id": "",
@@ -3205,20 +3265,8 @@
     {
       "id": "",
       "label": "disable conditional batching",
-      "localized": "조건부 일괄 처리 비활성화",
-      "hint": "조건부 일괄 처리 비활성화"
-    },
-    {
-      "id": "",
-      "label": "disable keyboard shortcut",
-      "localized": "키보드 단축키 비활성화",
-      "hint": "키보드 단축키 비활성화"
-    },
-    {
-      "id": "",
-      "label": "disable queue auto-processing",
-      "localized": "대기열 자동 처리 비활성화",
-      "hint": "대기열 자동 처리 비활성화"
+      "localized": "조건부 배치 처리 비활성화",
+      "hint": "조건부 배치 처리 비활성화"
     },
     {
       "id": "",
@@ -3229,8 +3277,8 @@
     {
       "id": "",
       "label": "discard penultimate sigma",
-      "localized": "마지막에서 두 번째 시그마 삭제",
-      "hint": "마지막에서 두 번째 시그마 삭제"
+      "localized": "끝에서 두 번째 시그마 버리기",
+      "hint": "끝에서 두 번째 시그마 버리기"
     },
     {
       "id": "",
@@ -3242,19 +3290,13 @@
       "id": "",
       "label": "do not change selected model when reading generation parameters",
       "localized": "생성 매개변수 읽을 때 선택된 모델 변경하지 않음",
-      "hint": "생성 매개변수를 읽을 때 선택된 모델을 변경하지 않습니다."
+      "hint": "생성 매개변수 읽을 때 선택된 모델 변경하지 않음"
     },
     {
       "id": "",
       "label": "do not display video output in ui",
       "localized": "UI에 비디오 출력 표시 안 함",
-      "hint": "UI에 비디오 출력을 표시하지 않습니다."
-    },
-    {
-      "id": "",
-      "label": "do nothing",
-      "localized": "아무것도 하지 않음",
-      "hint": "아무것도 하지 않음"
+      "hint": "UI에 비디오 출력 표시 안 함"
     },
     {
       "id": "",
@@ -3307,14 +3349,8 @@
     {
       "id": "",
       "label": "dpm++ 1s",
-      "localized": "DPM++ 1S",
-      "hint": "DPM++ 1S"
-    },
-    {
-      "id": "",
-      "label": "dpm++ 1s inverse",
-      "localized": "DPM++ 1S 역방향",
-      "hint": "DPM++ 1S 역방향"
+      "localized": "DPM++ 1s",
+      "hint": "DPM++ 1s"
     },
     {
       "id": "",
@@ -3357,6 +3393,18 @@
       "label": "dpm++ cosine",
       "localized": "DPM++ 코사인",
       "hint": "DPM++ 코사인"
+    },
+    {
+      "id": "",
+      "label": "dpm++ inverse",
+      "localized": "DPM++ 역방향",
+      "hint": "DPM++ 역방향"
+    },
+    {
+      "id": "",
+      "label": "dpm++ sde",
+      "localized": "DPM++ SDE",
+      "hint": "DPM++ SDE"
     },
     {
       "id": "",
@@ -3463,8 +3511,8 @@
     {
       "id": "",
       "label": "edit stop",
-      "localized": "편집 중단",
-      "hint": "편집 중단"
+      "localized": "편집 중지",
+      "hint": "편집 중지"
     },
     {
       "id": "",
@@ -3529,14 +3577,8 @@
     {
       "id": "",
       "label": "enhance prompt",
-      "localized": "프롬프트 개선",
-      "hint": "프롬프트 개선"
-    },
-    {
-      "id": "",
-      "label": "enqueue keyboard shortcut",
-      "localized": "대기열에 키보드 단축키 추가",
-      "hint": "대기열에 키보드 단축키 추가"
+      "localized": "프롬프트 향상",
+      "hint": "프롬프트 향상"
     },
     {
       "id": "",
@@ -3571,61 +3613,61 @@
     {
       "id": "",
       "label": "euler",
-      "localized": "Euler",
-      "hint": "Euler"
+      "localized": "오일러",
+      "hint": "오일러"
     },
     {
       "id": "",
       "label": "euler edm",
-      "localized": "Euler EDM",
-      "hint": "Euler EDM"
+      "localized": "오일러 EDM",
+      "hint": "오일러 EDM"
     },
     {
       "id": "",
       "label": "euler flowmatch",
-      "localized": "Euler Flowmatch",
-      "hint": "euler flowmatch"
+      "localized": "오일러 Flowmatch",
+      "hint": "오일러 Flowmatch"
     },
     {
       "id": "",
       "label": "euler sgm",
-      "localized": "Euler SGM",
-      "hint": "euler sgm"
+      "localized": "오일러 SGM",
+      "hint": "오일러 SGM"
     },
     {
       "id": "",
       "label": "executionprovider.cpu",
-      "localized": "ExecutionProvider.CPU",
+      "localized": "executionprovider.cpu",
       "hint": "executionprovider.cpu"
     },
     {
       "id": "",
       "label": "executionprovider.cuda",
-      "localized": "ExecutionProvider.CUDA",
+      "localized": "executionprovider.cuda",
       "hint": "executionprovider.cuda"
     },
     {
       "id": "",
       "label": "executionprovider.directml",
-      "localized": "ExecutionProvider.DirectML",
+      "localized": "executionprovider.directml",
       "hint": "executionprovider.directml"
     },
     {
       "id": "",
       "label": "executionprovider.migraphx",
-      "localized": "ExecutionProvider.Migraphx",
+      "localized": "executionprovider.migraphx",
       "hint": "executionprovider.migraphx"
     },
     {
       "id": "",
       "label": "executionprovider.openvino",
-      "localized": "ExecutionProvider.OpenVINO",
+      "localized": "executionprovider.openvino",
       "hint": "executionprovider.openvino"
     },
     {
       "id": "",
       "label": "executionprovider.rocm",
-      "localized": "ExecutionProvider.ROCm",
+      "localized": "executionprovider.rocm",
       "hint": "executionprovider.rocm"
     },
     {
@@ -3637,14 +3679,8 @@
     {
       "id": "",
       "label": "exponential",
-      "localized": "지수적",
-      "hint": "지수적"
-    },
-    {
-      "id": "",
-      "label": "export",
-      "localized": "내보내기",
-      "hint": "내보내기"
+      "localized": "지수",
+      "hint": "지수"
     },
     {
       "id": "",
@@ -3655,8 +3691,8 @@
     {
       "id": "",
       "label": "extra noise multiplier for img2img",
-      "localized": "img2img를 위한 추가 노이즈 배율",
-      "hint": "img2img를 위한 추가 노이즈 배율"
+      "localized": "img2img를 위한 추가 노이즈 곱셈기",
+      "hint": "img2img를 위한 추가 노이즈 곱셈기"
     },
     {
       "id": "",
@@ -3685,8 +3721,8 @@
     {
       "id": "",
       "label": "fall-off exponent (lower=higher detail)",
-      "localized": "폴오프 지수(낮을수록 디테일 증가)",
-      "hint": "폴오프 지수(낮을수록 디테일 증가)"
+      "localized": "폴오프 지수 (낮을수록 디테일 증가)",
+      "hint": "폴오프 지수 (낮을수록 디테일 증가)"
     },
     {
       "id": "",
@@ -3709,8 +3745,8 @@
     {
       "id": "",
       "label": "filename",
-      "localized": "파일명",
-      "hint": "파일명"
+      "localized": "파일 이름",
+      "hint": "파일 이름"
     },
     {
       "id": "",
@@ -3721,8 +3757,8 @@
     {
       "id": "",
       "label": "fixed unet precision",
-      "localized": "고정된 Unet 정밀도",
-      "hint": "고정된 Unet 정밀도"
+      "localized": "고정된 UNet 정밀도",
+      "hint": "고정된 UNet 정밀도"
     },
     {
       "id": "",
@@ -3733,8 +3769,8 @@
     {
       "id": "",
       "label": "flavors",
-      "localized": "플레이버",
-      "hint": "플레이버"
+      "localized": "향료",
+      "hint": "향료"
     },
     {
       "id": "",
@@ -3787,20 +3823,20 @@
     {
       "id": "",
       "label": "folder for init images",
-      "localized": "초기 이미지 폴더",
-      "hint": "초기 이미지 폴더"
+      "localized": "초기 이미지를 위한 폴더",
+      "hint": "초기 이미지를 위한 폴더"
     },
     {
       "id": "",
       "label": "folder for manually saved images",
-      "localized": "수동으로 저장된 이미지 폴더",
-      "hint": "수동으로 저장된 이미지 폴더"
+      "localized": "수동으로 저장된 이미지를 위한 폴더",
+      "hint": "수동으로 저장된 이미지를 위한 폴더"
     },
     {
       "id": "",
       "label": "folder for onnx cached models",
-      "localized": "ONNX 캐시된 모델 폴더",
-      "hint": "ONNX 캐시된 모델 폴더"
+      "localized": "ONNX 캐시 모델을 위한 폴더",
+      "hint": "ONNX 캐시 모델을 위한 폴더"
     },
     {
       "id": "",
@@ -3817,8 +3853,8 @@
     {
       "id": "",
       "label": "folder for processed images",
-      "localized": "처리된 이미지 폴더",
-      "hint": "처리된 이미지 폴더"
+      "localized": "처리된 이미지를 위한 폴더",
+      "hint": "처리된 이미지를 위한 폴더"
     },
     {
       "id": "",
@@ -3829,8 +3865,8 @@
     {
       "id": "",
       "label": "folder for tunable ops cache",
-      "localized": "튜닝 가능한 연산 캐시 폴더",
-      "hint": "튜닝 가능한 연산 캐시 폴더"
+      "localized": "튜닝 가능한 Ops 캐시 폴더",
+      "hint": "튜닝 가능한 Ops 캐시 폴더"
     },
     {
       "id": "",
@@ -3841,8 +3877,8 @@
     {
       "id": "",
       "label": "folder for videos",
-      "localized": "비디오 폴더",
-      "hint": "비디오 폴더"
+      "localized": "비디오를 위한 폴더",
+      "hint": "비디오를 위한 폴더"
     },
     {
       "id": "",
@@ -3895,8 +3931,8 @@
     {
       "id": "",
       "label": "folder with hypernetwork models",
-      "localized": "Hypernetwork 모델 폴더",
-      "hint": "Hypernetwork 모델 폴더"
+      "localized": "하이퍼네트워크 모델 폴더",
+      "hint": "하이퍼네트워크 모델 폴더"
     },
     {
       "id": "",
@@ -3907,8 +3943,8 @@
     {
       "id": "",
       "label": "folder with lora network(s)",
-      "localized": "LoRA 네트워크 폴더",
-      "hint": "LoRA 네트워크 폴더"
+      "localized": "Lora 네트워크 폴더",
+      "hint": "Lora 네트워크 폴더"
     },
     {
       "id": "",
@@ -3949,8 +3985,8 @@
     {
       "id": "",
       "label": "folder with unet files",
-      "localized": "U-Net 파일 폴더",
-      "hint": "U-Net 파일 폴더"
+      "localized": "UNet 파일 폴더",
+      "hint": "UNet 파일 폴더"
     },
     {
       "id": "",
@@ -4004,13 +4040,13 @@
       "id": "",
       "label": "fp4",
       "localized": "FP4",
-      "hint": "fp4"
+      "hint": "FP4"
     },
     {
       "id": "",
       "label": "frame change sensitivity",
-      "localized": "프레임 변경 민감도",
-      "hint": "프레임 변경 민감도"
+      "localized": "프레임 변화 감도",
+      "hint": "프레임 변화 감도"
     },
     {
       "id": "",
@@ -4033,8 +4069,8 @@
     {
       "id": "",
       "label": "freeu preset",
-      "localized": "FreeU 프리셋",
-      "hint": "FreeU 프리셋"
+      "localized": "FreeU 사전 설정",
+      "hint": "FreeU 사전 설정"
     },
     {
       "id": "",
@@ -4057,14 +4093,8 @@
     {
       "id": "",
       "label": "fused projections",
-      "localized": "융합된 투영",
-      "hint": "융합된 투영"
-    },
-    {
-      "id": "",
-      "label": "gallery",
-      "localized": "갤러리",
-      "hint": "갤러리"
+      "localized": "융합 프로젝션",
+      "hint": "융합 프로젝션"
     },
     {
       "id": "",
@@ -4075,8 +4105,8 @@
     {
       "id": "",
       "label": "gamma corrected",
-      "localized": "감마 보정",
-      "hint": "감마 보정"
+      "localized": "감마 보정됨",
+      "hint": "감마 보정됨"
     },
     {
       "id": "",
@@ -4089,12 +4119,6 @@
       "label": "gc threshold",
       "localized": "GC 임계값",
       "hint": "GC 임계값"
-    },
-    {
-      "id": "",
-      "label": "generation info",
-      "localized": "생성 정보",
-      "hint": "생성 정보"
     },
     {
       "id": "",
@@ -4111,26 +4135,26 @@
     {
       "id": "",
       "label": "gradient",
-      "localized": "그라데이션",
-      "hint": "그라데이션"
+      "localized": "그라디언트",
+      "hint": "그라디언트"
     },
     {
       "id": "",
       "label": "grid background color",
-      "localized": "그리드 배경색",
-      "hint": "그리드 배경색"
+      "localized": "격자 배경 색상",
+      "hint": "격자 배경 색상"
     },
     {
       "id": "",
       "label": "grid margins",
-      "localized": "그리드 여백",
-      "hint": "그리드 여백"
+      "localized": "격자 여백",
+      "hint": "격자 여백"
     },
     {
       "id": "",
       "label": "grid sections:",
-      "localized": "그리드 섹션:",
-      "hint": "그리드 섹션:"
+      "localized": "격자 섹션:",
+      "hint": "격자 섹션:"
     },
     {
       "id": "",
@@ -4153,8 +4177,8 @@
     {
       "id": "",
       "label": "guidance stop",
-      "localized": "안내 중지",
-      "hint": "안내 중지"
+      "localized": "안내 중단",
+      "hint": "안내 중단"
     },
     {
       "id": "",
@@ -4201,32 +4225,20 @@
     {
       "id": "",
       "label": "heun",
-      "localized": "호인",
-      "hint": "호인"
+      "localized": "Heun",
+      "hint": "Heun"
     },
     {
       "id": "",
       "label": "heun flowmatch",
-      "localized": "호인 플로우매치",
-      "hint": "호인 플로우매치"
-    },
-    {
-      "id": "",
-      "label": "hibernate",
-      "localized": "최대 절전 모드",
-      "hint": "최대 절전 모드"
-    },
-    {
-      "id": "",
-      "label": "hide the custom checkpoint dropdown",
-      "localized": "커스텀 체크포인트 드롭다운 숨기기",
-      "hint": "커스텀 체크포인트 드롭다운 숨기기"
+      "localized": "Heun FlowMatch",
+      "hint": "Heun FlowMatch"
     },
     {
       "id": "",
       "label": "hidet",
-      "localized": "하이뎃",
-      "hint": "하이뎃"
+      "localized": "Hidet",
+      "hint": "Hidet"
     },
     {
       "id": "",
@@ -4255,26 +4267,26 @@
     {
       "id": "",
       "label": "huggingface mirror",
-      "localized": "허깅페이스 미러",
-      "hint": "허깅페이스 미러"
+      "localized": "Hugging Face 미러",
+      "hint": "Hugging Face 미러"
     },
     {
       "id": "",
       "label": "huggingface token",
-      "localized": "허깅페이스 토큰",
-      "hint": "허깅페이스 토큰"
+      "localized": "Hugging Face 토큰",
+      "hint": "Hugging Face 토큰"
     },
     {
       "id": "",
       "label": "hunyuan",
-      "localized": "훈위안",
-      "hint": "훈위안"
+      "localized": "혼원",
+      "hint": "혼원"
     },
     {
       "id": "",
       "label": "il",
-      "localized": "일",
-      "hint": "일"
+      "localized": "il",
+      "hint": "il"
     },
     {
       "id": "",
@@ -4291,8 +4303,8 @@
     {
       "id": "",
       "label": "image transparent color fill",
-      "localized": "이미지 투명색 채우기",
-      "hint": "이미지 투명색 채우기"
+      "localized": "이미지 투명 색상 채우기",
+      "hint": "이미지 투명 색상 채우기"
     },
     {
       "id": "",
@@ -4311,12 +4323,6 @@
       "label": "image width",
       "localized": "이미지 너비",
       "hint": "이미지 너비"
-    },
-    {
-      "id": "",
-      "label": "import",
-      "localized": "가져오기",
-      "hint": "가져오기"
     },
     {
       "id": "",
@@ -4341,6 +4347,12 @@
       "label": "include original image",
       "localized": "원본 이미지 포함",
       "hint": "원본 이미지 포함"
+    },
+    {
+      "id": "",
+      "label": "include scores in results when available",
+      "localized": "사용 가능한 경우 결과에 점수 포함",
+      "hint": "사용 가능한 경우 결과에 점수 포함"
     },
     {
       "id": "",
@@ -4375,20 +4387,20 @@
     {
       "id": "",
       "label": "inpaint masked only",
-      "localized": "마스크 영역만 인페인트",
-      "hint": "마스크 영역만 인페인트"
+      "localized": "마스크된 영역만 인페인트",
+      "hint": "마스크된 영역만 인페인트"
     },
     {
       "id": "",
       "label": "inpainting include greyscale mask in results",
-      "localized": "인페인팅 결과에 회색조 마스크 포함",
-      "hint": "인페인팅 결과에 회색조 마스크 포함"
+      "localized": "인페인팅 결과에 흑백 마스크 포함",
+      "hint": "인페인팅 결과에 흑백 마스크 포함"
     },
     {
       "id": "",
       "label": "inpainting include masked composite in results",
-      "localized": "인페인팅 결과에 마스크 합성 이미지 포함",
-      "hint": "인페인팅 결과에 마스크 합성 이미지 포함"
+      "localized": "인페인팅 결과에 마스크된 합성 이미지 포함",
+      "hint": "인페인팅 결과에 마스크된 합성 이미지 포함"
     },
     {
       "id": "",
@@ -4413,24 +4425,6 @@
       "label": "interpolation method",
       "localized": "보간 방법",
       "hint": "보간 방법"
-    },
-    {
-      "id": "",
-      "label": "interrogate batch",
-      "localized": "일괄 이미지 분석",
-      "hint": "일괄 이미지 분석"
-    },
-    {
-      "id": "",
-      "label": "interrogate image",
-      "localized": "이미지 분석",
-      "hint": "이미지 분석"
-    },
-    {
-      "id": "",
-      "label": "interrogate: offload models",
-      "localized": "이미지 분석: 모델 오프로드",
-      "hint": "이미지 분석: 모델 오프로드"
     },
     {
       "id": "",
@@ -4465,20 +4459,20 @@
     {
       "id": "",
       "label": "item edge blur",
-      "localized": "아이템 가장자리 흐림",
-      "hint": "아이템 가장자리 흐림"
+      "localized": "항목 가장자리 흐림",
+      "hint": "항목 가장자리 흐림"
     },
     {
       "id": "",
       "label": "item padding",
-      "localized": "아이템 패딩",
-      "hint": "아이템 패딩"
+      "localized": "항목 패딩",
+      "hint": "항목 패딩"
     },
     {
       "id": "",
       "label": "iterate seed per line",
-      "localized": "줄마다 시드 반복",
-      "hint": "줄마다 시드 반복"
+      "localized": "줄 당 시드 반복",
+      "hint": "줄 당 시드 반복"
     },
     {
       "id": "",
@@ -4506,21 +4500,9 @@
     },
     {
       "id": "",
-      "label": "keep forever",
-      "localized": "영구 보관",
-      "hint": "영구 보관"
-    },
-    {
-      "id": "",
       "label": "keep incomplete images",
-      "localized": "미완성 이미지 보관",
-      "hint": "미완성 이미지 보관"
-    },
-    {
-      "id": "",
-      "label": "key",
-      "localized": "키",
-      "hint": "키"
+      "localized": "불완전한 이미지 유지",
+      "hint": "불완전한 이미지 유지"
     },
     {
       "id": "",
@@ -4531,8 +4513,8 @@
     {
       "id": "",
       "label": "latent history size",
-      "localized": "잠재 변수 기록 크기",
-      "hint": "잠재 변수 기록 크기"
+      "localized": "잠재 히스토리 크기",
+      "hint": "잠재 히스토리 크기"
     },
     {
       "id": "",
@@ -4555,8 +4537,8 @@
     {
       "id": "",
       "label": "layerwise non-blocking operations",
-      "localized": "레이어별 비차단 작업",
-      "hint": "레이어별 비차단 작업"
+      "localized": "레이어별 비차단 연산",
+      "hint": "레이어별 비차단 연산"
     },
     {
       "id": "",
@@ -4615,8 +4597,8 @@
     {
       "id": "",
       "label": "lineart",
-      "localized": "라인 아트",
-      "hint": "라인 아트"
+      "localized": "라인아트",
+      "hint": "라인아트"
     },
     {
       "id": "",
@@ -4627,8 +4609,8 @@
     {
       "id": "",
       "label": "list model details",
-      "localized": "모델 상세 정보 목록",
-      "hint": "모델 상세 정보 목록"
+      "localized": "모델 세부 정보 나열",
+      "hint": "모델 세부 정보 나열"
     },
     {
       "id": "",
@@ -4651,8 +4633,8 @@
     {
       "id": "",
       "label": "load custom diffusers pipeline",
-      "localized": "커스텀 Diffusers 파이프라인 로드",
-      "hint": "커스텀 Diffusers 파이프라인 로드"
+      "localized": "사용자 정의 Diffusers 파이프라인 로드",
+      "hint": "사용자 정의 Diffusers 파이프라인 로드"
     },
     {
       "id": "",
@@ -4693,14 +4675,14 @@
     {
       "id": "",
       "label": "lora load using diffusers method for selected models",
-      "localized": "선택된 모델에 Diffusers 방식으로 LoRA 로드",
-      "hint": "선택된 모델에 Diffusers 방식으로 LoRA 로드"
+      "localized": "선택된 모델에 대해 Diffusers 방법을 사용하여 LoRA 로드",
+      "hint": "선택된 모델에 대해 Diffusers 방법을 사용하여 LoRA 로드"
     },
     {
       "id": "",
       "label": "lora load using legacy method",
-      "localized": "레거시 방식으로 LoRA 로드",
-      "hint": "레거시 방식으로 LoRA 로드"
+      "localized": "레거시 방법을 사용하여 LoRA 로드",
+      "hint": "레거시 방법을 사용하여 LoRA 로드"
     },
     {
       "id": "",
@@ -4725,6 +4707,12 @@
       "label": "ltx model",
       "localized": "LTX 모델",
       "hint": "LTX 모델"
+    },
+    {
+      "id": "",
+      "label": "lumina: use mask in transformers",
+      "localized": "Lumina: 트랜스포머에서 마스크 사용",
+      "hint": "Lumina: 트랜스포머에서 마스크 사용"
     },
     {
       "id": "",
@@ -4765,8 +4753,8 @@
     {
       "id": "",
       "label": "masked",
-      "localized": "마스크 처리됨",
-      "hint": "마스크 처리됨"
+      "localized": "마스크됨",
+      "hint": "마스크됨"
     },
     {
       "id": "",
@@ -4783,8 +4771,8 @@
     {
       "id": "",
       "label": "max flavors",
-      "localized": "최대 플레이버",
-      "hint": "최대 플레이버"
+      "localized": "최대 플레이버 수",
+      "hint": "최대 플레이버 수"
     },
     {
       "id": "",
@@ -4812,6 +4800,12 @@
     },
     {
       "id": "",
+      "label": "max tokens",
+      "localized": "최대 토큰 수",
+      "hint": "최대 토큰 수"
+    },
+    {
+      "id": "",
       "label": "max words",
       "localized": "최대 단어 수",
       "hint": "최대 단어 수"
@@ -4825,14 +4819,14 @@
     {
       "id": "",
       "label": "max-autotune-no-cudagraphs",
-      "localized": "최대 자동 튜닝 (CUDA 그래프 없음)",
-      "hint": "최대 자동 튜닝 (CUDA 그래프 없음)"
+      "localized": "최대 자동 튜닝 - CUDA 그래프 없음",
+      "hint": "최대 자동 튜닝 - CUDA 그래프 없음"
     },
     {
       "id": "",
       "label": "maximum image size (mp)",
-      "localized": "최대 이미지 크기 (MP)",
-      "hint": "최대 이미지 크기 (MP)"
+      "localized": "최대 이미지 크기(MP)",
+      "hint": "최대 이미지 크기(MP)"
     },
     {
       "id": "",
@@ -4855,8 +4849,8 @@
     {
       "id": "",
       "label": "medium",
-      "localized": "미디엄",
-      "hint": "미디엄"
+      "localized": "중간",
+      "hint": "중간"
     },
     {
       "id": "",
@@ -4890,51 +4884,45 @@
     },
     {
       "id": "",
-      "label": "merge",
-      "localized": "병합",
-      "hint": "병합"
-    },
-    {
-      "id": "",
       "label": "merge alpha",
-      "localized": "병합 알파",
-      "hint": "병합 알파"
+      "localized": "알파 병합",
+      "hint": "알파 병합"
     },
     {
       "id": "",
       "label": "method",
-      "localized": "방법",
-      "hint": "방법"
+      "localized": "메서드",
+      "hint": "메서드"
     },
     {
       "id": "",
       "label": "method after",
-      "localized": "이후 방법",
-      "hint": "이후 방법"
+      "localized": "후처리 메서드",
+      "hint": "후처리 메서드"
     },
     {
       "id": "",
       "label": "method before",
-      "localized": "이전 방법",
-      "hint": "이전 방법"
+      "localized": "전처리 메서드",
+      "hint": "전처리 메서드"
     },
     {
       "id": "",
       "label": "method mask",
-      "localized": "방법 마스크",
-      "hint": "방법 마스크"
+      "localized": "마스크 메서드",
+      "hint": "마스크 메서드"
     },
     {
       "id": "",
       "label": "midas depth",
-      "localized": "Midas 깊이",
-      "hint": "Midas 깊이"
+      "localized": "미다스 깊이",
+      "hint": "미다스 깊이"
     },
     {
       "id": "",
       "label": "migraphx",
-      "localized": "Migraphx",
-      "hint": "Migraphx"
+      "localized": "migraphx",
+      "hint": "migraphx"
     },
     {
       "id": "",
@@ -4945,8 +4933,14 @@
     {
       "id": "",
       "label": "min guidance",
-      "localized": "최소 가이던스",
-      "hint": "최소 가이던스"
+      "localized": "최소 가이드",
+      "hint": "최소 가이드"
+    },
+    {
+      "id": "",
+      "label": "min length",
+      "localized": "최소 길이",
+      "hint": "최소 길이"
     },
     {
       "id": "",
@@ -4963,8 +4957,14 @@
     {
       "id": "",
       "label": "mlsd",
-      "localized": "MLSD",
-      "hint": "MLSD"
+      "localized": "mlsd",
+      "hint": "mlsd"
+    },
+    {
+      "id": "",
+      "label": "mm",
+      "localized": "mm",
+      "hint": "mm"
     },
     {
       "id": "",
@@ -4975,20 +4975,20 @@
     {
       "id": "",
       "label": "mode after",
-      "localized": "이후 모드",
-      "hint": "이후 모드"
+      "localized": "후처리 모드",
+      "hint": "후처리 모드"
     },
     {
       "id": "",
       "label": "mode before",
-      "localized": "이전 모드",
-      "hint": "이전 모드"
+      "localized": "전처리 모드",
+      "hint": "전처리 모드"
     },
     {
       "id": "",
       "label": "mode mask",
-      "localized": "모드 마스크",
-      "hint": "모드 마스크"
+      "localized": "마스크 모드",
+      "hint": "마스크 모드"
     },
     {
       "id": "",
@@ -5017,8 +5017,8 @@
     {
       "id": "",
       "label": "model compile fullgraph",
-      "localized": "모델 컴파일 풀 그래프",
-      "hint": "모델 컴파일 풀 그래프"
+      "localized": "모델 컴파일 전체 그래프",
+      "hint": "모델 컴파일 전체 그래프"
     },
     {
       "id": "",
@@ -5071,14 +5071,8 @@
     {
       "id": "",
       "label": "modern",
-      "localized": "현대적인",
-      "hint": "현대적인"
-    },
-    {
-      "id": "",
-      "label": "modules",
-      "localized": "모듈",
-      "hint": "모듈"
+      "localized": "최신",
+      "hint": "최신"
     },
     {
       "id": "",
@@ -5091,6 +5085,12 @@
       "label": "motion level",
       "localized": "움직임 수준",
       "hint": "움직임 수준"
+    },
+    {
+      "id": "",
+      "label": "mount url subpath",
+      "localized": "URL 하위 경로 마운트",
+      "hint": "URL 하위 경로 마운트"
     },
     {
       "id": "",
@@ -5107,14 +5107,14 @@
     {
       "id": "",
       "label": "move detailer model to cpu when complete",
-      "localized": "완료 시 디테일러 모델을 CPU로 이동",
-      "hint": "완료 시 디테일러 모델을 CPU로 이동"
+      "localized": "디테일러 모델 완료 시 CPU로 이동",
+      "hint": "디테일러 모델 완료 시 CPU로 이동"
     },
     {
       "id": "",
       "label": "move refiner model to cpu when not in use",
-      "localized": "사용하지 않을 때 리파이너 모델을 CPU로 이동",
-      "hint": "사용하지 않을 때 리파이너 모델을 CPU로 이동"
+      "localized": "미사용 시 리파이너 모델을 CPU로 이동",
+      "hint": "미사용 시 리파이너 모델을 CPU로 이동"
     },
     {
       "id": "",
@@ -5161,8 +5161,8 @@
     {
       "id": "",
       "label": "network parameters",
-      "localized": "네트워크 파라미터",
-      "hint": "네트워크 파라미터"
+      "localized": "네트워크 매개변수",
+      "hint": "네트워크 매개변수"
     },
     {
       "id": "",
@@ -5179,14 +5179,14 @@
     {
       "id": "",
       "label": "nf4",
-      "localized": "NF4",
-      "hint": "NF4"
+      "localized": "nf4",
+      "hint": "nf4"
     },
     {
       "id": "",
       "label": "nms",
-      "localized": "NMS",
-      "hint": "NMS"
+      "localized": "nms",
+      "hint": "nms"
     },
     {
       "id": "",
@@ -5197,20 +5197,20 @@
     {
       "id": "",
       "label": "noise multiplier (eta)",
-      "localized": "노이즈 승수 (Eta)",
-      "hint": "노이즈 승수 (Eta)"
+      "localized": "노이즈 곱셈기 (eta)",
+      "hint": "노이즈 곱셈기 (eta)"
     },
     {
       "id": "",
       "label": "noise multiplier for image processing",
-      "localized": "이미지 처리를 위한 노이즈 승수",
-      "hint": "이미지 처리를 위한 노이즈 승수"
+      "localized": "이미지 처리를 위한 노이즈 곱셈기",
+      "hint": "이미지 처리를 위한 노이즈 곱셈기"
     },
     {
       "id": "",
       "label": "noise seed delta (eta)",
-      "localized": "노이즈 시드 델타 (Eta)",
-      "hint": "노이즈 시드 델타 (Eta)"
+      "localized": "노이즈 시드 델타 (eta)",
+      "hint": "노이즈 시드 델타 (eta)"
     },
     {
       "id": "",
@@ -5238,6 +5238,12 @@
     },
     {
       "id": "",
+      "label": "num beams",
+      "localized": "빔 개수",
+      "hint": "빔 개수"
+    },
+    {
+      "id": "",
       "label": "number",
       "localized": "숫자",
       "hint": "숫자"
@@ -5262,33 +5268,39 @@
     },
     {
       "id": "",
+      "label": "offload models",
+      "localized": "모델 오프로드",
+      "hint": "모델 오프로드"
+    },
+    {
+      "id": "",
       "label": "olive-ai",
-      "localized": "Olive-AI",
-      "hint": "Olive-AI"
+      "localized": "olive-ai",
+      "hint": "olive-ai"
     },
     {
       "id": "",
       "label": "onediff",
-      "localized": "OneDiff",
-      "hint": "OneDiff"
+      "localized": "onediff",
+      "hint": "onediff"
     },
     {
       "id": "",
       "label": "onnx",
-      "localized": "ONNX",
-      "hint": "ONNX"
+      "localized": "onnx",
+      "hint": "onnx"
     },
     {
       "id": "",
       "label": "openbody",
-      "localized": "OpenBody",
-      "hint": "OpenBody"
+      "localized": "openbody",
+      "hint": "openbody"
     },
     {
       "id": "",
       "label": "openclip",
-      "localized": "OpenCLIP",
-      "hint": "OpenCLIP"
+      "localized": "openclip",
+      "hint": "openclip"
     },
     {
       "id": "",
@@ -5311,8 +5323,8 @@
     {
       "id": "",
       "label": "openvino_fx",
-      "localized": "OpenVINO FX",
-      "hint": "OpenVINO FX"
+      "localized": "openvino_fx",
+      "hint": "openvino_fx"
     },
     {
       "id": "",
@@ -5335,8 +5347,8 @@
     {
       "id": "",
       "label": "ortho",
-      "localized": "Ortho",
-      "hint": "Ortho"
+      "localized": "ortho",
+      "hint": "ortho"
     },
     {
       "id": "",
@@ -5353,56 +5365,56 @@
     {
       "id": "",
       "label": "override resolution",
-      "localized": "해상도 오버라이드",
-      "hint": "해상도 오버라이드"
+      "localized": "해상도 재정의",
+      "hint": "해상도 재정의"
     },
     {
       "id": "",
       "label": "override sampler",
-      "localized": "샘플러 오버라이드",
-      "hint": "샘플러 오버라이드"
+      "localized": "샘플러 재정의",
+      "hint": "샘플러 재정의"
     },
     {
       "id": "",
       "label": "override scheduler",
-      "localized": "스케줄러 오버라이드",
-      "hint": "스케줄러 오버라이드"
+      "localized": "스케줄러 재정의",
+      "hint": "스케줄러 재정의"
     },
     {
       "id": "",
       "label": "override steps",
-      "localized": "스텝 오버라이드",
-      "hint": "스텝 오버라이드"
+      "localized": "단계 재정의",
+      "hint": "단계 재정의"
     },
     {
       "id": "",
       "label": "override t1 ratio",
-      "localized": "T1 비율 오버라이드",
-      "hint": "T1 비율 오버라이드"
+      "localized": "t1 비율 재정의",
+      "hint": "t1 비율 재정의"
     },
     {
       "id": "",
       "label": "override t2 ratio",
       "localized": "t2 비율 재정의",
-      "hint": "t2 비율을 재정의합니다."
+      "hint": "t2 비율 재정의"
     },
     {
       "id": "",
       "label": "overwrite existing file",
       "localized": "기존 파일 덮어쓰기",
-      "hint": "기존 파일을 덮어씁니다."
+      "hint": "기존 파일 덮어쓰기"
     },
     {
       "id": "",
       "label": "overwrite model",
       "localized": "모델 덮어쓰기",
-      "hint": "모델을 덮어씁니다."
+      "hint": "모델 덮어쓰기"
     },
     {
       "id": "",
       "label": "pad frames",
       "localized": "프레임 패딩",
-      "hint": "프레임을 패딩합니다."
+      "hint": "프레임 패딩"
     },
     {
       "id": "",
@@ -5414,13 +5426,13 @@
       "id": "",
       "label": "parallel process images in batch",
       "localized": "배치로 이미지 병렬 처리",
-      "hint": "이미지를 배치로 병렬 처리합니다."
+      "hint": "배치로 이미지 병렬 처리"
     },
     {
       "id": "",
       "label": "parameter free",
-      "localized": "파라미터 없음",
-      "hint": "파라미터 없음"
+      "localized": "매개변수 없음",
+      "hint": "매개변수 없음"
     },
     {
       "id": "",
@@ -5437,8 +5449,8 @@
     {
       "id": "",
       "label": "peft",
-      "localized": "PEFT",
-      "hint": "PEFT (Parameter-Efficient Fine-Tuning)"
+      "localized": "peft",
+      "hint": "peft"
     },
     {
       "id": "",
@@ -5449,26 +5461,26 @@
     {
       "id": "",
       "label": "perflow",
-      "localized": "Perflow",
-      "hint": "Perflow"
+      "localized": "perflow",
+      "hint": "perflow"
     },
     {
       "id": "",
       "label": "perform injection",
       "localized": "주입 수행",
-      "hint": "주입을 수행합니다."
+      "hint": "주입 수행"
     },
     {
       "id": "",
       "label": "perform sdsa",
       "localized": "SDSA 수행",
-      "hint": "SDSA (Self-Distillation Similarity Aggregation)를 수행합니다."
+      "hint": "SDSA 수행"
     },
     {
       "id": "",
       "label": "perform warmup",
       "localized": "웜업 수행",
-      "hint": "웜업을 수행합니다."
+      "hint": "웜업 수행"
     },
     {
       "id": "",
@@ -5485,8 +5497,8 @@
     {
       "id": "",
       "label": "pidinet",
-      "localized": "PIDINet",
-      "hint": "PIDINet"
+      "localized": "피디넷",
+      "hint": "pidinet"
     },
     {
       "id": "",
@@ -5516,13 +5528,13 @@
       "id": "",
       "label": "play a notification upon completion",
       "localized": "완료 시 알림 재생",
-      "hint": "작업 완료 시 알림을 재생합니다."
+      "hint": "완료 시 알림을 재생합니다."
     },
     {
       "id": "",
       "label": "pndm",
       "localized": "PNDM",
-      "hint": "PNDM (Progressive Neural Diffusion Models)"
+      "hint": "pndm"
     },
     {
       "id": "",
@@ -5546,19 +5558,19 @@
       "id": "",
       "label": "positive",
       "localized": "긍정",
-      "hint": "긍정 프롬프트"
+      "hint": "긍정"
     },
     {
       "id": "",
       "label": "postprocess mask",
-      "localized": "마스크 후처리",
-      "hint": "마스크를 후처리합니다."
+      "localized": "후처리 마스크",
+      "hint": "후처리 마스크"
     },
     {
       "id": "",
       "label": "postprocess upscale",
-      "localized": "업스케일 후처리",
-      "hint": "업스케일을 후처리합니다."
+      "localized": "후처리 업스케일링",
+      "hint": "후처리 업스케일링"
     },
     {
       "id": "",
@@ -5569,8 +5581,14 @@
     {
       "id": "",
       "label": "power",
-      "localized": "파워",
-      "hint": "파워"
+      "localized": "전력",
+      "hint": "전력"
+    },
+    {
+      "id": "",
+      "label": "predefined question",
+      "localized": "미리 정의된 질문",
+      "hint": "미리 정의된 질문"
     },
     {
       "id": "",
@@ -5600,13 +5618,13 @@
       "id": "",
       "label": "preview end",
       "localized": "미리보기 종료",
-      "hint": "미리보기 종료 시점"
+      "hint": "미리보기 종료"
     },
     {
       "id": "",
       "label": "preview start",
       "localized": "미리보기 시작",
-      "hint": "미리보기 시작 시점"
+      "hint": "미리보기 시작"
     },
     {
       "id": "",
@@ -5624,7 +5642,7 @@
       "id": "",
       "label": "processor move to cpu after use",
       "localized": "사용 후 프로세서를 CPU로 이동",
-      "hint": "사용 후 프로세서를 CPU로 이동합니다."
+      "hint": "사용 후 프로세서를 CPU로 이동"
     },
     {
       "id": "",
@@ -5636,7 +5654,7 @@
       "id": "",
       "label": "processor unload after use",
       "localized": "사용 후 프로세서 언로드",
-      "hint": "사용 후 프로세서를 언로드합니다."
+      "hint": "사용 후 프로세서 언로드"
     },
     {
       "id": "",
@@ -5677,8 +5695,8 @@
     {
       "id": "",
       "label": "provider",
-      "localized": "제공자",
-      "hint": "제공자"
+      "localized": "공급자",
+      "hint": "공급자"
     },
     {
       "id": "",
@@ -5718,12 +5736,6 @@
     },
     {
       "id": "",
-      "label": "question",
-      "localized": "질문",
-      "hint": "질문"
-    },
-    {
-      "id": "",
       "label": "random seeds",
       "localized": "랜덤 시드",
       "hint": "랜덤 시드"
@@ -5742,6 +5754,12 @@
     },
     {
       "id": "",
+      "label": "recursive",
+      "localized": "재귀",
+      "hint": "재귀"
+    },
+    {
+      "id": "",
       "label": "reduce-overhead",
       "localized": "오버헤드 감소",
       "hint": "오버헤드 감소"
@@ -5749,14 +5767,14 @@
     {
       "id": "",
       "label": "redux prompt strength",
-      "localized": "Redux 프롬프트 강도",
-      "hint": "Redux 프롬프트 강도"
+      "localized": "리덕스 프롬프트 강도",
+      "hint": "리덕스 프롬프트 강도"
     },
     {
       "id": "",
       "label": "reference adain weight",
       "localized": "참조 AdaIN 가중치",
-      "hint": "참조 AdaIN (Adaptive Instance Normalization) 가중치"
+      "hint": "참조 AdaIN 가중치"
     },
     {
       "id": "",
@@ -5773,38 +5791,32 @@
     {
       "id": "",
       "label": "refine foreground",
-      "localized": "전경 다듬기",
-      "hint": "전경을 다듬습니다."
-    },
-    {
-      "id": "",
-      "label": "refresh",
-      "localized": "새로고침",
-      "hint": "새로고침"
+      "localized": "전경 개선",
+      "hint": "전경 개선"
     },
     {
       "id": "",
       "label": "refresh bench",
-      "localized": "벤치마크 새로고침",
-      "hint": "벤치마크를 새로고침합니다."
+      "localized": "벤치 갱신",
+      "hint": "벤치 갱신"
     },
     {
       "id": "",
       "label": "refresh data",
-      "localized": "데이터 새로고침",
-      "hint": "데이터를 새로고침합니다."
+      "localized": "데이터 갱신",
+      "hint": "데이터 갱신"
     },
     {
       "id": "",
       "label": "refresh state",
-      "localized": "상태 새로고침",
-      "hint": "상태를 새로고침합니다."
+      "localized": "상태 갱신",
+      "hint": "상태 갱신"
     },
     {
       "id": "",
       "label": "refresh ui values",
-      "localized": "UI 값 새로고침",
-      "hint": "UI 값을 새로고침합니다."
+      "localized": "UI 값 갱신",
+      "hint": "UI 값 갱신"
     },
     {
       "id": "",
@@ -5816,7 +5828,7 @@
       "id": "",
       "label": "remove background",
       "localized": "배경 제거",
-      "hint": "배경을 제거합니다."
+      "hint": "배경 제거"
     },
     {
       "id": "",
@@ -5834,7 +5846,7 @@
       "id": "",
       "label": "replace vae",
       "localized": "VAE 교체",
-      "hint": "VAE (Variational Autoencoder)를 교체합니다."
+      "hint": "VAE 교체"
     },
     {
       "id": "",
@@ -5846,31 +5858,25 @@
       "id": "",
       "label": "reprocess decode",
       "localized": "디코드 재처리",
-      "hint": "디코드를 재처리합니다."
+      "hint": "디코드 재처리"
     },
     {
       "id": "",
       "label": "reprocess face",
       "localized": "얼굴 재처리",
-      "hint": "얼굴을 재처리합니다."
+      "hint": "얼굴 재처리"
     },
     {
       "id": "",
       "label": "reprocess refine",
-      "localized": "다듬기 재처리",
-      "hint": "다듬기를 재처리합니다."
+      "localized": "정제 재처리",
+      "hint": "정제 재처리"
     },
     {
       "id": "",
       "label": "request browser notifications",
       "localized": "브라우저 알림 요청",
-      "hint": "브라우저 알림을 요청합니다."
-    },
-    {
-      "id": "",
-      "label": "requeue failed",
-      "localized": "실패한 항목 다시 대기열에 추가",
-      "hint": "실패한 항목을 다시 대기열에 추가합니다."
+      "hint": "브라우저 알림 요청"
     },
     {
       "id": "",
@@ -5881,14 +5887,14 @@
     {
       "id": "",
       "label": "rescale betas with zero terminal snr",
-      "localized": "종단 SNR이 0인 베타 재조정",
-      "hint": "종단 SNR(Signal-to-Noise Ratio)이 0인 베타를 재조정합니다."
+      "localized": "터미널 SNR이 0인 베타 재조정",
+      "hint": "터미널 SNR이 0인 베타 재조정"
     },
     {
       "id": "",
       "label": "reset anchors",
-      "localized": "앵커 초기화",
-      "hint": "앵커를 초기화합니다."
+      "localized": "앵커 재설정",
+      "hint": "앵커 재설정"
     },
     {
       "id": "",
@@ -5922,51 +5928,45 @@
     },
     {
       "id": "",
-      "label": "restart",
-      "localized": "재시작",
-      "hint": "재시작"
-    },
-    {
-      "id": "",
       "label": "restart step",
       "localized": "단계 재시작",
-      "hint": "단계를 재시작합니다."
+      "hint": "단계 재시작"
     },
     {
       "id": "",
       "label": "restore faces: codeformer",
       "localized": "얼굴 복원: CodeFormer",
-      "hint": "CodeFormer를 사용하여 얼굴을 복원합니다."
+      "hint": "얼굴 복원: CodeFormer"
     },
     {
       "id": "",
       "label": "restore faces: gfpgan",
       "localized": "얼굴 복원: GFPGAN",
-      "hint": "GFPGAN을 사용하여 얼굴을 복원합니다."
+      "hint": "얼굴 복원: GFPGAN"
     },
     {
       "id": "",
       "label": "restore pipe on end",
       "localized": "종료 시 파이프라인 복원",
-      "hint": "작업 종료 시 파이프라인을 복원합니다."
+      "hint": "종료 시 파이프라인 복원"
     },
     {
       "id": "",
-      "label": "resume",
-      "localized": "재개",
-      "hint": "재개"
+      "label": "restore unparsed prompt",
+      "localized": "구문 분석되지 않은 프롬프트 복원",
+      "hint": "구문 분석되지 않은 프롬프트 복원"
     },
     {
       "id": "",
       "label": "reswapper model",
-      "localized": "Reswapper 모델",
-      "hint": "Reswapper 모델"
+      "localized": "얼굴 스왑 모델",
+      "hint": "얼굴 스왑 모델"
     },
     {
       "id": "",
       "label": "return original images",
       "localized": "원본 이미지 반환",
-      "hint": "원본 이미지를 반환합니다."
+      "hint": "원본 이미지 반환"
     },
     {
       "id": "",
@@ -6007,14 +6007,14 @@
     {
       "id": "",
       "label": "safetensors",
-      "localized": "safetensors",
+      "localized": "Safetensors",
       "hint": "safetensors"
     },
     {
       "id": "",
       "label": "sage attention",
-      "localized": "세이지 어텐션",
-      "hint": "세이지 어텐션"
+      "localized": "Sage 어텐션",
+      "hint": "Sage 어텐션"
     },
     {
       "id": "",
@@ -6025,8 +6025,8 @@
     {
       "id": "",
       "label": "same latent",
-      "localized": "동일 잠재 변수",
-      "hint": "동일 잠재 변수"
+      "localized": "동일한 잠재 변수",
+      "hint": "동일한 잠재 변수"
     },
     {
       "id": "",
@@ -6043,8 +6043,8 @@
     {
       "id": "",
       "label": "sampler dynamic shift",
-      "localized": "샘플러 동적 시프트",
-      "hint": "샘플러 동적 시프트"
+      "localized": "샘플러 다이나믹 시프트",
+      "hint": "샘플러 다이나믹 시프트"
     },
     {
       "id": "",
@@ -6057,6 +6057,12 @@
       "label": "sampler shift",
       "localized": "샘플러 시프트",
       "hint": "샘플러 시프트"
+    },
+    {
+      "id": "",
+      "label": "sana: use complex human instructions",
+      "localized": "SANA: 복잡한 사용자 지침 사용",
+      "hint": "SANA: 복잡한 사용자 지침 사용"
     },
     {
       "id": "",
@@ -6078,6 +6084,12 @@
     },
     {
       "id": "",
+      "label": "save caption files",
+      "localized": "캡션 파일 저장",
+      "hint": "캡션 파일 저장"
+    },
+    {
+      "id": "",
       "label": "save diffusers",
       "localized": "Diffusers 저장",
       "hint": "Diffusers 저장"
@@ -6091,8 +6103,8 @@
     {
       "id": "",
       "label": "save image before color correction",
-      "localized": "색 보정 전 이미지 저장",
-      "hint": "색 보정 전 이미지 저장"
+      "localized": "색상 보정 전 이미지 저장",
+      "hint": "색상 보정 전 이미지 저장"
     },
     {
       "id": "",
@@ -6103,8 +6115,8 @@
     {
       "id": "",
       "label": "save image before hires",
-      "localized": "고해상도 변환 전 이미지 저장",
-      "hint": "고해상도 변환 전 이미지 저장"
+      "localized": "고해상도 처리 전 이미지 저장",
+      "hint": "고해상도 처리 전 이미지 저장"
     },
     {
       "id": "",
@@ -6115,8 +6127,8 @@
     {
       "id": "",
       "label": "save images to a subdirectory",
-      "localized": "이미지를 하위 디렉토리에 저장",
-      "hint": "이미지를 하위 디렉토리에 저장"
+      "localized": "하위 디렉토리에 이미지 저장",
+      "hint": "하위 디렉토리에 이미지 저장"
     },
     {
       "id": "",
@@ -6127,14 +6139,14 @@
     {
       "id": "",
       "label": "save inpainting mask",
-      "localized": "Inpainting 마스크 저장",
-      "hint": "Inpainting 마스크 저장"
+      "localized": "인페인팅 마스크 저장",
+      "hint": "인페인팅 마스크 저장"
     },
     {
       "id": "",
       "label": "save inpainting masked composite",
-      "localized": "Inpainting 마스크 합성본 저장",
-      "hint": "Inpainting 마스크 합성본 저장"
+      "localized": "인페인팅 마스크 합성본 저장",
+      "hint": "인페인팅 마스크 합성본 저장"
     },
     {
       "id": "",
@@ -6145,8 +6157,8 @@
     {
       "id": "",
       "label": "save only saves selected image",
-      "localized": "선택한 이미지만 저장",
-      "hint": "선택한 이미지만 저장"
+      "localized": "선택된 이미지 저장만 활성화",
+      "hint": "선택된 이미지 저장만 활성화"
     },
     {
       "id": "",
@@ -6162,15 +6174,21 @@
     },
     {
       "id": "",
+      "label": "save unparsed prompt",
+      "localized": "구문 분석되지 않은 프롬프트 저장",
+      "hint": "구문 분석되지 않은 프롬프트 저장"
+    },
+    {
+      "id": "",
       "label": "scale  after",
-      "localized": "스케일 조정 후",
-      "hint": "스케일 조정 후"
+      "localized": "스케일  후",
+      "hint": "스케일  후"
     },
     {
       "id": "",
       "label": "scale  before",
-      "localized": "스케일 조정 전",
-      "hint": "스케일 조정 전"
+      "localized": "스케일  전",
+      "hint": "스케일  전"
     },
     {
       "id": "",
@@ -6199,62 +6217,68 @@
     {
       "id": "",
       "label": "scribble",
-      "localized": "낙서",
-      "hint": "낙서"
+      "localized": "스크리블",
+      "hint": "스크리블"
     },
     {
       "id": "",
       "label": "sd15-attire",
-      "localized": "SD15 의상",
-      "hint": "SD15 의상"
+      "localized": "sd15-복장",
+      "hint": "sd15-복장"
     },
     {
       "id": "",
       "label": "sd15-likeness",
-      "localized": "SD15 유사성",
-      "hint": "SD15 유사성"
+      "localized": "sd15-유사도",
+      "hint": "sd15-유사도"
     },
     {
       "id": "",
       "label": "sd15-navimixu",
-      "localized": "SD15-navimixu",
-      "hint": "SD15-navimixu"
+      "localized": "sd15-navimixu",
+      "hint": "sd15-navimixu"
     },
     {
       "id": "",
       "label": "sd15-sexy",
-      "localized": "SD15 섹시",
-      "hint": "SD15 섹시"
+      "localized": "sd15-섹시",
+      "hint": "sd15-섹시"
     },
     {
       "id": "",
       "label": "sdxl-artstyle",
-      "localized": "SDXL 아트 스타일",
-      "hint": "SDXL 아트 스타일"
+      "localized": "sdxl-아트스타일",
+      "hint": "sdxl-아트스타일"
     },
     {
       "id": "",
       "label": "sdxl-negative",
-      "localized": "SDXL 네거티브",
-      "hint": "SDXL 네거티브"
+      "localized": "sdxl-네거티브",
+      "hint": "sdxl-네거티브"
     },
     {
       "id": "",
       "label": "sdxl-sexy",
-      "localized": "SDXL 섹시",
-      "hint": "SDXL 섹시"
+      "localized": "sdxl-섹시",
+      "hint": "sdxl-섹시"
     },
     {
       "id": "",
       "label": "sdxl-sliders",
-      "localized": "SDXL 슬라이더",
-      "hint": "SDXL 슬라이더"
+      "localized": "sdxl-슬라이더",
+      "hint": "sdxl-슬라이더"
     },
     {
       "id": "",
       "label": "sdxl-toon",
-      "localized": "SDXL 툰",
-      "hint": "SDXL 툰"
+      "localized": "sdxl-툰",
+      "hint": "sdxl-툰"
+    },
+    {
+      "id": "",
+      "label": "sdxl: use weighted pooled embeds",
+      "localized": "sdxl: 가중치가 적용된 풀링 임베딩 사용",
+      "hint": "sdxl: 가중치가 적용된 풀링 임베딩 사용"
     },
     {
       "id": "",
@@ -6283,8 +6307,8 @@
     {
       "id": "",
       "label": "segmentanything",
-      "localized": "SegmentAnything",
-      "hint": "SegmentAnything"
+      "localized": "Segment Anything",
+      "hint": "Segment Anything"
     },
     {
       "id": "",
@@ -6301,20 +6325,20 @@
     {
       "id": "",
       "label": "send interrupt",
-      "localized": "중단 신호 보내기",
-      "hint": "중단 신호 보내기"
+      "localized": "인터럽트 전송",
+      "hint": "인터럽트 전송"
     },
     {
       "id": "",
       "label": "send seed when sending prompt or image to other interface",
-      "localized": "프롬프트 또는 이미지를 다른 인터페이스로 보낼 때 시드 보내기",
-      "hint": "프롬프트 또는 이미지를 다른 인터페이스로 보낼 때 시드 보내기"
+      "localized": "프롬프트 또는 이미지를 다른 인터페이스로 보낼 때 시드 전송",
+      "hint": "프롬프트 또는 이미지를 다른 인터페이스로 보낼 때 시드 전송"
     },
     {
       "id": "",
       "label": "send size when sending prompt or image to another interface",
-      "localized": "프롬프트 또는 이미지를 다른 인터페이스로 보낼 때 크기 보내기",
-      "hint": "프롬프트 또는 이미지를 다른 인터페이스로 보낼 때 크기 보내기"
+      "localized": "프롬프트 또는 이미지를 다른 인터페이스로 보낼 때 크기 전송",
+      "hint": "프롬프트 또는 이미지를 다른 인터페이스로 보낼 때 크기 전송"
     },
     {
       "id": "",
@@ -6367,8 +6391,8 @@
     {
       "id": "",
       "label": "show grid in results",
-      "localized": "결과에 그리드 표시",
-      "hint": "결과에 그리드 표시"
+      "localized": "결과에 격자 표시",
+      "hint": "결과에 격자 표시"
     },
     {
       "id": "",
@@ -6385,8 +6409,8 @@
     {
       "id": "",
       "label": "show motd",
-      "localized": "오늘의 메시지 표시",
-      "hint": "오늘의 메시지 표시"
+      "localized": "MOTD 표시",
+      "hint": "MOTD 표시"
     },
     {
       "id": "",
@@ -6399,12 +6423,6 @@
       "label": "shuffle weights",
       "localized": "가중치 섞기",
       "hint": "가중치 섞기"
-    },
-    {
-      "id": "",
-      "label": "shut down",
-      "localized": "종료",
-      "hint": "종료"
     },
     {
       "id": "",
@@ -6451,8 +6469,8 @@
     {
       "id": "",
       "label": "simple merge",
-      "localized": "단순 병합",
-      "hint": "단순 병합"
+      "localized": "간단한 병합",
+      "hint": "간단한 병합"
     },
     {
       "id": "",
@@ -6469,8 +6487,8 @@
     {
       "id": "",
       "label": "skip generation if nan found in latents",
-      "localized": "잠재 변수에서 NaN이 발견되면 생성 건너뛰기",
-      "hint": "잠재 변수에서 NaN이 발견되면 생성 건너뛰기"
+      "localized": "잠재 공간에 NaN이 발견되면 생성 건너뛰기",
+      "hint": "잠재 공간에 NaN이 발견되면 생성 건너뛰기"
     },
     {
       "id": "",
@@ -6483,12 +6501,6 @@
       "label": "skip input frames",
       "localized": "입력 프레임 건너뛰기",
       "hint": "입력 프레임 건너뛰기"
-    },
-    {
-      "id": "",
-      "label": "sleep",
-      "localized": "대기",
-      "hint": "대기"
     },
     {
       "id": "",
@@ -6505,8 +6517,8 @@
     {
       "id": "",
       "label": "solver order (where",
-      "localized": "솔버 순서 (여기서",
-      "hint": "솔버 순서 (여기서"
+      "localized": "솔버 순서 (where",
+      "hint": "솔버 순서 (where"
     },
     {
       "id": "",
@@ -6582,12 +6594,6 @@
     },
     {
       "id": "",
-      "label": "stop webui",
-      "localized": "webui 중지",
-      "hint": "webui를 중지합니다."
-    },
-    {
-      "id": "",
       "label": "stride",
       "localized": "스트라이드",
       "hint": "스트라이드"
@@ -6607,14 +6613,14 @@
     {
       "id": "",
       "label": "subject",
-      "localized": "주체",
-      "hint": "주체"
+      "localized": "피사체",
+      "hint": "피사체"
     },
     {
       "id": "",
       "label": "submit results",
       "localized": "결과 제출",
-      "hint": "결과를 제출합니다."
+      "hint": "결과 제출"
     },
     {
       "id": "",
@@ -6625,56 +6631,56 @@
     {
       "id": "",
       "label": "swap x/y",
-      "localized": "x/y 교환",
-      "hint": "x와 y를 교환합니다."
+      "localized": "x/y 바꾸기",
+      "hint": "x/y 바꾸기"
     },
     {
       "id": "",
       "label": "swap x/z",
-      "localized": "x/z 교환",
-      "hint": "x와 z를 교환합니다."
+      "localized": "x/z 바꾸기",
+      "hint": "x/z 바꾸기"
     },
     {
       "id": "",
       "label": "swap y/z",
-      "localized": "y/z 교환",
-      "hint": "y와 z를 교환합니다."
+      "localized": "y/z 바꾸기",
+      "hint": "y/z 바꾸기"
     },
     {
       "id": "",
       "label": "t2i adapter",
-      "localized": "t2i 어댑터",
-      "hint": "t2i 어댑터"
+      "localized": "T2I 어댑터",
+      "hint": "T2I 어댑터"
     },
     {
       "id": "",
       "label": "t2i strength",
-      "localized": "t2i 강도",
-      "hint": "t2i 강도"
+      "localized": "T2I 강도",
+      "hint": "T2I 강도"
     },
     {
       "id": "",
       "label": "t2i-adapter unit 1",
-      "localized": "t2i-어댑터 유닛 1",
-      "hint": "t2i-어댑터 유닛 1"
+      "localized": "T2I 어댑터 유닛 1",
+      "hint": "T2I 어댑터 유닛 1"
     },
     {
       "id": "",
       "label": "t2i-adapter unit 2",
-      "localized": "t2i-어댑터 유닛 2",
-      "hint": "t2i-어댑터 유닛 2"
+      "localized": "T2I 어댑터 유닛 2",
+      "hint": "T2I 어댑터 유닛 2"
     },
     {
       "id": "",
       "label": "t2i-adapter unit 3",
-      "localized": "t2i-어댑터 유닛 3",
-      "hint": "t2i-어댑터 유닛 3"
+      "localized": "T2I 어댑터 유닛 3",
+      "hint": "T2I 어댑터 유닛 3"
     },
     {
       "id": "",
       "label": "t2i-adapter unit 4",
-      "localized": "t2i-어댑터 유닛 4",
-      "hint": "t2i-어댑터 유닛 4"
+      "localized": "T2I 어댑터 유닛 4",
+      "hint": "T2I 어댑터 유닛 4"
     },
     {
       "id": "",
@@ -6697,26 +6703,8 @@
     {
       "id": "",
       "label": "target subject",
-      "localized": "대상 주체",
-      "hint": "대상 주체"
-    },
-    {
-      "id": "",
-      "label": "task history",
-      "localized": "작업 기록",
-      "hint": "작업 기록"
-    },
-    {
-      "id": "",
-      "label": "task list page size (0 for auto)",
-      "localized": "작업 목록 페이지 크기 (0은 자동)",
-      "hint": "작업 목록 페이지 크기 (0은 자동)"
-    },
-    {
-      "id": "",
-      "label": "task queue",
-      "localized": "작업 대기열",
-      "hint": "작업 대기열"
+      "localized": "대상 피사체",
+      "hint": "대상 피사체"
     },
     {
       "id": "",
@@ -6745,8 +6733,8 @@
     {
       "id": "",
       "label": "temporal frequency",
-      "localized": "시간적 빈도",
-      "hint": "시간적 빈도"
+      "localized": "시간 주파수",
+      "hint": "시간 주파수"
     },
     {
       "id": "",
@@ -6798,15 +6786,111 @@
     },
     {
       "id": "",
+      "label": "tile prompt: x=1 y=1",
+      "localized": "타일 프롬프트: x=1 y=1",
+      "hint": "타일 프롬프트: x=1 y=1"
+    },
+    {
+      "id": "",
+      "label": "tile prompt: x=1 y=2",
+      "localized": "타일 프롬프트: x=1 y=2",
+      "hint": "타일 프롬프트: x=1 y=2"
+    },
+    {
+      "id": "",
+      "label": "tile prompt: x=1 y=3",
+      "localized": "타일 프롬프트: x=1 y=3",
+      "hint": "타일 프롬프트: x=1 y=3"
+    },
+    {
+      "id": "",
+      "label": "tile prompt: x=1 y=4",
+      "localized": "타일 프롬프트: x=1 y=4",
+      "hint": "타일 프롬프트: x=1 y=4"
+    },
+    {
+      "id": "",
+      "label": "tile prompt: x=2 y=1",
+      "localized": "타일 프롬프트: x=2 y=1",
+      "hint": "타일 프롬프트: x=2 y=1"
+    },
+    {
+      "id": "",
+      "label": "tile prompt: x=2 y=2",
+      "localized": "타일 프롬프트: x=2 y=2",
+      "hint": "타일 프롬프트: x=2 y=2"
+    },
+    {
+      "id": "",
+      "label": "tile prompt: x=2 y=3",
+      "localized": "타일 프롬프트: x=2 y=3",
+      "hint": "타일 프롬프트: x=2 y=3"
+    },
+    {
+      "id": "",
+      "label": "tile prompt: x=2 y=4",
+      "localized": "타일 프롬프트: x=2 y=4",
+      "hint": "타일 프롬프트: x=2 y=4"
+    },
+    {
+      "id": "",
+      "label": "tile prompt: x=3 y=1",
+      "localized": "타일 프롬프트: x=3 y=1",
+      "hint": "타일 프롬프트: x=3 y=1"
+    },
+    {
+      "id": "",
+      "label": "tile prompt: x=3 y=2",
+      "localized": "타일 프롬프트: x=3 y=2",
+      "hint": "타일 프롬프트: x=3 y=2"
+    },
+    {
+      "id": "",
+      "label": "tile prompt: x=3 y=3",
+      "localized": "타일 프롬프트: x=3 y=3",
+      "hint": "타일 프롬프트: x=3 y=3"
+    },
+    {
+      "id": "",
+      "label": "tile prompt: x=3 y=4",
+      "localized": "타일 프롬프트: x=3 y=4",
+      "hint": "타일 프롬프트: x=3 y=4"
+    },
+    {
+      "id": "",
+      "label": "tile prompt: x=4 y=1",
+      "localized": "타일 프롬프트: x=4 y=1",
+      "hint": "타일 프롬프트: x=4 y=1"
+    },
+    {
+      "id": "",
+      "label": "tile prompt: x=4 y=2",
+      "localized": "타일 프롬프트: x=4 y=2",
+      "hint": "타일 프롬프트: x=4 y=2"
+    },
+    {
+      "id": "",
+      "label": "tile prompt: x=4 y=3",
+      "localized": "타일 프롬프트: x=4 y=3",
+      "hint": "타일 프롬프트: x=4 y=3"
+    },
+    {
+      "id": "",
+      "label": "tile prompt: x=4 y=4",
+      "localized": "타일 프롬프트: x=4 y=4",
+      "hint": "타일 프롬프트: x=4 y=4"
+    },
+    {
+      "id": "",
       "label": "tiling options",
-      "localized": "타일 옵션",
-      "hint": "타일 옵션"
+      "localized": "타일링 옵션",
+      "hint": "타일링 옵션"
     },
     {
       "id": "",
       "label": "time embedding mix",
-      "localized": "시간 임베딩 혼합",
-      "hint": "시간 임베딩 혼합"
+      "localized": "시간 임베딩 믹스",
+      "hint": "시간 임베딩 믹스"
     },
     {
       "id": "",
@@ -6847,32 +6931,32 @@
     {
       "id": "",
       "label": "timesteps",
-      "localized": "타임스텝 수",
-      "hint": "타임스텝 수"
+      "localized": "타임스텝",
+      "hint": "타임스텝"
     },
     {
       "id": "",
       "label": "timesteps override",
-      "localized": "타임스텝 수 덮어쓰기",
-      "hint": "타임스텝 수 덮어쓰기"
+      "localized": "타임스텝 오버라이드",
+      "hint": "타임스텝 오버라이드"
     },
     {
       "id": "",
       "label": "timesteps presets",
-      "localized": "타임스텝 수 프리셋",
-      "hint": "타임스텝 수 프리셋"
+      "localized": "타임스텝 사전 설정",
+      "hint": "타임스텝 사전 설정"
     },
     {
       "id": "",
       "label": "timesteps range",
-      "localized": "타임스텝 수 범위",
-      "hint": "타임스텝 수 범위"
+      "localized": "타임스텝 범위",
+      "hint": "타임스텝 범위"
     },
     {
       "id": "",
       "label": "tiny",
-      "localized": "아주 작음",
-      "hint": "아주 작음"
+      "localized": "아주 작게",
+      "hint": "아주 작게"
     },
     {
       "id": "",
@@ -6891,6 +6975,18 @@
       "label": "tool",
       "localized": "도구",
       "hint": "도구"
+    },
+    {
+      "id": "",
+      "label": "top-k",
+      "localized": "top-k",
+      "hint": "top-k"
+    },
+    {
+      "id": "",
+      "label": "top-p",
+      "localized": "top-p",
+      "hint": "top-p"
     },
     {
       "id": "",
@@ -6932,49 +7028,49 @@
       "id": "",
       "label": "ui card size (px)",
       "localized": "UI 카드 크기 (px)",
-      "hint": "UI 카드 크기 (픽셀 단위)"
+      "hint": "UI 카드 크기 (px)"
     },
     {
       "id": "",
       "label": "ui fetch network info on mouse-over",
       "localized": "마우스 오버 시 UI 네트워크 정보 가져오기",
-      "hint": "마우스 오버 시 UI 네트워크 정보를 가져옵니다."
+      "hint": "마우스 오버 시 UI 네트워크 정보 가져오기"
     },
     {
       "id": "",
       "label": "ui height (%)",
       "localized": "UI 높이 (%)",
-      "hint": "UI 높이 (백분율)"
+      "hint": "UI 높이 (%)"
     },
     {
       "id": "",
       "label": "ui locale",
-      "localized": "UI 로케일",
-      "hint": "UI 로케일"
+      "localized": "UI 로캘",
+      "hint": "UI 로캘"
+    },
+    {
+      "id": "",
+      "label": "ui request timeout",
+      "localized": "UI 요청 시간 초과",
+      "hint": "UI 요청 시간 초과"
     },
     {
       "id": "",
       "label": "ui show on startup",
       "localized": "시작 시 UI 표시",
-      "hint": "시작 시 UI를 표시합니다."
+      "hint": "시작 시 UI 표시"
     },
     {
       "id": "",
       "label": "ui sidebar width (%)",
       "localized": "UI 사이드바 너비 (%)",
-      "hint": "UI 사이드바 너비 (백분율)"
+      "hint": "UI 사이드바 너비 (%)"
     },
     {
       "id": "",
       "label": "ui theme",
       "localized": "UI 테마",
       "hint": "UI 테마"
-    },
-    {
-      "id": "",
-      "label": "under generate button",
-      "localized": "생성 버튼 아래",
-      "hint": "생성 버튼 아래"
     },
     {
       "id": "",
@@ -6991,8 +7087,8 @@
     {
       "id": "",
       "label": "unet enabled",
-      "localized": "unet 활성화됨",
-      "hint": "unet 활성화됨"
+      "localized": "unet 활성화",
+      "hint": "unet 활성화"
     },
     {
       "id": "",
@@ -7032,21 +7128,15 @@
     },
     {
       "id": "",
-      "label": "unload",
-      "localized": "언로드",
-      "hint": "언로드"
-    },
-    {
-      "id": "",
       "label": "unload current model from vram",
-      "localized": "현재 모델을 VRAM에서 언로드",
-      "hint": "현재 모델을 VRAM에서 언로드합니다."
+      "localized": "VRAM에서 현재 모델 언로드",
+      "hint": "VRAM에서 현재 모델 언로드"
     },
     {
       "id": "",
       "label": "unload upscaler after processing",
       "localized": "처리 후 업스케일러 언로드",
-      "hint": "처리 후 업스케일러를 언로드합니다."
+      "hint": "처리 후 업스케일러 언로드"
     },
     {
       "id": "",
@@ -7064,7 +7154,7 @@
       "id": "",
       "label": "upcast attention layer",
       "localized": "어텐션 레이어 업캐스트",
-      "hint": "어텐션 레이어를 업캐스트합니다."
+      "hint": "어텐션 레이어 업캐스트"
     },
     {
       "id": "",
@@ -7080,105 +7170,105 @@
     },
     {
       "id": "",
-      "label": "upscale",
-      "localized": "업스케일",
-      "hint": "업스케일"
-    },
-    {
-      "id": "",
       "label": "use brownian noise",
       "localized": "브라운 노이즈 사용",
-      "hint": "브라운 노이즈를 사용합니다."
+      "hint": "브라운 노이즈 사용"
     },
     {
       "id": "",
       "label": "use cached model config when available",
       "localized": "사용 가능한 경우 캐시된 모델 구성 사용",
-      "hint": "사용 가능한 경우 캐시된 모델 구성을 사용합니다."
+      "hint": "사용 가능한 경우 캐시된 모델 구성 사용"
     },
     {
       "id": "",
       "label": "use defaults",
       "localized": "기본값 사용",
-      "hint": "기본값을 사용합니다."
+      "hint": "기본값 사용"
     },
     {
       "id": "",
       "label": "use dynamic thresholding",
       "localized": "동적 임계값 처리 사용",
-      "hint": "동적 임계값 처리를 사용합니다."
+      "hint": "동적 임계값 처리 사용"
     },
     {
       "id": "",
       "label": "use fixed width thumbnails",
       "localized": "고정 너비 썸네일 사용",
-      "hint": "고정 너비 썸네일을 사용합니다."
+      "hint": "고정 너비 썸네일 사용"
     },
     {
       "id": "",
       "label": "use image gallery cache",
       "localized": "이미지 갤러리 캐시 사용",
-      "hint": "이미지 갤러리 캐시를 사용합니다."
+      "hint": "이미지 갤러리 캐시 사용"
     },
     {
       "id": "",
       "label": "use karras sigmas",
       "localized": "Karras 시그마 사용",
-      "hint": "Karras 시그마를 사용합니다."
+      "hint": "Karras 시그마 사용"
     },
     {
       "id": "",
       "label": "use line break as prompt segment marker",
       "localized": "줄 바꿈을 프롬프트 세그먼트 마커로 사용",
-      "hint": "줄 바꿈을 프롬프트 세그먼트 마커로 사용합니다."
+      "hint": "줄 바꿈을 프롬프트 세그먼트 마커로 사용"
     },
     {
       "id": "",
       "label": "use model ema weights when possible",
-      "localized": "가능하면 모델 EMA 가중치 사용",
-      "hint": "가능하면 모델 EMA 가중치를 사용합니다."
+      "localized": "가능한 경우 모델 EMA 가중치 사용",
+      "hint": "가능한 경우 모델 EMA 가중치 사용"
     },
     {
       "id": "",
       "label": "use quantization",
       "localized": "양자화 사용",
-      "hint": "양자화를 사용합니다."
+      "hint": "양자화 사용"
     },
     {
       "id": "",
       "label": "use random seeds",
-      "localized": "랜덤 시드 사용",
-      "hint": "랜덤 시드를 사용합니다."
+      "localized": "무작위 시드 사용",
+      "hint": "무작위 시드 사용"
     },
     {
       "id": "",
       "label": "use reference values when available",
       "localized": "사용 가능한 경우 참조 값 사용",
-      "hint": "사용 가능한 경우 참조 값을 사용합니다."
+      "hint": "사용 가능한 경우 참조 값 사용"
     },
     {
       "id": "",
       "label": "use same seed",
       "localized": "동일한 시드 사용",
-      "hint": "동일한 시드를 사용합니다."
+      "hint": "동일한 시드 사용"
+    },
+    {
+      "id": "",
+      "label": "use sample",
+      "localized": "샘플 사용",
+      "hint": "샘플 사용"
     },
     {
       "id": "",
       "label": "use separate base dict",
-      "localized": "분리된 기본 딕셔너리 사용",
-      "hint": "분리된 기본 딕셔너리를 사용합니다."
+      "localized": "별도의 기본 사전 사용",
+      "hint": "별도의 기본 사전 사용"
     },
     {
       "id": "",
       "label": "use simplified solvers in final steps",
-      "localized": "마지막 단계에서 단순화된 솔버 사용",
-      "hint": "마지막 단계에서 단순화된 솔버를 사용합니다."
+      "localized": "마지막 단계에서 간소화된 솔버 사용",
+      "hint": "마지막 단계에서 간소화된 솔버 사용"
     },
     {
       "id": "",
       "label": "use text inputs",
       "localized": "텍스트 입력 사용",
-      "hint": "텍스트 입력을 사용합니다."
+      "hint": "텍스트 입력 사용"
     },
     {
       "id": "",
@@ -7195,14 +7285,14 @@
     {
       "id": "",
       "label": "v_prediction",
-      "localized": "v 예측",
-      "hint": "v 예측"
+      "localized": "v_prediction 예측",
+      "hint": "v_prediction 예측"
     },
     {
       "id": "",
       "label": "vae enabled",
       "localized": "VAE 활성화",
-      "hint": "VAE 활성화"
+      "hint": "VAE 활성화됨"
     },
     {
       "id": "",
@@ -7230,12 +7320,6 @@
     },
     {
       "id": "",
-      "label": "validate",
-      "localized": "검증",
-      "hint": "검증"
-    },
-    {
-      "id": "",
       "label": "vary_coeff",
       "localized": "변동 계수",
       "hint": "변동 계수"
@@ -7255,8 +7339,8 @@
     {
       "id": "",
       "label": "vgen params",
-      "localized": "VGen 매개변수",
-      "hint": "VGen 매개변수"
+      "localized": "VGen 파라미터",
+      "hint": "VGen 파라미터"
     },
     {
       "id": "",
@@ -7275,12 +7359,6 @@
       "label": "video type",
       "localized": "비디오 유형",
       "hint": "비디오 유형"
-    },
-    {
-      "id": "",
-      "label": "visual query",
-      "localized": "시각적 쿼리",
-      "hint": "시각적 쿼리"
     },
     {
       "id": "",
@@ -7320,6 +7398,24 @@
     },
     {
       "id": "",
+      "label": "vlm: top-k",
+      "localized": "VLM: Top-K",
+      "hint": "VLM: Top-K"
+    },
+    {
+      "id": "",
+      "label": "vlm: top-p",
+      "localized": "VLM: Top-P",
+      "hint": "VLM: Top-P"
+    },
+    {
+      "id": "",
+      "label": "vlm: use sample method",
+      "localized": "VLM: 샘플링 방법 사용",
+      "hint": "VLM: 샘플링 방법 사용"
+    },
+    {
+      "id": "",
       "label": "warmth",
       "localized": "따뜻함",
       "hint": "따뜻함"
@@ -7338,27 +7434,21 @@
     },
     {
       "id": "",
-      "label": "weighted",
-      "localized": "가중치 적용됨",
-      "hint": "가중치 적용됨"
-    },
-    {
-      "id": "",
       "label": "width  after",
-      "localized": "너비 (이후)",
-      "hint": "너비 (이후)"
+      "localized": "Width After",
+      "hint": "Width After"
     },
     {
       "id": "",
       "label": "width  before",
-      "localized": "너비 (이전)",
-      "hint": "너비 (이전)"
+      "localized": "Width Before",
+      "hint": "Width Before"
     },
     {
       "id": "",
       "label": "width  mask",
-      "localized": "너비 마스크",
-      "hint": "너비 마스크"
+      "localized": "Width Mask",
+      "hint": "Width Mask"
     },
     {
       "id": "",
@@ -7375,8 +7465,8 @@
     {
       "id": "",
       "label": "x components",
-      "localized": "X 구성 요소",
-      "hint": "X 구성 요소"
+      "localized": "X 컴포넌트",
+      "hint": "X 컴포넌트"
     },
     {
       "id": "",
@@ -7392,6 +7482,18 @@
     },
     {
       "id": "",
+      "label": "x-axis tile overlap",
+      "localized": "X축 타일 오버랩",
+      "hint": "X축 타일 오버랩"
+    },
+    {
+      "id": "",
+      "label": "x-axis tiles",
+      "localized": "X축 타일",
+      "hint": "X축 타일"
+    },
+    {
+      "id": "",
       "label": "xhinker",
       "localized": "Xhinker",
       "hint": "Xhinker"
@@ -7399,14 +7501,14 @@
     {
       "id": "",
       "label": "xs",
-      "localized": "xs",
-      "hint": "xs"
+      "localized": "XS",
+      "hint": "XS"
     },
     {
       "id": "",
       "label": "y components",
-      "localized": "Y 구성 요소",
-      "hint": "Y 구성 요소"
+      "localized": "Y 컴포넌트",
+      "hint": "Y 컴포넌트"
     },
     {
       "id": "",
@@ -7422,6 +7524,18 @@
     },
     {
       "id": "",
+      "label": "y-axis tile overlap",
+      "localized": "Y축 타일 오버랩",
+      "hint": "Y축 타일 오버랩"
+    },
+    {
+      "id": "",
+      "label": "y-axis tiles",
+      "localized": "Y축 타일",
+      "hint": "Y축 타일"
+    },
+    {
+      "id": "",
       "label": "z type",
       "localized": "Z 유형",
       "hint": "Z 유형"
@@ -7429,26 +7543,14 @@
     {
       "id": "",
       "label": "zero",
-      "localized": "영(0)",
-      "hint": "영(0)"
+      "localized": "제로",
+      "hint": "제로"
     },
     {
       "id": "",
       "label": "zoe depth",
       "localized": "Zoe 깊이",
       "hint": "Zoe 깊이"
-    },
-    {
-      "id": "",
-      "label": "➠ control",
-      "localized": "➠ 컨트롤",
-      "hint": "➠ 컨트롤"
-    },
-    {
-      "id": "",
-      "label": "💾",
-      "localized": "💾",
-      "hint": "💾"
     }
   ]
 }
