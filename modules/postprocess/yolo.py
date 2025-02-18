@@ -346,10 +346,10 @@ class YoloRestorer(Detailer):
             with gr.Row():
                 enabled = gr.Checkbox(label="Enable detailer pass", elem_id=f"{tab}_detailer_enabled", value=False)
             with gr.Row():
-                detailers = gr.Dropdown(label="Detailers", elem_id=f"{tab}_detailers", choices=self.list, value=shared.opts.detailer_models, multiselect=True)
+                detailers = gr.Dropdown(label="Detailer models", elem_id=f"{tab}_detailers", choices=self.list, value=shared.opts.detailer_models, multiselect=True)
                 ui_common.create_refresh_button(detailers, self.enumerate, {}, elem_id=f"{tab}_detailers_refresh")
             with gr.Row():
-                classes = gr.Textbox(label="Classes", placeholder="Classes", elem_id=f"{tab}_detailer_classes")
+                classes = gr.Textbox(label="Detailer classes", placeholder="Classes", elem_id=f"{tab}_detailer_classes")
             with gr.Row():
                 prompt = gr.Textbox(label="Detailer prompt", value='', placeholder='Detailer prompt', lines=2, elem_id=f"{tab}_detailer_prompt")
             with gr.Row():

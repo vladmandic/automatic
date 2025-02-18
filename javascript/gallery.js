@@ -23,19 +23,20 @@ class GalleryFolder extends HTMLElement {
   }
 
   connectedCallback() {
-    const style = document.createElement('style');
-    style.textContent = `
-      .gallery-folder {
-        cursor: pointer;
-        padding: 8px 6px 8px 6px;
-      }
-      .gallery-folder:hover {
-        background-color: var(--button-primary-background-fill-hover);
-      }
-      .gallery-folder-selected {
-        background-color: var(--button-primary-background-fill);
-      }
-    `;
+    const style = document.createElement('style'); // silly but necessasry since we're inside shadowdom
+    if (window.opts.theme_type === 'Modern') {
+      style.textContent = `
+        .gallery-folder { cursor: pointer; padding: 8px 6px 8px 6px; background-color: var(--sd-secondary-color); }
+        .gallery-folder:hover { background-color: var(--button-primary-background-fill-hover); }
+        .gallery-folder-selected { background-color: var(--sd-button-selected-color); color: var(--sd-button-selected-text-color); }
+      `;
+    } else {
+      style.textContent = `
+        .gallery-folder { cursor: pointer; padding: 8px 6px 8px 6px; }
+        .gallery-folder:hover { background-color: var(--button-primary-background-fill-hover); }
+        .gallery-folder-selected { background-color: var(--button-primary-background-fill); }
+      `;
+    }
     this.shadow.appendChild(style);
     const div = document.createElement('div');
     div.className = 'gallery-folder';
@@ -92,7 +93,7 @@ async function addSeparators() {
 async function delayFetchThumb(fn) {
   while (outstanding > 16) await new Promise((resolve) => setTimeout(resolve, 50)); // eslint-disable-line no-promise-executor-return
   outstanding++;
-  const res = await fetch(`/sdapi/v1/browser/thumb?file=${encodeURI(fn)}`, { priority: 'low' });
+  const res = await fetch(`${window.api}/browser/thumb?file=${encodeURI(fn)}`, { priority: 'low' });
   if (!res.ok) {
     error(`fetchThumb: ${res.statusText}`);
     outstanding--;
@@ -334,7 +335,7 @@ async function fetchFilesHT(evt) {
   el.status.innerText = `Folder | ${evt.target.name} | in-progress`;
   let numFiles = 0;
 
-  const res = await fetch(`/sdapi/v1/browser/files?folder=${encodeURI(evt.target.name)}`);
+  const res = await fetch(`${window.api}/browser/files?folder=${encodeURI(evt.target.name)}`);
   if (!res || res.status !== 200) {
     el.status.innerText = `Folder | ${evt.target.name} | failed: ${res?.statusText}`;
     return;
@@ -412,7 +413,7 @@ async function pruneImages() {
 
 async function galleryVisible() {
   // if (el.folders.children.length > 0) return;
-  const res = await fetch('/sdapi/v1/browser/folders');
+  const res = await fetch(`${window.api}/browser/folders`);
   if (!res || res.status !== 200) return;
   el.folders.innerHTML = '';
   url = res.url.split('/sdapi')[0].replace('http', 'ws'); // update global url as ws need fqdn

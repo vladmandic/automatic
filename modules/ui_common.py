@@ -275,7 +275,7 @@ def create_output_panel(tabname, preview=True, prompt=None, height=None):
                 if not shared.native:
                     buttons = generation_parameters_copypaste.create_buttons(["img2img", "inpaint", "extras"])
                 else:
-                    buttons = generation_parameters_copypaste.create_buttons(["txt2img", "img2img", "control", "extras"])
+                    buttons = generation_parameters_copypaste.create_buttons(["txt2img", "img2img", "control", "extras", "caption"])
 
             download_files = gr.File(None, file_count="multiple", interactive=False, show_label=False, visible=False, elem_id=f'download_files_{tabname}')
             with gr.Group():

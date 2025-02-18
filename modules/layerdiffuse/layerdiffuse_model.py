@@ -272,7 +272,7 @@ class TransparentVAEDecoder(AutoencoderKL):
 
             B, H, W, C = fg.shape
             cb = checkerboard(shape=(H // 64, W // 64))
-            cb = cv2.resize(cb, (W, H), interpolation=cv2.INTER_NEAREST)
+            cb = cv2.resize(cb, (W, H), interpolation=cv2.INTER_LANCZOS4)
             cb = (0.5 + (cb - 0.5) * 0.1)[None, ..., None]
             cb = torch.from_numpy(cb).to(fg)
 

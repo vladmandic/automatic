@@ -37,7 +37,7 @@ async function createSplash() {
   await preloadImages();
   const imgEl = `<div id="spash-img" class="splash-img" alt="logo" style="background-image: url(file=html/logo-bg-${dark ? 'dark' : 'light'}.jpg), url(file=html/logo-bg-${num}.jpg); background-blend-mode: ${dark ? 'multiply' : 'lighten'}"></div>`;
   document.getElementById('splash').insertAdjacentHTML('afterbegin', imgEl);
-  fetch('/sdapi/v1/motd')
+  fetch(`${window.api}/motd`)
     .then((res) => res.text())
     .then((text) => {
       const motdEl = document.getElementById('motd');
@@ -52,7 +52,7 @@ async function removeSplash() {
   log('removeSplash');
   const t = Math.round(performance.now() - appStartTime) / 1000;
   log('startupTime', t);
-  xhrPost('/sdapi/v1/log', { message: `ready time=${t}` });
+  xhrPost(`${window.api}/log`, { message: `ready time=${t}` });
 }
 
 window.onload = createSplash;

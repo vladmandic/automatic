@@ -5,11 +5,12 @@ import ctypes
 import shutil
 import zipfile
 import urllib.request
-from typing import Optional, Union
+from typing import Union
 from modules import rocm
 
 
 DLL_MAPPING = {
+    'cudart.dll': 'cudart64_110.dll',
     'cublas.dll': 'cublas64_11.dll',
     'cusparse.dll': 'cusparse64_11.dll',
     'cufft.dll': 'cufft64_10.dll',
@@ -19,19 +20,38 @@ DLL_MAPPING = {
 HIPSDK_TARGETS = ['rocblas.dll', 'rocsolver.dll', 'hipfft.dll',]
 ZLUDA_TARGETS = ('nvcuda.dll', 'nvml.dll',)
 
+hipBLASLt_available = False
+MIOpen_available = False
+
 path = os.path.abspath(os.environ.get('ZLUDA', '.zluda'))
 default_agent: Union[rocm.Agent, None] = None
 nightly = os.environ.get("ZLUDA_NIGHTLY", "0") == "1"
-hipBLASLt_enabled = os.path.exists(os.path.join(rocm.path, "bin", "hipblaslt.dll")) and os.path.exists(rocm.blaslt_tensile_libpath) and ((not os.path.exists(path) and nightly) or os.path.exists(os.path.join(path, 'cublasLt.dll')))
+hipBLASLt_enabled = False
 
 
 def set_default_agent(agent: rocm.Agent):
     global default_agent # pylint: disable=global-statement
     default_agent = agent
 
+    is_nightly = False
+    try:
+        nvcuda = ctypes.windll.LoadLibrary(os.path.join(path, 'nvcuda.dll'))
+        nvcuda.zluda_get_nightly_flag.restype = ctypes.c_int
+        nvcuda.zluda_get_nightly_flag.argtypes = []
+        is_nightly = nvcuda.zluda_get_nightly_flag() == 1
+    except Exception:
+        pass
 
-def is_old_zluda() -> bool: # ZLUDA<3.8.7
-    return not os.path.exists(os.path.join(path, "cufftw.dll"))
+    global hipBLASLt_available, hipBLASLt_enabled # pylint: disable=global-statement
+    hipBLASLt_available = is_nightly and os.path.exists(rocm.blaslt_tensile_libpath)
+    hipBLASLt_enabled = hipBLASLt_available and ((not os.path.exists(path) and nightly) or os.path.exists(os.path.join(path, 'cublasLt.dll')))
+
+    global MIOpen_available # pylint: disable=global-statement
+    MIOpen_available = is_nightly and agent.gfx_version in (0x908, 0x90a, 0x940, 0x941, 0x942, 0x1030, 0x1100, 0x1101, 0x1102,)
+
+
+def is_reinstall_needed() -> bool: # ZLUDA<3.8.7
+    return not os.path.exists(os.path.join(path, 'cufftw.dll'))
 
 
 def install() -> None:
@@ -39,7 +59,7 @@ def install() -> None:
         return
 
     platform = "windows"
-    commit = os.environ.get("ZLUDA_HASH", "c4994b3093e02231339d22e12be08418b2af781f")
+    commit = os.environ.get("ZLUDA_HASH", "32493c9dcb22012a0ba95ee740980231236e909c")
     if nightly:
         platform = "nightly-" + platform
     urllib.request.urlretrieve(f'https://github.com/lshqqytiger/ZLUDA/releases/download/rel.{commit}/ZLUDA-{platform}-rocm{rocm.version[0]}-amd64.zip', '_zluda')
@@ -68,9 +88,12 @@ def get_blaslt_enabled() -> bool:
 
 def link_or_copy(src: os.PathLike, dst: os.PathLike):
     try:
-        os.link(src, dst)
+        os.symlink(src, dst)
     except Exception:
-        shutil.copyfile(src, dst)
+        try:
+            os.link(src, dst)
+        except Exception:
+            shutil.copyfile(src, dst)
 
 
 def make_copy() -> None:
@@ -80,6 +103,9 @@ def make_copy() -> None:
 
     if hipBLASLt_enabled and not os.path.exists(os.path.join(path, 'cublasLt64_11.dll')):
         link_or_copy(os.path.join(path, 'cublasLt.dll'), os.path.join(path, 'cublasLt64_11.dll'))
+
+    if MIOpen_available and not os.path.exists(os.path.join(path, 'cudnn64_9.dll')):
+        link_or_copy(os.path.join(path, 'cudnn.dll'), os.path.join(path, 'cudnn64_9.dll'))
 
 
 def load() -> None:
@@ -94,8 +120,15 @@ def load() -> None:
         ctypes.windll.LoadLibrary(os.path.join(path, v))
 
     if hipBLASLt_enabled:
+        os.environ.setdefault("DISABLE_ADDMM_CUDA_LT", "0")
         ctypes.windll.LoadLibrary(os.path.join(rocm.path, 'bin', 'hipblaslt.dll'))
         ctypes.windll.LoadLibrary(os.path.join(path, 'cublasLt64_11.dll'))
+    else:
+        os.environ["DISABLE_ADDMM_CUDA_LT"] = "1"
+
+    if MIOpen_available:
+        ctypes.windll.LoadLibrary(os.path.join(rocm.path, 'bin', 'MIOpen.dll'))
+        ctypes.windll.LoadLibrary(os.path.join(path, 'cudnn64_9.dll'))
 
     def conceal():
         import torch # pylint: disable=unused-import
@@ -110,12 +143,3 @@ def load() -> None:
             return os.path.join(cpp_extension.ROCM_HOME, *paths)
         cpp_extension._join_rocm_home = _join_rocm_home # pylint: disable=protected-access
     rocm.conceal = conceal
-
-
-def get_default_torch_version(agent: Optional[rocm.Agent]) -> str:
-    if agent is not None:
-        if agent.arch in (rocm.MicroArchitecture.RDNA, rocm.MicroArchitecture.CDNA,):
-            return "2.4.1" if hipBLASLt_enabled else "2.3.1"
-        elif agent.arch == rocm.MicroArchitecture.GCN:
-            return "2.2.1"
-    return "2.4.1" if hipBLASLt_enabled else "2.3.1"

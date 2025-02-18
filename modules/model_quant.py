@@ -30,8 +30,6 @@ def get_quant(name):
     return 'none'
 
 
-
-
 def create_bnb_config(kwargs = None, allow_bnb: bool = True):
     from modules import shared, devices
     if len(shared.opts.bnb_quantization) > 0 and allow_bnb:
@@ -77,7 +75,7 @@ def load_torchao(msg='', silent=False):
     global ao # pylint: disable=global-statement
     if ao is not None:
         return ao
-    install('torchao==0.7.0', quiet=True)
+    install('torchao==0.8.0', quiet=True)
     try:
         import torchao
         ao = torchao

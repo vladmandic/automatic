@@ -117,8 +117,10 @@ onAfterUiUpdate(async () => {
   });
 
   const settingsSearch = gradioApp().querySelectorAll('#settings_search > label > textarea')[0];
+  let settingsTimer;
   settingsSearch.oninput = (e) => {
-    setTimeout(() => {
+    if (settingsTimer) clearTimeout(settingsTimer);
+    settingsTimer = setTimeout(() => {
       log('settingsSearch', e.target.value);
       showAllSettings();
       getSettingsTabs().forEach((section) => {
@@ -128,7 +130,7 @@ onAfterUiUpdate(async () => {
           else setting.style.removeProperty('display');
         });
       });
-    }, 50);
+    }, 250);
   };
 });
 
@@ -150,7 +152,7 @@ async function initModels() {
   const el = gradioApp().getElementById('main_info');
   const en = gradioApp().getElementById('txt2img_extra_networks');
   if (!el || !en) return;
-  const req = await fetch('/sdapi/v1/sd-models');
+  const req = await fetch(`${window.api}/sd-models`);
   const res = req.ok ? await req.json() : [];
   log('initModels', res.length);
   const ready = () => `

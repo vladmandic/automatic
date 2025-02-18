@@ -175,13 +175,14 @@ def set_pipeline_args(p, model, prompts:list, negative_prompts:list, prompts_2:t
             else:
                 args['negative_prompt'] = negative_prompts
     if 'complex_human_instruction' in possible:
-        chi = any(len(p) < 300 for p in prompts)
+        chi = shared.opts.te_complex_human_instruction
         p.extra_generation_params["CHI"] = chi
         if not chi:
             args['complex_human_instruction'] = None
     if 'use_resolution_binning' in possible:
         args['use_resolution_binning'] = False
-        # p.extra_generation_params["Binning"] = True
+    if 'use_mask_in_transformer' in possible:
+        args['use_mask_in_transformer'] = shared.opts.te_use_mask
     if prompt_parser_diffusers.embedder is not None and not prompt_parser_diffusers.embedder.scheduled_prompt: # not scheduled so we dont need it anymore
         prompt_parser_diffusers.embedder = None
 

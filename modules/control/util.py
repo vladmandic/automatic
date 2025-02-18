@@ -36,7 +36,7 @@ def HWC3(x):
 
 def make_noise_disk(H, W, C, F):
     noise = np.random.uniform(low=0, high=1, size=((H // F) + 2, (W // F) + 2, C))
-    noise = cv2.resize(noise, (W + 2 * F, H + 2 * F), interpolation=cv2.INTER_CUBIC)
+    noise = cv2.resize(noise, (W + 2 * F, H + 2 * F), interpolation=cv2.INTER_LANCZOS4)
     noise = noise[F: F + H, F: F + W]
     noise -= np.min(noise)
     noise /= np.max(noise)
@@ -77,7 +77,7 @@ def img2mask(img, H, W, low=10, high=90):
         y = img[:, :, random.randrange(0, img.shape[2])]
     else:
         y = img
-    y = cv2.resize(y, (W, H), interpolation=cv2.INTER_CUBIC)
+    y = cv2.resize(y, (W, H), interpolation=cv2.INTER_LANCZOS4)
     if random.uniform(0, 1) < 0.5:
         y = 255 - y
     return y < np.percentile(y, random.randrange(low, high))
@@ -92,7 +92,7 @@ def resize_image(input_image, resolution):
     W *= k
     H = int(np.round(H / 64.0)) * 64
     W = int(np.round(W / 64.0)) * 64
-    img = cv2.resize(input_image, (W, H), interpolation=cv2.INTER_LANCZOS4 if k > 1 else cv2.INTER_AREA)
+    img = cv2.resize(input_image, (W, H), interpolation=cv2.INTER_LANCZOS4)
     return img
 
 
@@ -150,7 +150,7 @@ def blend(images):
     y = np.zeros((images[0].shape[0], images[0].shape[1], 3), dtype=np.float32)
     for img in images:
         if img.shape[0] != y.shape[0] or img.shape[1] != y.shape[1]:
-            img = cv2.resize(img, (y.shape[1], y.shape[0]), interpolation=cv2.INTER_CUBIC)
+            img = cv2.resize(img, (y.shape[1], y.shape[0]), interpolation=cv2.INTER_LANCZOS4)
         if len(img.shape) == 3 and img.shape[2] == 4: # rgba to rgb
             img = cv2.cvtColor(img, cv2.COLOR_RGBA2RGB)
         if len(img.shape) == 2: # grayscale to rgb

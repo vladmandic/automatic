@@ -10,11 +10,12 @@ instightface_mp = None
 def get_app(mp_name, threshold=0.5, resolution=640):
     global insightface_app, instightface_mp # pylint: disable=global-statement
 
-    from installer import install, installed
+    from installer import install, installed, reload
     if not installed('insightface', reload=False, quiet=True):
-        install('insightface', 'insightface', ignore=False)
-        install('albumentations==1.4.3', 'albumentations', ignore=False, reinstall=True)
-        install('pydantic==1.10.21', 'pydantic', ignore=False, reinstall=True)
+        install('insightface==0.7.3', ignore=False)
+        install('albumentations==1.4.3', ignore=False, reinstall=True)
+        install('pydantic==1.10.21', ignore=False, reinstall=True, force=True)
+        reload('pydantic')
     if not installed('ip_adapter', reload=False, quiet=True):
         install('git+https://github.com/tencent-ailab/IP-Adapter.git', 'ip_adapter', ignore=False)
 

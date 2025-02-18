@@ -6,7 +6,7 @@ import numpy as np
 from torch.hub import download_url_to_file, get_dir
 from PIL import Image
 from modules import devices
-from modules.shared import log
+from installer import log
 
 
 LAMA_MODEL_URL = "https://github.com/enesmsahin/simple-lama-inpainting/releases/download/v0.1.0/big-lama.pt"
@@ -38,7 +38,7 @@ def prepare_img_and_mask(image, mask, device, pad_out_to_modulo=8, scale_factor=
             mode="symmetric",
         )
 
-    def scale_image(img, factor, interpolation=cv2.INTER_AREA):
+    def scale_image(img, factor, interpolation=cv2.INTER_LANCZOS4):
         if img.shape[0] == 1:
             img = img[0]
         else:
@@ -54,7 +54,7 @@ def prepare_img_and_mask(image, mask, device, pad_out_to_modulo=8, scale_factor=
     out_mask = get_image(mask)
     if scale_factor is not None:
         out_image = scale_image(out_image, scale_factor)
-        out_mask = scale_image(out_mask, scale_factor, interpolation=cv2.INTER_NEAREST)
+        out_mask = scale_image(out_mask, scale_factor, interpolation=cv2.INTER_LANCZOS4)
     if pad_out_to_modulo is not None and pad_out_to_modulo > 1:
         out_image = pad_img_to_modulo(out_image, pad_out_to_modulo)
         out_mask = pad_img_to_modulo(out_mask, pad_out_to_modulo)

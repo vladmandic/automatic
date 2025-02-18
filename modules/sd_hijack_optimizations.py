@@ -20,7 +20,7 @@ if shared.opts.cross_attention_optimization == "xFormers":
         shared.xformers_available = True
     except Exception:
         pass
-else:
+elif not shared.cmd_opts.experimental:
     if sys.modules.get("xformers", None) is not None:
         shared.log.debug('Unloading xFormers')
     sys.modules["xformers"] = None

@@ -90,6 +90,9 @@ def parse(infotext):
     # debug(f'Negative: {negative}')
 
     params = dict(re_param.findall(remaining))
+    if len(list(params)) == 0:
+        params['Prompt'] = infotext
+        return params
     params['Prompt'] = prompt
     params['Negative prompt'] = negative
     for key, val in params.copy().items():

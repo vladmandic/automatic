@@ -51,7 +51,7 @@ build/
 dist/
 
 # dynamically generated
-/repositories/ip-instruct/
+/repositories/deepseek-vl2/
 
 # all dynamic stuff
 /extensions/**/*

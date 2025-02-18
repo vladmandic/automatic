@@ -34,7 +34,7 @@ def restore(np_image, name, session, strength): # pylint: disable=unused-argumen
 
     detected_faces = len(face_helper.cropped_faces)
     for cropped_face in face_helper.cropped_faces:
-        cropped_face = cv2.resize(cropped_face, resolution, interpolation=cv2.INTER_LINEAR)
+        cropped_face = cv2.resize(cropped_face, resolution, interpolation=cv2.INTER_LANCZOS4)
         cropped_face = cropped_face.astype(np.float16)[:,:,::-1] / 255.0
         cropped_face = cropped_face.transpose((2, 0, 1))
         cropped_face = (cropped_face - 0.5) / 0.5
@@ -52,7 +52,7 @@ def restore(np_image, name, session, strength): # pylint: disable=unused-argumen
     restored_img = face_helper.paste_faces_to_input_image()
     restored_img = restored_img[:, :, ::-1]
     if original_resolution != restored_img.shape[0:2]:
-        restored_img = cv2.resize(restored_img, (0, 0), fx=original_resolution[1]/restored_img.shape[1], fy=original_resolution[0]/restored_img.shape[0], interpolation=cv2.INTER_LINEAR)
+        restored_img = cv2.resize(restored_img, (0, 0), fx=original_resolution[1]/restored_img.shape[1], fy=original_resolution[0]/restored_img.shape[0], interpolation=cv2.INTER_LANCZOS4)
 
     face_helper.clean_all()
     t1 = time.time()

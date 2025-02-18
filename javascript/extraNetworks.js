@@ -294,7 +294,7 @@ function selectHistory(id) {
   const headers = new Headers();
   headers.set('Content-Type', 'application/json');
   const init = { method: 'POST', body: { name: id }, headers };
-  fetch('/sdapi/v1/history', { method: 'POST', body: JSON.stringify({ name: id }), headers });
+  fetch(`${window.api}/history`, { method: 'POST', body: JSON.stringify({ name: id }), headers });
 }
 
 let enDirty = false;
@@ -464,13 +464,13 @@ function setupExtraNetworksForTab(tabname) {
           en.style.position = 'absolute';
           en.style.height = 'auto';
           en.style.width = `${window.opts.extra_networks_sidebar_width}vw`;
-          en.style.maxWidth = '655px';
+          en.style.maxWidth = '50vw';
           en.style.right = '0';
           en.style.top = '13em';
           en.style.transition = 'width 0.3s ease';
           en.style.zIndex = 100;
           // gradioApp().getElementById(`${tabname}_settings`).parentNode.style.width = `${100 - 2 - window.opts.extra_networks_sidebar_width}vw`;
-          gradioApp().getElementById(`${tabname}_settings`).parentNode.style.width = `calc(100vw - 2em - min(${window.opts.extra_networks_sidebar_width}vw, 655px))`;
+          gradioApp().getElementById(`${tabname}_settings`).parentNode.style.width = `calc(100vw - 2em - min(${window.opts.extra_networks_sidebar_width}vw, 50vw))`;
         } else {
           en.style.position = 'relative';
           en.style.height = 'unset';
@@ -515,5 +515,6 @@ async function setupExtraNetworks() {
   registerPrompt('img2img', 'img2img_neg_prompt');
   registerPrompt('control', 'control_prompt');
   registerPrompt('control', 'control_neg_prompt');
-  log('initNetworks');
+  log('initNetworks', window.opts.extra_networks_card_size);
+  document.documentElement.style.setProperty('--card-size', `${window.opts.extra_networks_card_size}px`);
 }

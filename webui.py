@@ -250,6 +250,18 @@ def start_common():
         timer.startup.record("cleanup")
 
 
+def mount_subpath(app):
+    if shared.cmd_opts.subpath:
+        shared.opts.subpath = shared.cmd_opts.subpath
+    if shared.opts.subpath is None or len(shared.opts.subpath) == 0:
+        return
+    import gradio
+    if not shared.opts.subpath.startswith('/'):
+        shared.opts.subpath = f'/{shared.opts.subpath}'
+    gradio.mount_gradio_app(app, shared.demo, path=shared.opts.subpath)
+    shared.log.info(f'Mounted: subpath="{shared.opts.subpath}"')
+
+
 def start_ui():
     log.debug('UI start sequence')
     modules.script_callbacks.before_ui_callback()
@@ -324,18 +336,13 @@ def start_ui():
     shared.demo.server.wants_restart = False
     modules.api.middleware.setup_middleware(app, shared.cmd_opts)
 
-    if shared.cmd_opts.subpath:
-        import gradio
-        gradio.mount_gradio_app(app, shared.demo, path=f"/{shared.cmd_opts.subpath}")
-        shared.log.info(f'Redirector mounted: /{shared.cmd_opts.subpath}')
-
     timer.startup.record("launch")
 
-    modules.progress.setup_progress_api(app)
     shared.api = create_api(app)
+    shared.api.register()
+    modules.progress.setup_progress_api()
+    modules.ui_extra_networks.init_api()
     timer.startup.record("api")
-
-    modules.ui_extra_networks.init_api(app)
 
     modules.script_callbacks.app_started_callback(shared.demo, app)
     timer.startup.record("app-started")
@@ -347,6 +354,7 @@ def start_ui():
     time_component = [f'{k}:{round(v,3)}' for (k,v) in modules.scripts.time_component.items() if v > 0.005]
     if len(time_component) > 0:
         shared.log.debug(f'Scripts components: {time_component}')
+    return app
 
 
 def webui(restart=False):
@@ -355,10 +363,11 @@ def webui(restart=False):
         modules.script_callbacks.script_unloaded_callback()
 
     start_common()
-    start_ui()
+    app = start_ui()
     modules.script_callbacks.after_ui_callback()
     modules.sd_models.write_metadata()
     load_model()
+    mount_subpath(app)
     shared.opts.save(shared.config_filename)
     if shared.cmd_opts.profile:
         for k, v in modules.script_callbacks.callback_map.items():
@@ -407,6 +416,7 @@ def api_only():
     app = FastAPI(**fastapi_args)
     modules.api.middleware.setup_middleware(app, shared.cmd_opts)
     shared.api = create_api(app)
+    shared.api.register()
     shared.api.wants_restart = False
     modules.script_callbacks.app_started_callback(None, app)
     modules.sd_models.write_metadata()

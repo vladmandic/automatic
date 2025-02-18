@@ -162,7 +162,10 @@ def parse_prompt(prompt):
         args = m.group(2)
         res[name].append(ExtraNetworkParams(items=args.split(":")))
         return ""
-    prompt = re.sub(re_extra_net, found, prompt)
+    if isinstance(prompt, list):
+        prompt = [re.sub(re_extra_net, found, p) for p in prompt]
+    else:
+        prompt = re.sub(re_extra_net, found, prompt)
     return prompt, res
 
 

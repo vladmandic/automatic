@@ -25,7 +25,7 @@ const loginHTML = `
 function forceLogin() {
   const form = document.createElement('form');
   form.method = 'POST';
-  form.action = '/login';
+  form.action = `${location.href}login`;
   form.id = 'loginForm';
   form.style.cssText = loginCSS;
   form.innerHTML = loginHTML;
@@ -39,8 +39,8 @@ function forceLogin() {
     const formData = new FormData(form);
     formData.append('username', username.value);
     formData.append('password', password.value);
-    console.warn('login', formData);
-    fetch('/login', {
+    console.warn('login', location.href, formData);
+    fetch(`${location.href}login`, {
       method: 'POST',
       body: formData,
     })
@@ -59,7 +59,7 @@ function forceLogin() {
 }
 
 function loginCheck() {
-  fetch('/login_check', {})
+  fetch(`${location.href}login_check`, {})
     .then((res) => {
       if (res.status === 200) console.log('login ok');
       else forceLogin();

@@ -46,11 +46,19 @@ re_clean = re.compile(r"^\W+", re.S)
 re_whitespace = re.compile(r"\s+", re.S)
 re_break = re.compile(r"\s*\bBREAK\b|##\s*", re.S)
 re_attention_v2 = re.compile(r"""
-\(|\[|\\\(|\\\[|\\|\\\\|
-:([+-]?[.\d]+)|
-\)|\]|\\\)|\\\]|
-[^\(\)\[\]:]+|
-:
+\\\(             |      # Allow masked '\('
+\\\)             |      # Allow masked '\)'
+\\\:             |      # Allow masked '\:'
+\\\[             |      # Allow masked '\['
+\\\]             |      # Allow masked '\]'
+\\\\             |      # Allow masked '\\'
+\\               |      # Removes '\'
+\(               |      # Start '('
+\[               |      # Start '['
+:([+-]?[.\d]+)\) |      # Weight ':', followed by an optional sign and a number, and then ')'
+\)               |      # End ')'
+\]               |      # End ']'
+[^\\()\[\]:]+    |      # Content matches any character except '\', '(', ')', '[', ']', ':'
 """, re.X)
 re_attention_v1 = re.compile(r"""
 \\\(|
@@ -325,7 +333,7 @@ def parse_prompt_attention(text):
         re_attention = re_attention_v1
         whitespace = ''
     else:
-        re_attention = re_attention_v1
+        re_attention = re_attention_v2
         if native and opts.sd_textencder_linebreak:
             text = text.replace('\n', ' BREAK ')
         else:
@@ -335,7 +343,7 @@ def parse_prompt_attention(text):
     def multiply_range(start_position, multiplier):
         try:
             for p in range(start_position, len(res)):
-                res[p][1] *= multiplier
+                res[p][1] = round(res[p][1] * multiplier, 3)
         except Exception as e:
             log(f'Prompt parser: {e}')
 
@@ -343,8 +351,14 @@ def parse_prompt_attention(text):
         try:
             section = m.group(0)
             weight = m.group(1)
+            # log.trace(f'Prompt: text="{text[m.start():m.end()]}" section="{section}" weight="{weight}"')
+            if len(section) == 0:
+                continue
             if section.startswith('\\'):
-                res.append([section[1:], 1.0])
+                if len(res) > 0 and text[m.start()-1] != ' ':
+                    res[-1][0] += section[1:] # append literal character to the last section
+                else:
+                    res.append([section[1:], 1.0])
             elif section == '(':
                 round_brackets.append(len(res))
             elif section == '[':
@@ -377,9 +391,10 @@ def parse_prompt_attention(text):
     # merge runs of identical weights
     i = 0
     while i + 1 < len(res):
-        if res[i][1] == res[i + 1][1]:
-            res[i][0] += whitespace + res[i + 1][0]
-            res.pop(i + 1)
+        if res[i][1] == res[i+1][1]:
+            sep = whitespace if res[i][0][-1].isalnum() else ''
+            res[i][0] += sep + res[i+1][0]
+            res.pop(i+1)
         else:
             i += 1
     debug(f'Prompt: parser="{opts.prompt_attention}" {res}')

@@ -428,6 +428,8 @@ def resize_hires(p, latents): # input=latents output=pil if not latent_upscaler 
 
 
 def fix_prompts(p, prompts, negative_prompts, prompts_2, negative_prompts_2):
+    if hasattr(p, 'keep_prompts'):
+        return prompts, negative_prompts, prompts_2, negative_prompts_2
     if type(prompts) is str:
         prompts = [prompts]
     if type(negative_prompts) is str:

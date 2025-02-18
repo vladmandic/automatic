@@ -71,6 +71,8 @@ class FilenameGenerator:
             self.prompt = prompt
         else:
             self.prompt = p.prompt if p is not None else ''
+        if isinstance(self.prompt, list):
+            self.prompt = ' '.join(self.prompt)
         self.image = image
         if not grid:
             self.batch_number = NOTHING if self.p is None or getattr(self.p, 'batch_size', 1) == 1 else (self.p.batch_index + 1 if hasattr(self.p, 'batch_index') else NOTHING)
@@ -205,6 +207,8 @@ class FilenameGenerator:
                     break
                 pattern, arg = m.groups()
                 pattern_args.insert(0, arg)
+            if isinstance(pattern, list):
+                pattern = ' '.join(pattern)
             fun = self.replacements.get(pattern.lower(), None)
             if fun is not None:
                 try:
@@ -212,6 +216,7 @@ class FilenameGenerator:
                     replacement = fun(self, *pattern_args)
                 except Exception as e:
                     replacement = None
+                    errors.display(e, 'Filename apply pattern')
                     shared.log.error(f'Filename apply pattern: {x} {e}')
                 if replacement == NOTHING:
                     continue

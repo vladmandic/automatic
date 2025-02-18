@@ -372,7 +372,7 @@ class StableDiffusionXLPuLIDPipeline:
         # sigmas
         sigmas = self.get_sigmas_karras(num_inference_steps).to(self.device)
         if image is not None and strength > 0:
-            _, num_inference_steps = self.pipe.get_timesteps(num_inference_steps, strength, self.device, None)  # denoising_start disabled
+            _timesteps, num_inference_steps = self.pipe.get_timesteps(num_inference_steps, strength, self.device, None)  # denoising_start disabled
             sigmas = sigmas[-(num_inference_steps + 1):].to(self.device) # shorten sigmas in i2i
         debug(f'PulID sigmas: sigmas={sigmas.shape} dtype={sigmas.dtype}')
 

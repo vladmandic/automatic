@@ -158,16 +158,23 @@ def install_extension_from_url(dirname, url, branch_name, search_text, sort_colu
     try:
         import git
         shutil.rmtree(tmpdir, True)
-        if not branch_name: # if no branch is specified, use the default branch
-            with git.Repo.clone_from(url, tmpdir, filter=['blob:none']) as repo:
-                repo.remote().fetch()
-                for submodule in repo.submodules:
-                    submodule.update()
-        else:
-            with git.Repo.clone_from(url, tmpdir, filter=['blob:none'], branch=branch_name) as repo:
-                repo.remote().fetch()
-                for submodule in repo.submodules:
-                    submodule.update()
+        args = {
+            'url': url,
+            'to_path': tmpdir,
+            'allow_unsafe_protocols': True,
+            'allow_unsafe_options': True,
+            'filter': ['blob:none'],
+        }
+        if branch_name:
+            args['branch'] = branch_name
+        ssh = os.environ.get('GIT_SSH_COMMAND', None)
+        if ssh:
+            args['env'] = {'GIT_SSH_COMMAND':ssh}
+        shared.log.debug(f'GIT: {args}')
+        with git.Repo.clone_from(**args) as repo:
+            repo.remote().fetch(verbose=True)
+            for submodule in repo.submodules:
+                submodule.update()
         try:
             os.rename(tmpdir, target_dir)
         except OSError as err:
@@ -177,13 +184,14 @@ def install_extension_from_url(dirname, url, branch_name, search_text, sort_colu
                 raise err
         from launch import run_extension_installer
         run_extension_installer(target_dir)
+        shutil.rmtree(tmpdir, True)
         extensions.list_extensions()
         return [create_html(search_text, sort_column), html.escape(f"Extension installed: {target_dir} | Restart required")]
     except Exception as e:
-        shared.log.error(f'Error installing extension: {url} {e}')
-    finally:
+        # errors.display(e, 'GIT')
         shutil.rmtree(tmpdir, True)
-    return []
+        shared.log.error(f'Error installing extension: {url} {e}')
+        return ['', str(e).replace('\n', '<br>')]
 
 
 def install_extension(extension_to_install, search_text, sort_column):

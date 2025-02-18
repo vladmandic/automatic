@@ -81,8 +81,8 @@ class DeepDanbooru:
                 tag_outformat = tag_outformat.replace('_', ' ')
             if shared.opts.deepbooru_escape:
                 tag_outformat = re.sub(re_special, r'\\\1', tag_outformat)
-            if shared.opts.deepbooru_clip_score and not force_disable_ranks:
-                tag_outformat = f"({tag_outformat}:{probability:.3f})"
+            if shared.opts.interrogate_score and not force_disable_ranks:
+                tag_outformat = f"({tag_outformat}:{probability:.2f})"
             res.append(tag_outformat)
         if len(res) > shared.opts.deepbooru_max_tags:
             res = res[:shared.opts.deepbooru_max_tags]

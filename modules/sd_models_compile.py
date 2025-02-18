@@ -63,7 +63,6 @@ def ipex_optimize(sd_model):
 def optimize_openvino(sd_model):
     try:
         from modules.intel.openvino import openvino_fx # pylint: disable=unused-import
-        torch._dynamo.eval_frame.check_if_dynamo_supported = lambda: True # pylint: disable=protected-access
         if shared.compiled_model_state is not None:
             shared.compiled_model_state.compiled_cache.clear()
             shared.compiled_model_state.req_cache.clear()
@@ -164,13 +163,15 @@ def compile_torch(sd_model):
                 model = torch.compile(model.to(devices.device),
                     mode=shared.opts.cuda_compile_mode,
                     backend=shared.opts.cuda_compile_backend,
-                    fullgraph=shared.opts.cuda_compile_fullgraph
+                    fullgraph=shared.opts.cuda_compile_fullgraph,
+                    dynamic=None if shared.opts.cuda_compile_backend != "openvino_fx" else False,
                 ).to(return_device)
             else:
                 model = torch.compile(model,
                     mode=shared.opts.cuda_compile_mode,
                     backend=shared.opts.cuda_compile_backend,
-                    fullgraph=shared.opts.cuda_compile_fullgraph
+                    fullgraph=shared.opts.cuda_compile_fullgraph,
+                    dynamic=None if shared.opts.cuda_compile_backend != "openvino_fx" else False,
                 )
             devices.torch_gc()
             return model

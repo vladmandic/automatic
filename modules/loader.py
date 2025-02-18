@@ -140,4 +140,4 @@ except ImportError:
         pass  # shrug...
 
 errors.log.info(f'Torch: torch=={torch.__version__} torchvision=={torchvision.__version__}')
-errors.log.info(f'Packages: diffusers=={diffusers.__version__} transformers=={transformers.__version__} accelerate=={accelerate.__version__} gradio=={gradio.__version__}')
+errors.log.info(f'Packages: diffusers=={diffusers.__version__} transformers=={transformers.__version__} accelerate=={accelerate.__version__} gradio=={gradio.__version__} pydantic=={pydantic.__version__}')

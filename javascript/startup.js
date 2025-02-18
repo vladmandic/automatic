@@ -1,4 +1,6 @@
 /* eslint-disable no-undef */
+window.api = '/sdapi/v1';
+window.subpath = '';
 
 async function initStartup() {
   log('initStartup');
@@ -23,6 +25,11 @@ async function initStartup() {
 
   // make sure all of the ui is ready and options are loaded
   while (Object.keys(window.opts).length === 0) await sleep(50);
+  log('mountURL', window.opts.subpath);
+  if (window.opts.subpath?.length > 0) {
+    window.subpath = window.opts.subpath;
+    window.api = `${window.subpath}/sdapi/v1`;
+  }
   executeCallbacks(uiReadyCallbacks);
   initLogMonitor();
   setupExtraNetworks();
