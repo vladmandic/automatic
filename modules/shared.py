@@ -1129,6 +1129,7 @@ class Options:
             self.filename = config_filename
         if filename is None:
             filename = self.filename
+        filename = os.path.abspath(filename)
         if cmd_opts.freeze:
             log.warning(f'Setting: fn="{filename}" save disabled')
             return
@@ -1173,6 +1174,7 @@ class Options:
     def load(self, filename=None):
         if filename is None:
             filename = self.filename
+        filename = os.path.abspath(filename)
         if not os.path.isfile(filename):
             log.debug(f'Settings: fn="{filename}" created')
             self.save(filename)

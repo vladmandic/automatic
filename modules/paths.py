@@ -13,6 +13,7 @@ parser = argparse.ArgumentParser(add_help=False)
 parser.add_argument("--ckpt", type=str, default=os.environ.get("SD_MODEL", None), help="Path to model checkpoint to load immediately, default: %(default)s")
 parser.add_argument("--data-dir", type=str, default=os.environ.get("SD_DATADIR", ''), help="Base path where all user data is stored, default: %(default)s")
 parser.add_argument("--models-dir", type=str, default=os.environ.get("SD_MODELSDIR", None), help="Base path where all models are stored, default: %(default)s",)
+parser.add_argument("--extensions-dir", type=str, default=os.environ.get("SD_EXTENSIONSDIR", None), help="Base path where all extensions are stored, default: %(default)s",)
 cli = parser.parse_known_args(argv)[0]
 parser.add_argument("--config", type=str, default=os.environ.get("SD_CONFIG", os.path.join(cli.data_dir, 'config.json')), help="Use specific server configuration file, default: %(default)s") # twice because we want data_dir
 cli = parser.parse_known_args(argv)[0]
@@ -28,7 +29,7 @@ script_path = os.path.dirname(modules_path)
 data_path = cli.data_dir
 models_config = cli.models_dir or config.get('models_dir') or 'models'
 models_path = models_config if os.path.isabs(models_config) else os.path.join(data_path, models_config)
-extensions_dir = os.path.join(data_path, "extensions")
+extensions_dir = cli.extensions_dir or os.path.join(data_path, "extensions")
 extensions_builtin_dir = "extensions-builtin"
 sd_configs_path = os.path.join(script_path, "configs")
 sd_default_config = os.path.join(sd_configs_path, "v1-inference.yaml")
