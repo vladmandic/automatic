@@ -328,6 +328,8 @@ class ReqInterrogate(BaseModel):
     clip_model: str = Field(default="", title="CLiP Model", description="The interrogate model used.")
     blip_model: str = Field(default="", title="BLiP Model", description="The interrogate model used.")
 
+InterrogateRequest = ReqInterrogate # alias for backwards compatibility
+
 class ResInterrogate(BaseModel):
     caption: Optional[str] = Field(default=None, title="Caption", description="The generated caption for the image.")
     medium: Optional[str] = Field(default=None, title="Medium", description="Image medium.")

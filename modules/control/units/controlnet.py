@@ -338,12 +338,11 @@ class ControlNetPipeline():
             classes = [c.__class__.__name__ for c in controlnets]
             if any(c == 'ControlNetUnionModel' for c in classes):
                 if not all(c == 'ControlNetUnionModel' for c in classes):
-                    log.warning(f'Control {what}: units={classes} mixed type')
+                    log.warning(f'Control {what}: units={classes} mixed type is not supported')
+                    return
+                if isinstance(controlnets, list) and len(controlnets) == 1:
+                    controlnets = controlnets[0]
                 cls = StableDiffusionXLControlNetUnionPipeline
-                if len(controlnets) > 1:
-                    # TODO controlnet-union multi-unit
-                    log.warning(f'Control {what}: units={classes} supports single unit only')
-                controlnets = controlnets[0]
             else:
                 cls = StableDiffusionXLControlNetPipeline
             self.pipeline = cls(

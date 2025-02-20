@@ -126,7 +126,7 @@ def register_api(app: FastAPI): # register api
             shared.log.error(f'Gallery image: file="{filepath}" {e}')
             return {}
 
-    @app.get('/sdapi/v1/browser/folders', response_model=List[str])
+    # @app.get('/sdapi/v1/browser/folders', response_model=List[str])
     def get_folders():
         folders = [shared.opts.data.get(f, '') for f in OPTS_FOLDERS]
         folders += list(shared.opts.browser_folders.split(','))
@@ -141,7 +141,7 @@ def register_api(app: FastAPI): # register api
         debug(f'Browser folders: {folders}')
         return JSONResponse(content=folders)
 
-    @app.get("/sdapi/v1/browser/thumb", response_model=dict)
+    # @app.get("/sdapi/v1/browser/thumb", response_model=dict)
     async def get_thumb(file: str):
         try:
             decoded = unquote(file).replace('%3A', ':')
@@ -154,7 +154,7 @@ def register_api(app: FastAPI): # register api
             content = { 'error': str(e) }
             return JSONResponse(content=content)
 
-    @app.get("/sdapi/v1/browser/files", response_model=list)
+    # @app.get("/sdapi/v1/browser/files", response_model=list)
     async def ht_files(folder: str):
         try:
             t0 = time.time()
@@ -172,6 +172,10 @@ def register_api(app: FastAPI): # register api
             shared.log.error(f'Gallery: {folder} {e}')
             return []
 
+    shared.api.add_api_route("/sdapi/v1/browser/folders", get_folders, methods=["GET"], response_model=List[str])
+    shared.api.add_api_route("/sdapi/v1/browser/thumb", get_thumb, methods=["GET"], response_model=dict)
+    shared.api.add_api_route("/sdapi/v1/browser/files", ht_files, methods=["GET"], response_model=list)
+
     @app.websocket("/sdapi/v1/browser/files")
     async def ws_files(ws: WebSocket):
         try:
@@ -180,7 +184,7 @@ def register_api(app: FastAPI): # register api
             folder = unquote(folder).replace('%3A', ':')
             t0 = time.time()
             numFiles = 0
-            files = files_cache.directory_files(folder, recursive=True)
+            files = files_cache.list_files(folder, recursive=True)
             # files = list(files_cache.directory_files(folder, recursive=True))
             # files.sort(key=os.path.getmtime)
             for f in files:

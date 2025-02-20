@@ -24,6 +24,8 @@
 ## SD.Next Features
 
 All individual features are not listed here, instead check [ChangeLog](CHANGELOG.md) for full list of changes
+- Fully localized:
+  ▹ **English | Chinese | Russian | Spanish | German | French | Italian | Portuguese | Japanese | Korean**  
 - Multiple UIs!  
   ▹ **Standard | Modern**  
 - Multiple [diffusion models](https://vladmandic.github.io/sdnext-docs/Model-Support/)!  
@@ -34,6 +36,7 @@ All individual features are not listed here, instead check [ChangeLog](CHANGELOG
 - Optimized processing with latest `torch` developments with built-in support for model compile, quantize and compress  
   Compile backends: *Triton | StableFast | DeepCache | OneDiff | TeaCache | etc.*  
   Quantization and compression methods: *BitsAndBytes | TorchAO | Optimum-Quanto | NNCF*  
+- **Interrogate/Captioning** with 150+ **OpenCLiP** models and 20+ built-in **VLMs**  
 - Built-in queue management  
 - Built in installer with automatic updates and dependency management  
 - Mobile compatible  
@@ -67,6 +70,8 @@ SD.Next supports broad range of models: [supported models](https://vladmandic.gi
 - *Apple M1/M2* on *OSX* using built-in support in Torch with **MPS** optimizations  
 - *ONNX/Olive*  
 - *AMD* GPUs on Windows using **ZLUDA** libraries  
+
+Plus Docker container receipes for: [CUDA, ROCm, Intel IPEX and OpenVINO](https://vladmandic.github.io/sdnext-docs/Docker/)
 
 ## Getting started
 

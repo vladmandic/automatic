@@ -86,5 +86,5 @@ def progressapi(req: ProgressRequest):
     return res
 
 
-def setup_progress_api(app):
-    return app.add_api_route("/internal/progress", progressapi, methods=["POST"], response_model=InternalProgressResponse)
+def setup_progress_api():
+    shared.api.add_api_route("/internal/progress", progressapi, methods=["POST"], response_model=InternalProgressResponse)

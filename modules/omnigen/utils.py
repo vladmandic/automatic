@@ -45,12 +45,12 @@ def center_crop_arr(pil_image, image_size):
     """
     while min(*pil_image.size) >= 2 * image_size:
         pil_image = pil_image.resize(
-            tuple(x // 2 for x in pil_image.size), resample=Image.BOX
+            tuple(x // 2 for x in pil_image.size), resample=Image.Resampling.LANCZOS
         )
 
     scale = image_size / min(*pil_image.size)
     pil_image = pil_image.resize(
-        tuple(round(x * scale) for x in pil_image.size), resample=Image.BICUBIC
+        tuple(round(x * scale) for x in pil_image.size), resample=Image.Resampling.LANCZOS
     )
 
     arr = np.array(pil_image)
@@ -63,19 +63,19 @@ def center_crop_arr(pil_image, image_size):
 def crop_arr(pil_image, max_image_size):
     while min(*pil_image.size) >= 2 * max_image_size:
         pil_image = pil_image.resize(
-            tuple(x // 2 for x in pil_image.size), resample=Image.BOX
+            tuple(x // 2 for x in pil_image.size), resample=Image.Resampling.LANCZOS
         )
 
     if max(*pil_image.size) > max_image_size:
         scale = max_image_size / max(*pil_image.size)
         pil_image = pil_image.resize(
-            tuple(round(x * scale) for x in pil_image.size), resample=Image.BICUBIC
+            tuple(round(x * scale) for x in pil_image.size), resample=Image.Resampling.LANCZOS
         )
 
     if min(*pil_image.size) < 16:
         scale = 16 / min(*pil_image.size)
         pil_image = pil_image.resize(
-            tuple(round(x * scale) for x in pil_image.size), resample=Image.BICUBIC
+            tuple(round(x * scale) for x in pil_image.size), resample=Image.Resampling.LANCZOS
         )
 
     arr = np.array(pil_image)

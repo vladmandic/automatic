@@ -290,6 +290,9 @@ def load_diffuser_force(model_type, checkpoint_info, diffusers_load_config, op='
         elif model_type in ['FLUX']:
             from modules.model_flux import load_flux
             sd_model = load_flux(checkpoint_info, diffusers_load_config)
+        elif model_type in ['Lumina 2']:
+            from modules.model_lumina import load_lumina2
+            sd_model = load_lumina2(checkpoint_info, diffusers_load_config)
         elif model_type in ['Stable Diffusion 3']:
             from modules.model_sd3 import load_sd3
             shared.log.debug(f'Load {op}: model="Stable Diffusion 3"')
@@ -314,7 +317,7 @@ def load_diffuser_folder(model_type, pipeline, checkpoint_info, diffusers_load_c
     files = shared.walk_files(checkpoint_info.path, ['.safetensors', '.bin', '.ckpt'])
     if 'variant' not in diffusers_load_config and any('diffusion_pytorch_model.fp16' in f for f in files): # deal with diffusers lack of variant fallback when loading
         diffusers_load_config['variant'] = 'fp16'
-    if model_type is not None and pipeline is not None and 'ONNX' in model_type: # forced pipeline
+    if (model_type is not None) and (pipeline is not None) and ('ONNX' in model_type): # forced pipeline
         try:
             sd_model = pipeline.from_pretrained(checkpoint_info.path)
         except Exception as e:

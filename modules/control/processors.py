@@ -2,7 +2,7 @@ import os
 import time
 import numpy as np
 from PIL import Image
-from modules.shared import log
+from installer import log
 from modules.errors import display
 from modules import devices, images
 

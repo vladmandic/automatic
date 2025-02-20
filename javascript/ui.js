@@ -127,13 +127,13 @@ function switch_to_img2img(...args) {
   return Array.from(arguments);
 }
 
-function switch_to_sketch(...args) {
+function switch_to_inpaint(...args) {
   switchToTab('Image');
   switch_to_img2img_tab(1);
   return Array.from(arguments);
 }
 
-function switch_to_inpaint(...args) {
+function switch_to_sketch(...args) {
   switchToTab('Image');
   switch_to_img2img_tab(2);
   return Array.from(arguments);
@@ -152,6 +152,11 @@ function switch_to_extras(...args) {
 
 function switch_to_control(...args) {
   switchToTab('Control');
+  return Array.from(arguments);
+}
+
+function switch_to_caption(...args) {
+  switchToTab('Caption');
   return Array.from(arguments);
 }
 
@@ -385,7 +390,7 @@ function monitorServerStatus() {
         <h1>Waiting for server...</h1>
         <script>
           function monitorServerStatus() {
-            fetch('/sdapi/v1/progress?skip_current_image=true')
+            fetch('${window.api}/progress?skip_current_image=true')
               .then((res) => { !res?.ok ? setTimeout(monitorServerStatus, 1000) : location.reload(); })
               .catch((e) => setTimeout(monitorServerStatus, 1000))
           }
@@ -400,7 +405,7 @@ function monitorServerStatus() {
 function restartReload() {
   document.body.style = 'background: #222222; font-size: 1rem; font-family:monospace; margin-top:20%; color:lightgray; text-align:center';
   document.body.innerHTML = '<h1>Server shutdown in progress...</h1>';
-  fetch('/sdapi/v1/progress?skip_current_image=true')
+  fetch(`${window.api}/progress?skip_current_image=true`)
     .then((res) => setTimeout(restartReload, 1000))
     .catch((e) => setTimeout(monitorServerStatus, 500));
   return [];
@@ -479,7 +484,7 @@ function toggleCompact(val, old) {
 
 function previewTheme() {
   let name = gradioApp().getElementById('setting_gradio_theme').querySelectorAll('input')?.[0].value || '';
-  fetch('/file=html/themes.json')
+  fetch(`${window.subpath}/file=html/themes.json`)
     .then((res) => {
       res.json()
         .then((themes) => {

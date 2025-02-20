@@ -7,7 +7,7 @@ import torch
 from tensordict import TensorDict
 import modules.memstats
 import modules.devices as devices
-from modules.shared import log, console
+from installer import log, console
 from modules.sd_models import read_state_dict
 from modules.merging import merge_methods
 from modules.merging.merge_utils import WeightClass

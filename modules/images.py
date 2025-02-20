@@ -26,6 +26,22 @@ except Exception:
     pass
 
 
+
+def sanitize_filename_part(text, replace_spaces=True):
+    if text is None:
+        return None
+    if replace_spaces:
+        text = text.replace(' ', '_')
+    invalid_filename_chars = '#<>:"/\\|?*\n\r\t'
+    invalid_filename_prefix = ' '
+    invalid_filename_postfix = ' .'
+    max_filename_part_length = 64
+    text = text.translate({ord(x): '_' for x in invalid_filename_chars})
+    text = text.lstrip(invalid_filename_prefix)[:max_filename_part_length]
+    text = text.rstrip(invalid_filename_postfix)
+    return text
+
+
 def atomically_save_image():
     Image.MAX_IMAGE_PIXELS = None # disable check in Pillow and rely on check below to allow large custom image sizes
     while True:

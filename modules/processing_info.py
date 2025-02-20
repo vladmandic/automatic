@@ -4,6 +4,8 @@ from modules import shared, sd_samplers_common, sd_vae, generation_parameters_co
 from modules.processing_class import StableDiffusionProcessing
 
 
+args = {} # maintain history
+infotext = '' # maintain history
 debug = shared.log.trace if os.environ.get('SD_PROCESS_DEBUG', None) is not None else lambda *args, **kwargs: None
 if not shared.native:
     from modules import sd_hijack
@@ -11,7 +13,12 @@ else:
     sd_hijack = None
 
 
+def get_last_args():
+    return args, infotext
+
+
 def create_infotext(p: StableDiffusionProcessing, all_prompts=None, all_seeds=None, all_subseeds=None, comments=None, iteration=0, position_in_batch=0, index=None, all_negative_prompts=None, grid=None):
+    global args, infotext # pylint: disable=global-statement
     if p is None:
         shared.log.warning('Processing info: no data')
         return ''
@@ -179,6 +186,12 @@ def create_infotext(p: StableDiffusionProcessing, all_prompts=None, all_seeds=No
                 del args[k]
     debug(f'Infotext: args={args}')
     params_text = ", ".join([k if k == v else f'{k}: {generation_parameters_copypaste.quote(v)}' for k, v in args.items()])
+
+    if hasattr(p, 'original_prompt'):
+        args['Original prompt'] = p.original_prompt
+    if hasattr(p, 'original_negative'):
+        args['Original negative'] = p.original_negative
+
     negative_prompt_text = f"\nNegative prompt: {all_negative_prompts[index] if all_negative_prompts[index] else ''}"
     infotext = f"{all_prompts[index]}{negative_prompt_text}\n{params_text}".strip()
     debug(f'Infotext: "{infotext}"')

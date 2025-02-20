@@ -1,5 +1,146 @@
 # Change Log for SD.Next
 
+## Update for 2025-02-20
+
+### Highlight for 2025-02-20
+
+We're back with another update with nearly 100 commits!  
+- Starting with massive UI update with full [localization](https://vladmandic.github.io/sdnext-docs/Locale/) for 8 languages  
+  and 100+ new [hints](https://vladmandic.github.io/sdnext-docs/Hints/)  
+- Big update to [Docker](https://vladmandic.github.io/sdnext-docs/Docker/) containers  
+  with support for all major compute platforms  
+- A lot of [outpainting](https://vladmandic.github.io/sdnext-docs/Outpaint/) goodies  
+- Support for new models: [AlphaVLLM Lumina 2](https://github.com/Alpha-VLLM/Lumina-Image-2.0) and [Ostris Flex.1-Alpha](https://huggingface.co/ostris/Flex.1-alpha)  
+- And new **Mixture-of-Diffusers** regional prompting & tiling pipeline  
+- Follow-up to last weeks **interrogate/captioning** rewrite  
+  now with redesigned captioning UI, batch support, and much more  
+  plus **JoyTag**, **JoyCaption**, **PaliGemma**, **ToriiGate**, **Ovis2** added to list of supported models  
+- Some changes to **prompt parsing** to allow more control as well as  
+  more flexibility when mouting SDNext server to custom URL  
+- Of course, cumulative fixes...  
+
+*...and more* - see [changelog](https://github.com/vladmandic/sdnext/blob/dev/CHANGELOG.md) for full details!  
+
+### Details for 2025-02-20
+
+- **User Interface**  
+  - **Hints**  
+    - added/updated 100+ ui hints!  
+    - [hints](https://vladmandic.github.io/sdnext-docs/Hints/) documentation and contribution guide  
+  - **Localization**  
+    - full ui localization!  
+      *english, croatian, spanish, french, italian, portuguese, chinese, japanese, korean, russian*  
+    - set in *settings -> user interface -> language*  
+    - [localization](https://vladmandic.github.io/sdnext-docs/Locale/) documentation  
+  - **UI**  
+    - force browser cache-invalidate on page load  
+    - configurable request timeout  
+    - modernui improve gallery styling  
+    - modernui improve networks styling  
+    - modernui support variable card size  
+- **Docs**  
+  - New [Outpaint](https://vladmandic.github.io/sdnext-docs/Outpaint/) step-by-step guide  
+  - Updated [Docker](https://github.com/vladmandic/sdnext/wiki/Docker) guide  
+    includes build and publish and both local and cloud examples  
+- **Models**  
+  - [AlphaVLLM Lumina 2](https://github.com/Alpha-VLLM/Lumina-Image-2.0)  
+    new foundation model for image generation based o Gemma-2-2B text encoder and a flow-based diffusion transformer  
+    fully supports offloading and on-the-fly quantization  
+    simply select from *networks -> models -> reference*  
+  - [Ostris Flex.1-Alpha](https://huggingface.co/ostris/Flex.1-alpha)  
+    originally based on *Flux.1-Schnell*, but retrained and with different architecture  
+    result is model smaller than *Flux.1-Dev*, but with similar capabilities  
+    fully supports offloading and on-the-fly quantization  
+    simply select from *networks -> models -> reference*  
+- **Functions**  
+  - [Mixture-of-Diffusers](https://huggingface.co/posts/elismasilva/251775641926329)  
+    Regional tiling type of a solution for SDXL models  
+    select from *scripts -> mixture of diffusers*  
+  - [Automatic Color Inpaint]  
+    Automatically creates mask based on selected color and triggers inpaint  
+    simply select in *scripts -> automatic color inpaint* when in img2img mode  
+  - [RAS: Region-Adaptive Sampling](https://github.com/microsoft/RAS) *experimental*  
+    Speeds up SD3.5 models by sampling only regions of interest  
+    Enable in *settings -> pipeline modifiers -> ras*  
+- **Interrogate/Captioning**  
+  - Redesigned captioning UI  
+    split from Process tab into separate tab  
+    split `clip` vs `vlm` models processing  
+    direct *send-to* buttons on all tabs: txt/img/ctrl->process/caption, process/caption->txt/img/ctrl  
+  - Advanced params:
+    VLM: *max-tokens, num-beams, temperature, top-k, top-p, do-sample*  
+    CLiP: *min-length, max-length, chunk-size, min-flavors, max-flavors, flavor-count, num-beams*  
+    params are auto-saved in `config.json` and used when using quick interrogate  
+    params that are set to 0 mean use model defaults  
+  - Batch processing: VLM and CLiP  
+    for example, can be used to caption your training dataset in one go  
+    add option to append to captions file, can be used to run multiple captioning models in sequence  
+    add option to run recursively on all subfolders  
+    add progress bar  
+  - Add additional VLM models:  
+    [JoyTag](https://huggingface.co/fancyfeast/joytag)  
+    [JoyCaption 2](https://huggingface.co/fancyfeast/llama-joycaption-alpha-two-hf-llava)  
+    [Google PaliGemma 2](https://huggingface.co/google/paligemma2-3b-pt-224) 3B  
+    [ToriiGate 0.4](https://huggingface.co/Minthy/ToriiGate-v0.4-7B) 7B  
+    [AIDC Ovis2](https://huggingface.co/AIDC-AI/Ovis2-1B) 1B/2B/4B  
+  - *Note* some models require `flash-attn` to be installed  
+    due to binary/build dependencies, it should not be done automatically,  
+    see [flash-attn](https://github.com/Dao-AILab/flash-attention) for installation instructions  
+- **Docker**  
+  - updated **CUDA** receipe to `torch==2.6.0` with `cuda==12.6` and add prebuilt image  
+  - added **ROCm** receipe and prebuilt image  
+  - added **IPEX** receipe and add prebuilt image  
+  - added **OpenVINO** receipe and prebuilt image   
+- **System**  
+  - improve **python==3.12** compatibility  
+  - **Torch**  
+    - for **zluda** set default to `torch==2.6.0+cu118`  
+    - for **openvino** set default to `torch==2.6.0+cpu`  
+  - **OpenVINO**  
+    - update to `openvino==2025.0.0`  
+    - improve upscaler compatibility  
+    - enable upscaler compile by default  
+    - fix shape mismatch errors on too many resolution changes  
+  - **ZLUDA**  
+    - update to `zluda==3.8.8`  
+- **Other**  
+  - **Asymmetric tiling**  
+    allows for configurable image tiling for x/y axis separately  
+    enable in *scripts -> asymmetric tiling*  
+    *note*: traditional symmetric tiling is achieved by setting circular mode for both x and y  
+  - **Styles**  
+    ability to save and/or restore prompts before or after parsing of wildcards  
+    set in *settings -> networks -> styles*  
+  - **Access tokens**  
+    persist *models -> hugginface -> token*  
+    persist *models -> civitai -> token*  
+  - global switch to lancosz method for all interal resize ops and bicubic for interpolation ops  
+  - **Text encoder**  
+    add advanced per-model options for text encoder  
+    set in *settings -> text encoder -> Optional*  
+  - **Subpath**  
+    allow setting additional mount subpath over which server url will be accessible  
+    set in *settings -> user interface*  
+  - **Prompt parsing**  
+    better handling of prompt parsing when using masking char `\`  
+- **Fixes**  
+  - update torch nightly urls  
+  - docs/wiki always use relative links  
+  - ui use correct timezone for log display  
+  - ui improve settings search behavior  
+  - ui log scroll to bottom  
+  - ui fix send to inpaint/sketch  
+  - modernui add control init image toggle  
+  - modernui fix sampler advanced options  
+  - outpaint fixes  
+  - validate output before hires/refine  
+  - scheduler fix sigma index out of bounds  
+  - force pydantic version reinstall/reload  
+  - multi-unit when using controlnet-union  
+  - pulid with hidiffusion  
+  - api: stricter access control  
+  - api: universal handle mount subpaths  
+
 ## Update for 2025-02-05
 
 - refresh dev/master branches

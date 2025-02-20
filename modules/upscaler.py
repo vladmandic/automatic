@@ -113,7 +113,7 @@ class Upscaler:
                 if img.width >= dest_w and img.height >= dest_h:
                     break
             if img.width != dest_w or img.height != dest_h:
-                img = img.resize((int(dest_w), int(dest_h)), resample=Image.Resampling.BICUBIC)
+                img = img.resize((int(dest_w), int(dest_h)), resample=Image.Resampling.LANCZOS)
         shared.state.end()
         shared.state = orig_state
         return img
@@ -187,7 +187,9 @@ def compile_upscaler(model):
 
             if shared.opts.cuda_compile_backend == "openvino_fx":
                 from modules.intel.openvino import openvino_fx # pylint: disable=unused-import
-                torch._dynamo.eval_frame.check_if_dynamo_supported = lambda: True # pylint: disable=protected-access
+                if shared.compiled_model_state is None:
+                    from modules.sd_models_compile import CompiledModelState
+                    shared.compiled_model_state = CompiledModelState()
 
             log_level = logging.WARNING if shared.opts.cuda_compile_verbose else logging.CRITICAL # pylint: disable=protected-access
             if hasattr(torch, '_logging'):
@@ -206,7 +208,12 @@ def compile_upscaler(model):
                 shared.log.error(f"Torch inductor config error: {e}")
 
             t0 = time.time()
-            model = torch.compile(model, mode=shared.opts.cuda_compile_mode, backend=shared.opts.cuda_compile_backend, fullgraph=shared.opts.cuda_compile_fullgraph) # pylint: disable=attribute-defined-outside-init
+            model = torch.compile(model,
+                mode=shared.opts.cuda_compile_mode,
+                backend=shared.opts.cuda_compile_backend,
+                fullgraph=shared.opts.cuda_compile_fullgraph,
+                dynamic=None if shared.opts.cuda_compile_backend != "openvino_fx" else False,
+            ) # pylint: disable=attribute-defined-outside-init
             setup_logging() # compile messes with logging so reset is needed
             t1 = time.time()
             shared.log.info(f"Upscaler compile: time={t1-t0:.2f}")

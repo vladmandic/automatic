@@ -611,6 +611,8 @@ def control_run(state: str = '',
                         elif input_type == 1: # Init image same as control
                             if 'control_image' in possible:
                                 p.task_args['control_image'] = p.init_images # switch image and control_image
+                            if 'control_mode' in possible:
+                                p.task_args['control_mode'] = getattr(p, 'control_mode', None)
                             if 'strength' in possible:
                                 p.task_args['strength'] = p.denoising_strength
                             p.init_images = [p.override or input_image] * len(active_model)
@@ -620,9 +622,14 @@ def control_run(state: str = '',
                                 init_image = input_image
                             if 'control_image' in possible:
                                 p.task_args['control_image'] = p.init_images # switch image and control_image
+                            if 'control_mode' in possible:
+                                p.task_args['control_mode'] = getattr(p, 'control_mode', None)
                             if 'strength' in possible:
                                 p.task_args['strength'] = p.denoising_strength
                             p.init_images = [init_image] * len(active_model)
+                        if hasattr(shared.sd_model, 'controlnet') and hasattr(p.task_args, 'control_image') and len(p.task_args['control_image']) > 1 and (shared.sd_model.__class__.__name__ == 'StableDiffusionXLControlNetUnionPipeline'): # special case for controlnet-union
+                            p.task_args['control_image'] = [[x] for x in p.task_args['control_image']]
+                            p.task_args['control_mode'] = [[x] for x in p.task_args['control_mode']]
 
                     if is_generator:
                         image_txt = f'{blended_image.width}x{blended_image.height}' if blended_image is not None else 'None'
@@ -664,8 +671,6 @@ def control_run(state: str = '',
                         if unit_type == 'lite':
                             p.init_image = [input_image]
                             instance.apply(selected_models, processed_image, control_conditioning)
-                        if getattr(p, 'control_mode', None) is not None:
-                            p.task_args['control_mode'] = getattr(p, 'control_mode', None)
                     if hasattr(p, 'init_images') and p.init_images is None: # delete empty
                         del p.init_images
 

@@ -28,11 +28,12 @@ class Script(scripts.Script):
         return shared.native
 
     def dependencies(self):
-        from installer import install, installed
-        if not installed('insightface', reload=False, quiet=True):
-            install('insightface', 'insightface', ignore=False)
-            install('albumentations==1.4.3', 'albumentations', ignore=False, reinstall=True)
-            install('pydantic==1.10.21', 'pydantic', ignore=False, reinstall=True)
+        from installer import install, installed, reload
+        if not installed('insightface==0.7.3', reload=False, quiet=True):
+            install('insightface==0.7.3', ignore=False)
+            install('albumentations==1.4.3', ignore=False, reinstall=True)
+            install('pydantic==1.10.21', ignore=False, reinstall=True, force=True)
+            reload('pydantic')
 
     def register(self): # register xyz grid elements
         global registered # pylint: disable=global-statement

@@ -55,7 +55,7 @@ def download_model(model_path):
     model_url = 'https://huggingface.co/stabilityai/stable-cascade/resolve/main/previewer.safetensors?download=true'
     if not os.path.exists(model_path):
         import torch
-        from modules.shared import log
+        from installer import log
         os.makedirs(os.path.dirname(model_path), exist_ok=True)
         log.info(f'Downloading Stable Cascade previewer: {model_path}')
         torch.hub.download_url_to_file(model_url, model_path)

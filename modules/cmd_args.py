@@ -39,6 +39,7 @@ def main_args():
 
     group_http = parser.add_argument_group('HTTP')
     group_http.add_argument('--theme', type=str, default=os.environ.get("SD_THEME", None), help='Override UI theme')
+    group_http.add_argument('--locale', type=str, default=os.environ.get("SD_LOCALE", None), help='Override UI locale')
     group_http.add_argument("--server-name", type=str, default=os.environ.get("SD_SERVERNAME", None), help="Sets hostname of server, default: %(default)s")
     group_http.add_argument("--tls-keyfile", type=str, default=os.environ.get("SD_TLSKEYFILE", None), help="Enable TLS and specify key file, default: %(default)s")
     group_http.add_argument("--tls-certfile", type=str, default=os.environ.get("SD_TLSCERTFILE", None), help="Enable TLS and specify cert file, default: %(default)s")
@@ -68,7 +69,6 @@ def compatibility_args():
     group_compat.add_argument("--ui-settings-file", type=str, help=argparse.SUPPRESS, default=os.path.join(data_path, 'config.json'))
     group_compat.add_argument("--ui-config-file", type=str, help=argparse.SUPPRESS, default=os.path.join(data_path, 'ui-config.json'))
     group_compat.add_argument("--hide-ui-dir-config", action='store_true', help=argparse.SUPPRESS, default=False)
-    group_compat.add_argument("--theme", type=str, help=argparse.SUPPRESS, default=None)
     group_compat.add_argument("--disable-console-progressbars", action='store_true', help=argparse.SUPPRESS, default=True)
     group_compat.add_argument("--disable-safe-unpickle", action='store_true', help=argparse.SUPPRESS, default=True)
     group_compat.add_argument("--lowram", action='store_true', help=argparse.SUPPRESS)
@@ -88,7 +88,6 @@ def settings_args(opts, args):
     group_compat.add_argument("--ui-settings-file", type=str, help=argparse.SUPPRESS, default=os.path.join(data_path, 'config.json'))
     group_compat.add_argument("--ui-config-file", type=str, help=argparse.SUPPRESS, default=os.path.join(data_path, 'ui-config.json'))
     group_compat.add_argument("--hide-ui-dir-config", action='store_true', help=argparse.SUPPRESS, default=False)
-    group_compat.add_argument("--theme", type=str, help=argparse.SUPPRESS, default=None)
     group_compat.add_argument("--disable-console-progressbars", action='store_true', help=argparse.SUPPRESS, default=True)
     group_compat.add_argument("--disable-safe-unpickle", action='store_true', help=argparse.SUPPRESS, default=True)
     group_compat.add_argument("--lowram", action='store_true', help=argparse.SUPPRESS)

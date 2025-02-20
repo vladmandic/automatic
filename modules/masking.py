@@ -238,7 +238,7 @@ def run_segment(input_image: gr.Image, input_mask: np.ndarray):
         overlap = 0
         if input_mask_size > 0:
             if mask.shape != input_mask.shape:
-                mask = cv2.resize(mask, (input_mask.shape[1], input_mask.shape[0]), interpolation=cv2.INTER_CUBIC)
+                mask = cv2.resize(mask, (input_mask.shape[1], input_mask.shape[0]), interpolation=cv2.INTER_LANCZOS4)
             overlap = cv2.bitwise_and(mask, input_mask)
             overlap = np.count_nonzero(overlap)
             if overlap == 0:
@@ -278,7 +278,7 @@ def run_rembg(input_image: Image, input_mask: np.ndarray):
     binary_input = cv2.threshold(input_mask, 127, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
     binary_output = cv2.threshold(mask, 127, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
     if binary_input.shape != binary_output.shape:
-        binary_output = cv2.resize(binary_output, binary_input.shape[:2], interpolation=cv2.INTER_LINEAR)
+        binary_output = cv2.resize(binary_output, binary_input.shape[:2], interpolation=cv2.INTER_LANCZOS4)
     binary_overlap = cv2.bitwise_and(binary_input, binary_output)
     input_size = np.count_nonzero(binary_input)
     overlap_size = np.count_nonzero(binary_overlap)
@@ -335,6 +335,8 @@ def get_mask(input_image: gr.Image, input_mask: gr.Image):
 
 
 def outpaint(input_image: Image.Image, outpaint_type: str = 'Edge'):
+    fn = f'{sys._getframe(2).f_code.co_name}:{sys._getframe(1).f_code.co_name}' # pylint: disable=protected-access
+    debug(f'Run outpaint: fn={fn}') # pylint: disable=protected-access
     image = cv2.cvtColor(np.array(input_image), cv2.COLOR_RGB2BGR)
     h0, w0 = image.shape[:2]
     empty = (image == 0).all(axis=2)
@@ -342,35 +344,43 @@ def outpaint(input_image: Image.Image, outpaint_type: str = 'Edge'):
     x1, x2 = min(x0), max(x0)
     y1, y2 = min(y0), max(y0)
     cropped = image[y1:y2, x1:x2]
-    h1, w1 = cropped.shape[:2]
-    mask = None
 
-    if opts.mask_only:
-        mask = cv2.copyMakeBorder(cropped, y1, h0-y2, x1, w0-x2, cv2.BORDER_CONSTANT, value=(0, 0, 0))
-        mask = cv2.resize(mask, (w0, h0))
-        mask = cv2.cvtColor(np.array(mask), cv2.COLOR_BGR2GRAY)
-        mask = cv2.threshold(mask, 0, 255, cv2.THRESH_BINARY)[1]
-        sigmaX, sigmaY = int((h0-h1)/3), int((w0-w1)/3)
-        sigmaX, sigmaY = max(1, sigmaX), max(1, sigmaY)
-        kernel = np.ones((5, 5), np.uint8)
-        mask = cv2.erode(mask, kernel, iterations=max(sigmaX, sigmaY) // 3) # increase overlap area
-        mask = cv2.GaussianBlur(mask, (0, 0), sigmaX=sigmaX, sigmaY=sigmaY) # blur mask
-        mask = Image.fromarray(mask)
-
+    mask = cv2.copyMakeBorder(cropped, y1, h0-y2, x1, w0-x2, cv2.BORDER_CONSTANT, value=(0, 0, 0))
+    mask = cv2.resize(mask, (w0, h0))
+    mask = cv2.cvtColor(np.array(mask), cv2.COLOR_BGR2GRAY)
+    mask = cv2.threshold(mask, 0, 255, cv2.THRESH_BINARY)[1]
+    """
+    size = min(input_image.width, input_image.height)
+    if opts.mask_erode > 0:
+        try:
+            kernel = np.ones((int(opts.mask_erode * size / 4) + 1, int(opts.mask_erode * size / 4) + 1), np.uint8)
+            mask = cv2.erode(mask, kernel, iterations=opts.kernel_iterations) # remove noise
+            debug(f'Mask erode={opts.mask_erode:.3f} kernel={kernel.shape} mask={mask.shape}')
+        except Exception as e:
+            shared.log.error(f'Mask erode: {e}')
+    if opts.mask_dilate > 0:
+        try:
+            kernel = np.ones((int(opts.mask_dilate * size / 4) + 1, int(opts.mask_dilate * size / 4) + 1), np.uint8)
+            mask = cv2.dilate(mask, kernel, iterations=opts.kernel_iterations) # expand area
+            debug(f'Mask dilate={opts.mask_dilate:.3f} kernel={kernel.shape} mask={mask.shape}')
+        except Exception as e:
+            shared.log.error(f'Mask dilate: {e}')
+    if opts.mask_blur > 0:
+        try:
+            sigmax, sigmay = 1 + int(opts.mask_blur * size / 4), 1 + int(opts.mask_blur * size / 4)
+            mask = cv2.GaussianBlur(mask, (0, 0), sigmaX=sigmax, sigmaY=sigmay) # blur mask
+            debug(f'Mask blur={opts.mask_blur:.3f} x={sigmax} y={sigmay} mask={mask.shape}')
+        except Exception as e:
+            shared.log.error(f'Mask blur: {e}')
+    """
     if outpaint_type == 'Edge':
         bordered = cv2.copyMakeBorder(cropped, y1, h0-y2, x1, w0-x2, cv2.BORDER_REPLICATE)
         bordered = cv2.resize(bordered, (w0, h0))
         image = bordered
-        # noise = np.random.normal(1, variation, bordered.shape)
-        # noised = (noise * bordered).astype(np.uint8)
-        # h, w = cropped.shape[:2]
-        # noised[y1:y1 + h, x1:x1 + w] = cropped # overlay original over initialized
-        # image = noised
-
-    # mask = Image.new('L', (w0, h0), 0)
 
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     image = Image.fromarray(image)
+    mask = Image.fromarray(mask)
     return image, mask
 
 
@@ -409,9 +419,9 @@ def run_mask(input_image: Image.Image, input_mask: Image.Image = None, return_ty
         mask = run_rembg(input_image, input_mask)
     else:
         mask = run_segment(input_image, input_mask)
-    mask = cv2.resize(mask, (input_image.width, input_image.height), interpolation=cv2.INTER_LINEAR)
+    mask = cv2.resize(mask, (input_image.width, input_image.height), interpolation=cv2.INTER_LANCZOS4)
 
-    debug(f'Mask shape={mask.shape} opts={opts}')
+    shared.log.trace(f'Mask shape={mask.shape} opts={opts} fn={fn}')
     if opts.mask_erode > 0:
         try:
             kernel = np.ones((int(opts.mask_erode * size / 4) + 1, int(opts.mask_erode * size / 4) + 1), np.uint8)
@@ -435,7 +445,6 @@ def run_mask(input_image: Image.Image, input_mask: Image.Image = None, return_ty
             shared.log.error(f'Mask blur: {e}')
     if opts.invert:
         mask = np.invert(mask)
-
 
     return_type = return_type or opts.preview_type
 

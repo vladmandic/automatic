@@ -6,21 +6,13 @@ import threading
 import re
 import torch
 import torch.hub # pylint: disable=ungrouped-imports
+import gradio as gr
 from PIL import Image
 from torchvision import transforms
 from torchvision.transforms.functional import InterpolationMode
 from modules import devices, paths, shared, lowvram, errors, sd_models
 
 
-config = {
-    "caption_max_length": 74,
-    "chunk_size": 1024,
-    "flavor_intermediate_count": 1024,
-    "min_flavors": 2,
-    "max_flavors": 8,
-    "clip_offload": True,
-    "caption_offload": True,
-}
 caption_models = {
     'blip-base': 'Salesforce/blip-image-captioning-base',
     'blip-large': 'Salesforce/blip-image-captioning-large',
@@ -213,8 +205,8 @@ class InterrogateModels:
                 for _name, topn, items in self.categories():
                     matches = self.rank(image_features, items, top_count=topn)
                     for match, score in matches:
-                        if shared.opts.interrogate_clip_score:
-                            res += f", ({match}:{score/100:.3f})"
+                        if shared.opts.interrogate_score:
+                            res += f", ({match}:{score/100:.2f})"
                         else:
                             res += f", {match}"
         except Exception as e:
@@ -227,13 +219,17 @@ class InterrogateModels:
 # --------- interrrogate ui
 
 class BatchWriter:
-    def __init__(self, folder):
+    def __init__(self, folder, mode='w'):
         self.folder = folder
-        self.csv, self.file = None, None
+        self.csv = None
+        self.file = None
+        self.mode = mode
 
     def add(self, file, prompt):
         txt_file = os.path.splitext(file)[0] + ".txt"
-        with open(os.path.join(self.folder, txt_file), 'w', encoding='utf-8') as f:
+        if self.mode == 'a':
+            prompt = '\n' + prompt
+        with open(os.path.join(self.folder, txt_file), self.mode, encoding='utf-8') as f:
             f.write(prompt)
 
     def close(self):
@@ -241,21 +237,13 @@ class BatchWriter:
             self.file.close()
 
 
-def update_interrogate_params(caption_max_length:int=None, chunk_size:int=None, min_flavors:int=None, max_flavors:int=None, flavor_intermediate_count:int=None):
-    config["caption_max_length"] = int(caption_max_length or shared.opts.interrogate_clip_max_length)
-    config["clip_offload"] = shared.opts.interrogate_offload
-    config["caption_offload"] = shared.opts.interrogate_offload
-    config["min_flavors"] = int(min_flavors or shared.opts.interrogate_clip_min_flavors)
-    config["max_flavors"] = int(max_flavors or shared.opts.interrogate_clip_max_flavors)
-    if chunk_size is not None:
-        config["chunk_size"] = int(chunk_size)
-    if flavor_intermediate_count is not None:
-        config["flavor_intermediate_count"] = int(flavor_intermediate_count)
+def update_interrogate_params():
     if ci is not None:
-        ci.config.caption_max_length = config["caption_max_length"]
-        ci.config.chunk_size = config["chunk_size"]
-        ci.config.flavor_intermediate_count = config["flavor_intermediate_count"]
-    shared.log.debug(f'Interrogate: type={shared.opts.interrogate_default_type} config={config}')
+        ci.caption_max_length=shared.opts.interrogate_clip_max_length
+        ci.chunk_size=shared.opts.interrogate_clip_chunk_size
+        ci.flavor_intermediate_count=shared.opts.interrogate_clip_flavor_count
+        ci.clip_offload=shared.opts.interrogate_offload
+        ci.caption_offload=shared.opts.interrogate_offload
 
 
 def get_clip_models():
@@ -285,11 +273,11 @@ def load_interrogator(clip_model, blip_model):
             clip_model_name=clip_model,
             caption_model_name=blip_model,
             quiet=True,
-            caption_max_length=config['caption_max_length'],
-            chunk_size=config['chunk_size'],
-            flavor_intermediate_count=config['flavor_intermediate_count'],
-            clip_offload=config['clip_offload'],
-            caption_offload=config['caption_offload'],
+            caption_max_length=shared.opts.interrogate_clip_max_length,
+            chunk_size=shared.opts.interrogate_clip_chunk_size,
+            flavor_intermediate_count=shared.opts.interrogate_clip_flavor_count,
+            clip_offload=shared.opts.interrogate_offload,
+            caption_offload=shared.opts.interrogate_offload,
         )
         ci = clip_interrogator.Interrogator(interrogator_config)
     elif clip_model != ci.config.clip_model_name or blip_model != ci.config.caption_model_name:
@@ -319,15 +307,15 @@ def interrogate(image, mode, caption=None):
         return ''
     image = image.convert("RGB")
     if mode == 'best':
-        prompt = ci.interrogate(image, caption=caption, min_flavors=config["min_flavors"], max_flavors=config["max_flavors"])
+        prompt = ci.interrogate(image, caption=caption, min_flavors=shared.opts.interrogate_clip_min_flavors, max_flavors=shared.opts.interrogate_clip_max_flavors, )
     elif mode == 'caption':
         prompt = ci.generate_caption(image) if caption is None else caption
     elif mode == 'classic':
-        prompt = ci.interrogate_classic(image, caption=caption, max_flavors=config["max_flavors"])
+        prompt = ci.interrogate_classic(image, caption=caption, max_flavors=shared.opts.interrogate_clip_max_flavors)
     elif mode == 'fast':
-        prompt = ci.interrogate_fast(image, caption=caption, max_flavors=config["max_flavors"])
+        prompt = ci.interrogate_fast(image, caption=caption, max_flavors=shared.opts.interrogate_clip_max_flavors)
     elif mode == 'negative':
-        prompt = ci.interrogate_negative(image, max_flavors=config["max_flavors"])
+        prompt = ci.interrogate_negative(image, max_flavors=shared.opts.interrogate_clip_max_flavors)
     else:
         raise RuntimeError(f"Unknown mode {mode}")
     return prompt
@@ -339,7 +327,7 @@ def interrogate_image(image, clip_model, blip_model, mode):
         if not shared.native and (shared.cmd_opts.lowvram or shared.cmd_opts.medvram):
             lowvram.send_everything_to_cpu()
             devices.torch_gc()
-        if shared.native:
+        if shared.native and shared.sd_loaded:
             sd_models.apply_balanced_offload(shared.sd_model)
         load_interrogator(clip_model, blip_model)
         image = image.convert('RGB')
@@ -353,58 +341,45 @@ def interrogate_image(image, clip_model, blip_model, mode):
     return prompt
 
 
-def interrogate_batch(batch_files, batch_folder, batch_str, clip_model, blip_model, mode, write):
+def interrogate_batch(batch_files, batch_folder, batch_str, clip_model, blip_model, mode, write, append, recursive):
     files = []
     if batch_files is not None:
         files += [f.name for f in batch_files]
     if batch_folder is not None:
         files += [f.name for f in batch_folder]
     if batch_str is not None and len(batch_str) > 0 and os.path.exists(batch_str) and os.path.isdir(batch_str):
-        files += [os.path.join(batch_str, f) for f in os.listdir(batch_str) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.webp'))]
+        from modules.files_cache import list_files
+        files += list(list_files(batch_str, ext_filter=['.png', '.jpg', '.jpeg', '.webp'], recursive=recursive))
     if len(files) == 0:
-        shared.log.error('Interrogate batch no images')
+        shared.log.warning('Interrogate batch: type=clip no images')
         return ''
-    shared.state.begin('Batch interrogate')
+    shared.state.begin('Interrogate batch')
     prompts = []
-    try:
-        if not shared.native and (shared.cmd_opts.lowvram or shared.cmd_opts.medvram):
-            lowvram.send_everything_to_cpu()
-            devices.torch_gc()
-        load_interrogator(clip_model, blip_model)
-        shared.log.info(f'Interrogate batch: images={len(files)} mode={mode} config={ci.config}')
-        captions = []
-        # first pass: generate captions
+
+    load_interrogator(clip_model, blip_model)
+    if write:
+        file_mode = 'w' if not append else 'a'
+        writer = BatchWriter(os.path.dirname(files[0]), mode=file_mode)
+    import rich.progress as rp
+    pbar = rp.Progress(rp.TextColumn('[cyan]Caption:'), rp.BarColumn(), rp.MofNCompleteColumn(), rp.TaskProgressColumn(), rp.TimeRemainingColumn(), rp.TimeElapsedColumn(), rp.TextColumn('[cyan]{task.description}'), console=shared.console)
+    with pbar:
+        task = pbar.add_task(total=len(files), description='starting...')
         for file in files:
-            caption = ""
+            pbar.update(task, advance=1, description=file)
             try:
                 if shared.state.interrupted:
                     break
                 image = Image.open(file).convert('RGB')
-                caption = ci.generate_caption(image)
-            except Exception as e:
-                shared.log.error(f'Interrogate caption: {e}')
-            finally:
-                captions.append(caption)
-        # second pass: interrogate
-        if write:
-            writer = BatchWriter(os.path.dirname(files[0]))
-        for idx, file in enumerate(files):
-            try:
-                if shared.state.interrupted:
-                    break
-                image = Image.open(file).convert('RGB')
-                prompt = interrogate(image, mode, caption=captions[idx])
+                prompt = interrogate(image, mode)
                 prompts.append(prompt)
                 if write:
                     writer.add(file, prompt)
             except OSError as e:
                 shared.log.error(f'Interrogate batch: {e}')
-        if write:
-            writer.close()
-        ci.config.quiet = False
-        unload_clip_model()
-    except Exception as e:
-        shared.log.error(f'Interrogate batch: {e}')
+    if write:
+        writer.close()
+    ci.config.quiet = False
+    unload_clip_model()
     shared.state.end()
     return '\n\n'.join(prompts)
 
@@ -423,7 +398,13 @@ def analyze_image(image, clip_model, blip_model):
     movement_ranks = dict(zip(top_movements, ci.similarities(image_features, top_movements)))
     trending_ranks = dict(zip(top_trendings, ci.similarities(image_features, top_trendings)))
     flavor_ranks = dict(zip(top_flavors, ci.similarities(image_features, top_flavors)))
-    return medium_ranks, artist_ranks, movement_ranks, trending_ranks, flavor_ranks
+    return [
+        gr.update(value=medium_ranks, visible=True),
+        gr.update(value=artist_ranks, visible=True),
+        gr.update(value=movement_ranks, visible=True),
+        gr.update(value=trending_ranks, visible=True),
+        gr.update(value=flavor_ranks, visible=True),
+    ]
 
 
 interrogator = InterrogateModels()

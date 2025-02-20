@@ -20,7 +20,6 @@ extra_ui = []
 
 def create_ui():
     dummy_component = gr.Label(visible=False)
-
     with gr.Row(elem_id="models_tab"):
         with gr.Column(elem_id='models_output_container', scale=1):
             # models_output = gr.Text(elem_id="models_output", value="", show_label=False)
@@ -429,6 +428,11 @@ def create_ui():
                     log.info(f'Diffuser model downloaded: model="{hub_id}"')
                     return f'Diffuser model downloaded: model="{hub_id}"'
 
+                def hf_update_token(token):
+                    log.debug('Huggingface update token')
+                    opts.huggingface_token = token
+                    opts.save()
+
                 with gr.Column(scale=6):
                     gr.HTML('<h2>Search for models</h2>Select a model from the search results to download<br><br>')
                     with gr.Row():
@@ -443,7 +447,7 @@ def create_ui():
                                 hf_variant = gr.Textbox('', label='Specify model variant', placeholder='')
                                 hf_revision = gr.Textbox('', label='Specify model revision', placeholder='')
                     with gr.Row():
-                        hf_token = gr.Textbox('', label='Huggingface token', placeholder='optional access token for private or gated models')
+                        hf_token = gr.Textbox(opts.huggingface_token, label='Huggingface token', placeholder='optional access token for private or gated models')
                         hf_mirror = gr.Textbox('', label='Huggingface mirror', placeholder='optional mirror site for downloads')
                         hf_custom_pipeline = gr.Textbox('', label='Custom pipeline', placeholder='optional pipeline for downloads')
                 with gr.Column(scale=1):
@@ -459,6 +463,7 @@ def create_ui():
                 hf_search_btn.click(fn=hf_search, inputs=[hf_search_text], outputs=[hf_results])
                 hf_results.select(fn=hf_select, inputs=[hf_results], outputs=[hf_selected])
                 hf_download_model_btn.click(fn=hf_download_model, inputs=[hf_selected, hf_token, hf_variant, hf_revision, hf_mirror, hf_custom_pipeline], outputs=[models_outcome])
+                hf_token.change(fn=hf_update_token, inputs=[hf_token], outputs=[])
 
             with gr.Tab(label="CivitAI"):
                 data = []
@@ -632,6 +637,11 @@ def create_ui():
                 global search_metadata_civit  # pylint: disable=global-statement
                 search_metadata_civit = civit_search_metadata
 
+                def civitai_update_token(token):
+                    log.debug('CivitAI update token')
+                    opts.civitai_token = token
+                    opts.save()
+
                 with gr.Row():
                     gr.HTML('<h2>Fetch information</h2>Fetches preview and metadata information for all models with missing information<br>Models with existing previews and information are not updated<br>')
                 with gr.Row():
@@ -657,7 +667,8 @@ def create_ui():
                     civit_download_model_btn = gr.Button(value="Download", variant='primary')
                     gr.HTML('<span style="line-height: 2em">Select a model, model version and and model variant from the search results to download or enter model URL manually</span><br>')
                 with gr.Row():
-                    civit_token = gr.Textbox('', label='CivitAI token', placeholder='optional access token for private or gated models')
+                    civit_token = gr.Textbox(opts.civitai_token, label='CivitAI token', placeholder='optional access token for private or gated models')
+                    civit_token.change(fn=civitai_update_token, inputs=[civit_token], outputs=[])
                 with gr.Row():
                     civit_name = gr.Textbox('', label='Model name', placeholder='select model from search results', visible=True)
                     civit_selected = gr.Textbox('', label='Model URL', placeholder='select model from search results', visible=True)

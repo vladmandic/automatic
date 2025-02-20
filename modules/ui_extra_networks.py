@@ -37,7 +37,7 @@ card_full = '''
             <span class='details' title="Get details" onclick="showCardDetails(event)">&#x1f6c8;</span>
             <div class='additional'><ul></ul></div>
         </div>
-        <img class='preview' src='{preview}' style='width: {width}px; height: {height}px; object-fit: {fit}' loading='lazy'></img>
+        <img class='preview' src='{preview}' style='width: {width}; height: {height}; object-fit: {fit}' loading='lazy'></img>
     </div>
 '''
 card_list = '''
@@ -53,7 +53,7 @@ card_list = '''
 preview_map = None
 
 
-def init_api(app):
+def init_api():
 
     def fetch_file(filename: str = ""):
         if not os.path.exists(filename):
@@ -102,10 +102,10 @@ def init_api(app):
         # shared.log.debug(f"Networks desc: page='{page.name}' item={item['name']} len={len(desc)}")
         return JSONResponse({"description": desc})
 
-    app.add_api_route("/sd_extra_networks/thumb", fetch_file, methods=["GET"])
-    app.add_api_route("/sd_extra_networks/metadata", get_metadata, methods=["GET"])
-    app.add_api_route("/sd_extra_networks/info", get_info, methods=["GET"])
-    app.add_api_route("/sd_extra_networks/description", get_desc, methods=["GET"])
+    shared.api.add_api_route("/sd_extra_networks/thumb", fetch_file, methods=["GET"])
+    shared.api.add_api_route("/sd_extra_networks/metadata", get_metadata, methods=["GET"])
+    shared.api.add_api_route("/sd_extra_networks/info", get_info, methods=["GET"])
+    shared.api.add_api_route("/sd_extra_networks/description", get_desc, methods=["GET"])
 
 
 class ExtraNetworksPage:
@@ -316,8 +316,8 @@ class ExtraNetworksPage:
                 "filename": item.get('filename', ''),
                 "tags": '|'.join([item.get('tags')] if isinstance(item.get('tags', {}), str) else list(item.get('tags', {}).keys())),
                 "preview": html.escape(item.get('preview', None) or self.link_preview('html/card-no-preview.png')),
-                "width": shared.opts.extra_networks_card_size,
-                "height": shared.opts.extra_networks_card_size if shared.opts.extra_networks_card_square else 'auto',
+                "width": 'var(--card-size)',
+                "height": 'var(--card-size)' if shared.opts.extra_networks_card_square else 'auto',
                 "fit": shared.opts.extra_networks_card_fit,
                 "prompt": item.get("prompt", None),
                 "search": item.get("search_term", ""),
@@ -785,6 +785,16 @@ def create_ui(container, button_parent, tabname, skip_indexing = False):
             if 'modelVersions' in fullinfo: # sanitize massive objects
                 fullinfo['modelVersions'] = []
             info = fullinfo
+            """
+            if prompt is not None:
+                item.prompt = prompt
+            if negative is not None:
+                item.negative = negative
+            if description is not None:
+                item.description = description
+            if wildcards is not None:
+                item.wildcards = wildcards
+            """
             meta = page.metadata.get(item.name, {}) or {}
             if type(meta) is str:
                 try:
@@ -844,7 +854,6 @@ def create_ui(container, button_parent, tabname, skip_indexing = False):
                     <tr><td>Description</td><td>{item.description}</td></tr>
                     <tr><td>Preview Embedded</td><td>{item.preview.startswith('data:')}</td></tr>
                 '''
-                # desc = f'Name: {os.path.basename(item.name)}\nDescription: {item.description}\nPrompt: {item.prompt}\nNegative: {item.negative}\nExtra: {item.extra}\n'
             if item.name.startswith('Diffusers'):
                 url = item.name.replace('Diffusers/', '')
                 url = f'<a href="https://huggingface.co/{url}" target="_blank">https://huggingface.co/models/{url}</a>' if url is not None else 'N/A'
@@ -868,6 +877,7 @@ def create_ui(container, button_parent, tabname, skip_indexing = False):
                 </tbody></table>
                 {note}
             '''
+        is_style = (page is not None) and (page.title == 'Style')
         return [
             text, # gr.html
             img, # gr.image
@@ -875,13 +885,13 @@ def create_ui(container, button_parent, tabname, skip_indexing = False):
             info, # gr.json
             meta, # gr.json
             description, # gr.textbox
-            prompt, # gr.textbox
-            negative, # gr.textbox
-            parameters, # gr.textbox
-            wildcards, # gr.textbox
+            gr.update(value=prompt, visible=is_style), # gr.textbox
+            gr.update(value=negative, visible=is_style), # gr.textbox
+            gr.update(value=parameters, visible=is_style), # gr.textbox
+            gr.update(value=wildcards, visible=is_style), # gr.textbox
             gr.update(visible=valid), # details ui visible
-            gr.update(visible=page is not None and page.title != 'Style'), # details ui tabs visible
-            gr.update(visible=page is not None and page.title == 'Style'), # details ui text visible
+            gr.update(visible=not is_style), # details ui tabs visible
+            gr.update(visible=is_style), # details ui text visible
         ]
 
     def ui_refresh_click(title):
@@ -920,39 +930,50 @@ def create_ui(container, button_parent, tabname, skip_indexing = False):
         return ui_refresh_click(title)
 
     def ui_save_click():
-        filename = os.path.join(paths.data_path, "params.txt")
-        if os.path.exists(filename):
-            with open(filename, "r", encoding="utf8") as file:
-                prompt = file.read()
+        if shared.opts.extra_networks_save_unparsed:
+            from modules.processing_info import get_last_args
+            params, text = get_last_args()
         else:
-            prompt = ''
-        params = infotext.parse(prompt)
-        res = show_details(text=None, img=None, desc=None, info=None, meta=None, parameters=None, description=None, prompt=None, negative=None, wildcards=None, params=params)
+            filename = os.path.join(paths.data_path, "params.txt")
+            if os.path.exists(filename):
+                with open(filename, "r", encoding="utf8") as file:
+                    text = file.read()
+            else:
+                text = ''
+            params = infotext.parse(text)
+        prompt = params.get('Original prompt', None) or params.get('Prompt', '')
+        negative = params.get('Original negative', None) or params.get('Negative prompt', '')
+        res = show_details(text=None, img=None, desc=None, info=None, meta=None, parameters=None, description=None, prompt=prompt, negative=negative, wildcards=None, params=params)
         return res
 
     def ui_quicksave_click(name):
-        if name is None or len(name) < 1:
-            shared.log.warning("Network quick save style: no name provided")
-            return
-        fn = os.path.join(paths.data_path, "params.txt")
-        if os.path.exists(fn):
-            with open(fn, "r", encoding="utf8") as file:
-                prompt = file.read()
+        if shared.opts.extra_networks_save_unparsed:
+            from modules.processing_info import get_last_args
+            params, text = get_last_args()
         else:
-            prompt = ''
-        params = infotext.parse(prompt)
+            if name is None or len(name) < 1:
+                shared.log.warning("Network quick save style: no name provided")
+                return
+            fn = os.path.join(paths.data_path, "params.txt")
+            if os.path.exists(fn):
+                with open(fn, "r", encoding="utf8") as file:
+                    text = file.read()
+            else:
+                text = ''
+            params = infotext.parse(text)
         fn = os.path.join(shared.opts.styles_dir, os.path.splitext(name)[0] + '.json')
-        prompt = params.get('Prompt', '')
+        prompt = params.get('Original prompt', None) or params.get('Prompt', '')
+        negative = params.get('Original negative', None) or params.get('Negative prompt', '')
         item = {
             "name": name,
             "description": '',
             "prompt": prompt,
-            "negative": params.get('Negative prompt', ''),
+            "negative": negative,
             "extra": '',
         }
         shared.writefile(item, fn, silent=True)
         if len(prompt) > 0:
-            shared.log.debug(f"Network quick save style: item={name} filename='{fn}'")
+            shared.log.debug(f"Network quick save style: item={name} filename='{fn}' unparsed={shared.opts.extra_networks_unparsed}")
         else:
             shared.log.warning(f"Network quick save model: item={name} filename='{fn}' prompt is empty")
 
