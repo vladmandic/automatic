@@ -20,8 +20,8 @@ async function preloadImages() {
   try {
     await Promise.all(imagePromises);
     return true;
-  } catch (error) {
-    error(`preloadImages: ${error}`);
+  } catch (err) {
+    error(`preloadImages: ${err}`);
     return false;
   }
 }
