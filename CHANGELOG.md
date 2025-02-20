@@ -2,7 +2,17 @@
 
 ## Update for 2025-02-20
 
-### Highlight for 2025-02-20
+Quick release refresh:
+- remove ui splash screen on auth fail  
+- add `--extensions-dir` cli arg and `SD_EXTENSIONSDIR` env variable to specify extensions directory  
+- log full path when reading/saving `config.json`  
+- log full path to `sdnext.log`  
+- log system hostname in `sdnext.log`  
+- log extensions path in `sdnext.log`  
+
+## Update for 2025-02-18
+
+### Highlight for 2025-02-18
 
 We're back with another update with nearly 100 commits!  
 - Starting with massive UI update with full [localization](https://vladmandic.github.io/sdnext-docs/Locale/) for 8 languages  

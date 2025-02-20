@@ -5,6 +5,7 @@ import json
 import time
 import shutil
 import locale
+import socket
 import logging
 import platform
 import subprocess
@@ -26,6 +27,7 @@ console = None
 debug = log.debug if os.environ.get('SD_INSTALL_DEBUG', None) is not None else lambda *args, **kwargs: None
 pip_log = '--log pip.log ' if os.environ.get('SD_PIP_DEBUG', None) is not None else ''
 log_file = os.path.join(os.path.dirname(__file__), 'sdnext.log')
+hostname = socket.gethostname()
 log_rolled = False
 first_call = True
 quick_allowed = True
@@ -176,7 +178,7 @@ def setup_logging():
         fh.doRollover()
         log_rolled = True
 
-    fh.formatter = logging.Formatter('%(asctime)s | %(name)s | %(levelname)s | %(module)s | %(message)s')
+    fh.formatter = logging.Formatter(f'%(asctime)s | {hostname} | %(name)s | %(levelname)s | %(module)s | %(message)s')
     fh.setLevel(logging.DEBUG)
     log.addHandler(fh)
 
@@ -203,7 +205,7 @@ def setup_logging():
 
 def get_logfile():
     log_size = os.path.getsize(log_file) if os.path.exists(log_file) else 0
-    log.info(f'Logger: file="{log_file}" level={logging.getLevelName(logging.DEBUG if args.debug else logging.INFO)} size={log_size} mode={"append" if not log_rolled else "create"}')
+    log.info(f'Logger: file="{os.path.abspath(log_file)}" level={logging.getLevelName(logging.DEBUG if args.debug else logging.INFO)} host="{hostname}" size={log_size} mode={"append" if not log_rolled else "create"}')
     return log_file
 
 
@@ -979,14 +981,13 @@ def run_extension_installer(folder):
 
 # get list of all enabled extensions
 def list_extensions_folder(folder, quiet=False):
-    name = os.path.basename(folder)
     disabled_extensions_all = opts.get('disable_all_extensions', 'none')
     if disabled_extensions_all != 'none':
         return []
     disabled_extensions = opts.get('disabled_extensions', [])
     enabled_extensions = [x for x in os.listdir(folder) if os.path.isdir(os.path.join(folder, x)) and x not in disabled_extensions and not x.startswith('.')]
     if not quiet:
-        log.info(f'Extensions: enabled={enabled_extensions} {name}')
+        log.info(f'Extensions: path="{folder}" enabled={enabled_extensions}')
     return enabled_extensions
 
 
