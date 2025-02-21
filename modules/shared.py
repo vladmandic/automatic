@@ -453,7 +453,7 @@ def get_default_modes():
         default_cross_attention = "Scaled-Dot-Product"
 
     if devices.backend == "zluda":
-        default_sdp_options =  ['Math attention', 'Dynamic attention']
+        default_sdp_options =  ['Math attention', 'Flash attention', 'Dynamic attention']
     else:
         default_sdp_options = ['Flash attention', 'Memory attention', 'Math attention']
 
