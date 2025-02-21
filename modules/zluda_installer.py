@@ -10,7 +10,6 @@ from modules import rocm
 
 
 DLL_MAPPING = {
-    'cudart.dll': 'cudart64_110.dll',
     'cublas.dll': 'cublas64_11.dll',
     'cusparse.dll': 'cusparse64_11.dll',
     'cufft.dll': 'cufft64_10.dll',
