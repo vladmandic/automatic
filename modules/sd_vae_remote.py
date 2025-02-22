@@ -15,7 +15,7 @@ hf_endpoints = {
 
 
 def remote_decode(latents: torch.Tensor, width: int = 0, height: int = 0, model_type: str = None) -> Image.Image:
-    from modules import devices, shared, errors
+    from modules import devices, shared, errors, modelloader
     images = []
     model_type = model_type or shared.sd_model_type
     url = hf_endpoints.get(model_type, None)
@@ -23,6 +23,7 @@ def remote_decode(latents: torch.Tensor, width: int = 0, height: int = 0, model_
         shared.log.error(f'Decode: type="remote" type={model_type} unsuppported')
         return images
     t0 = time.time()
+    modelloader.hf_login()
     latents = latents.unsqueeze(0) if len(latents.shape) == 3 else latents
     for i in range(latents.shape[0]):
         try:

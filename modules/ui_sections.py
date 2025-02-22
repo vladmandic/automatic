@@ -169,7 +169,7 @@ def create_cfg_inputs(tab):
 def create_advanced_inputs(tab, base=True):
     with gr.Accordion(open=False, label="Advanced", elem_id=f"{tab}_advanced", elem_classes=["small-accordion"]):
         with gr.Group():
-            with gr.Row(elem_id=f"{tab}_advanced_options"):
+            with gr.Row(elem_id=f"{tab}_vae_options"):
                 vae_type = gr.Dropdown(label='VAE type', choices=['Full', 'Tiny', 'Remote'], value='Full', elem_id=f"{tab}_vae_type")
             with gr.Row(elem_id=f"{tab}_advanced_options"):
                 tiling = gr.Checkbox(label='Texture tiling', value=False, elem_id=f"{tab}_tiling")
