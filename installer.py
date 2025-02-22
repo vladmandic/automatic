@@ -56,11 +56,14 @@ args = Dot({
 })
 git_commit = "unknown"
 diffusers_commit = "unknown"
-extensions_commit = {
+extensions_commit = { # force specific commit for extensions
     'sd-webui-controlnet': 'ecd33eb',
     'adetailer': 'a89c01d'
     # 'stable-diffusion-webui-images-browser': '27fe4a7',
 }
+control_extensions = [ # 3rd party extensions marked as safe for control ui
+    'NudeNet',
+]
 
 
 try:

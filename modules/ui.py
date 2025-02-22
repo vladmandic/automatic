@@ -316,7 +316,13 @@ def create_ui(startup_timer = None):
                     for i, (k, item) in enumerate(opts.data_labels.items()):
                         section_must_be_skipped = item.section[0] is None
                         if previous_section != item.section and not section_must_be_skipped:
-                            elem_id, text = item.section
+                            if len(item.section) == 2:
+                                elem_id, text = item.section
+                            elif len(item.section) == 3:
+                                _category, elem_id, text = item.section
+                            else:
+                                shared.log.error(f'Settings: section={item.section} invalid')
+                                continue
                             if current_tab is not None and len(previous_section) > 0:
                                 create_dirty_indicator(previous_section[0], tab_item_keys)
                                 tab_item_keys = []
