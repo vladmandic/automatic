@@ -3,7 +3,7 @@ import os
 import time
 import torch
 import numpy as np
-from modules import shared, processing_correction, extra_networks, timer, prompt_parser_diffusers
+from modules import shared, devices, processing_correction, extra_networks, timer, prompt_parser_diffusers
 
 
 p = None
@@ -51,6 +51,8 @@ def diffusers_callback_legacy(step: int, timestep: int, latents: typing.Union[to
 
 def diffusers_callback(pipe, step: int = 0, timestep: int = 0, kwargs: dict = {}):
     t0 = time.time()
+    if devices.backend == "zluda":
+        torch.cuda.synchronize(devices.device)
     if p is None:
         return kwargs
     latents = kwargs.get('latents', None)
