@@ -170,8 +170,9 @@ def create_advanced_inputs(tab, base=True):
     with gr.Accordion(open=False, label="Advanced", elem_id=f"{tab}_advanced", elem_classes=["small-accordion"]):
         with gr.Group():
             with gr.Row(elem_id=f"{tab}_advanced_options"):
-                full_quality = gr.Checkbox(label='Full quality', value=True, elem_id=f"{tab}_full_quality")
-                tiling = gr.Checkbox(label='Tiling', value=False, elem_id=f"{tab}_tiling")
+                vae_type = gr.Dropdown(label='VAE type', choices=['Full', 'Tiny', 'Remote'], value='Full', elem_id=f"{tab}_vae_type")
+            with gr.Row(elem_id=f"{tab}_advanced_options"):
+                tiling = gr.Checkbox(label='Texture tiling', value=False, elem_id=f"{tab}_tiling")
                 hidiffusion = gr.Checkbox(label='HiDiffusion', value=False, elem_id=f"{tab}_hidiffusion")
             if base:
                 cfg_scale, cfg_end = create_cfg_inputs(tab)
@@ -185,7 +186,7 @@ def create_advanced_inputs(tab, base=True):
                 diffusers_pag_adaptive = gr.Slider(minimum=0.0, maximum=1.0, step=0.05, label='Adaptive scaling', value=0.5, elem_id=f"{tab}_pag_adaptive", visible=shared.native)
             with gr.Row():
                 clip_skip = gr.Slider(label='CLIP skip', value=1, minimum=0, maximum=12, step=0.1, elem_id=f"{tab}_clip_skip", interactive=True)
-    return full_quality, tiling, hidiffusion, cfg_scale, clip_skip, image_cfg_scale, diffusers_guidance_rescale, diffusers_pag_scale, diffusers_pag_adaptive, cfg_end
+    return vae_type, tiling, hidiffusion, cfg_scale, clip_skip, image_cfg_scale, diffusers_guidance_rescale, diffusers_pag_scale, diffusers_pag_adaptive, cfg_end
 
 
 def create_correction_inputs(tab):

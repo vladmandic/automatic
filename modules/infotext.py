@@ -105,7 +105,7 @@ def parse(infotext):
         elif val == "False":
             params[key] = False
         elif key == 'VAE' and val == 'TAESD':
-            params["Full quality"] = False
+            params["VAE type"] = 'Tiny'
         elif size is not None:
             params[f"{key}-1"] = int(size.group(1))
             params[f"{key}-2"] = int(size.group(2))

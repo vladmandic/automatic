@@ -1,14 +1,20 @@
 # Change Log for SD.Next
 
-## Update for 2025-02-20
+## Update for 2025-02-22
 
-Quick release refresh:
-- remove ui splash screen on auth fail  
-- add `--extensions-dir` cli arg and `SD_EXTENSIONSDIR` env variable to specify extensions directory  
-- log full path when reading/saving `config.json`  
-- log full path to `sdnext.log`  
-- log system hostname in `sdnext.log`  
-- log extensions path in `sdnext.log`  
+- **Decode**  
+  - Final step of image generate, VAE decode, is by far the most memory intensive operation and can easily result in out-of-memory errors  
+    What can be done? Well, *Huggingface* is now providing *free-of-charge* **remote-VAE-decode** service!  
+  - How to use? Previous *Full quality* option in UI is replace it with VAE type selector: Full, Tiny, Remote  
+    Currently supports SD15, SDXL and FLUX.1 with more models expected in the near future  
+    Availability is limited, so if remote processing fails SD.Next will fallback to using normal VAE decode process  
+- **Other**  
+  - add `--extensions-dir` cli arg and `SD_EXTENSIONSDIR` env variable to specify extensions directory  
+- **Fixes**  
+  - remove ui splash screen on auth fail  
+  - log full config path, full log path, system name, extensions path
+  - zluda update  
+  - fix zluda with pulid  
 
 ## Update for 2025-02-18
 

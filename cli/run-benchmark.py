@@ -134,7 +134,7 @@ if __name__ == '__main__':
             "sampler_name": args.sampler,
             "width": args.width,
             "height": args.height,
-            "full_quality": not args.taesd,
+            "vae_type": 'Tiny' if args.taesd else 'Full',
             "cfg_scale": 0,
             "batch_size": 1,
             "n_iter": 1,

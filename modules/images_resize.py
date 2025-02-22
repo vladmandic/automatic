@@ -16,9 +16,9 @@ def resize_image(resize_mode: int, im: Union[Image.Image, torch.Tensor], width: 
             return im
         else:
             from modules.processing_vae import vae_encode, vae_decode
-            latents = vae_encode(im, shared.sd_model, full_quality=False) # TODO resize image: enable full VAE mode for resize-latent
+            latents = vae_encode(im, shared.sd_model, vae_type='Tiny') # TODO resize image: enable full VAE mode for resize-latent
             latents = selected_upscaler.scaler.upscale(latents, scale, selected_upscaler.name)
-            im = vae_decode(latents, shared.sd_model, output_type='pil', full_quality=False)[0]
+            im = vae_decode(latents, shared.sd_model, output_type='pil', vae_type='Tiny')[0]
             return im
 
     def resize(im: Union[Image.Image, torch.Tensor], w, h):
