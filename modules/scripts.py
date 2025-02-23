@@ -341,6 +341,7 @@ class ScriptRunner:
         self.script_load_ctr = 0
         self.is_img2img = False
         self.inputs = [None]
+        self.time = 0
 
     def add_script(self, script_class, path, is_img2img, is_control):
         try:
@@ -519,7 +520,9 @@ class ScriptRunner:
         if 'upscale' in script.title():
             if not hasattr(p, 'init_images') and p.task_args.get('image', None) is not None:
                 p.init_images = p.task_args['image']
-        parsed = p.per_script_args.get(script.title(), args[script.args_from:script.args_to])
+        parsed = []
+        if hasattr(script, 'args_to') and hasattr(script, 'args_from'):
+            parsed = p.per_script_args.get(script.title(), args[script.args_from:script.args_to])
         if hasattr(script, 'run'):
             processed = script.run(p, *parsed)
         else:
@@ -537,7 +540,9 @@ class ScriptRunner:
         script = self.selectable_scripts[script_index-1]
         if script is None or not hasattr(script, 'after'):
             return processed
-        parsed = p.per_script_args.get(script.title(), args[script.args_from:script.args_to])
+        parsed = []
+        if hasattr(script, 'args_to') and hasattr(script, 'args_from'):
+            parsed = p.per_script_args.get(script.title(), args[script.args_from:script.args_to])
         after_processed = script.after(p, processed, *parsed)
         if after_processed is not None:
             processed = after_processed
@@ -549,7 +554,7 @@ class ScriptRunner:
         s = ScriptSummary('before-process')
         for script in self.alwayson_scripts:
             try:
-                if (script.args_to > 0) and (script.args_to >= script.args_from):
+                if hasattr(script, 'args_to') and hasattr(script, 'args_from') and (script.args_to > 0) and (script.args_to >= script.args_from):
                     args = p.per_script_args.get(script.title(), p.script_args[script.args_from:script.args_to])
                     script.before_process(p, *args, **kwargs)
             except Exception as e:
@@ -561,7 +566,7 @@ class ScriptRunner:
         s = ScriptSummary('process')
         for script in self.alwayson_scripts:
             try:
-                if (script.args_to > 0) and (script.args_to >= script.args_from):
+                if hasattr(script, 'args_to') and hasattr(script, 'args_from') and (script.args_to > 0) and (script.args_to >= script.args_from):
                     args = p.per_script_args.get(script.title(), p.script_args[script.args_from:script.args_to])
                     script.process(p, *args, **kwargs)
             except Exception as e:
@@ -574,7 +579,7 @@ class ScriptRunner:
         processed = None
         for script in self.alwayson_scripts:
             try:
-                if (script.args_to > 0) and (script.args_to >= script.args_from):
+                if hasattr(script, 'args_to') and hasattr(script, 'args_from') and (script.args_to > 0) and (script.args_to >= script.args_from):
                     args = p.per_script_args.get(script.title(), p.script_args[script.args_from:script.args_to])
                     _processed = script.process_images(p, *args, **kwargs)
                     if _processed is not None:
@@ -589,7 +594,7 @@ class ScriptRunner:
         s = ScriptSummary('before-process-batch')
         for script in self.alwayson_scripts:
             try:
-                if (script.args_to > 0) and (script.args_to >= script.args_from):
+                if hasattr(script, 'args_to') and hasattr(script, 'args_from') and (script.args_to > 0) and (script.args_to >= script.args_from):
                     args = p.per_script_args.get(script.title(), p.script_args[script.args_from:script.args_to])
                     script.before_process_batch(p, *args, **kwargs)
             except Exception as e:
@@ -601,7 +606,7 @@ class ScriptRunner:
         s = ScriptSummary('process-batch')
         for script in self.alwayson_scripts:
             try:
-                if (script.args_to > 0) and (script.args_to >= script.args_from):
+                if hasattr(script, 'args_to') and hasattr(script, 'args_from') and (script.args_to > 0) and (script.args_to >= script.args_from):
                     args = p.per_script_args.get(script.title(), p.script_args[script.args_from:script.args_to])
                     script.process_batch(p, *args, **kwargs)
             except Exception as e:
@@ -613,7 +618,7 @@ class ScriptRunner:
         s = ScriptSummary('postprocess')
         for script in self.alwayson_scripts:
             try:
-                if (script.args_to > 0) and (script.args_to >= script.args_from):
+                if hasattr(script, 'args_to') and hasattr(script, 'args_from') and (script.args_to > 0) and (script.args_to >= script.args_from):
                     args = p.per_script_args.get(script.title(), p.script_args[script.args_from:script.args_to])
                     script.postprocess(p, processed, *args)
             except Exception as e:
@@ -625,7 +630,7 @@ class ScriptRunner:
         s = ScriptSummary('postprocess-batch')
         for script in self.alwayson_scripts:
             try:
-                if (script.args_to > 0) and (script.args_to >= script.args_from):
+                if hasattr(script, 'args_to') and hasattr(script, 'args_from') and (script.args_to > 0) and (script.args_to >= script.args_from):
                     args = p.per_script_args.get(script.title(), p.script_args[script.args_from:script.args_to])
                     script.postprocess_batch(p, *args, images=images, **kwargs)
             except Exception as e:
@@ -637,7 +642,7 @@ class ScriptRunner:
         s = ScriptSummary('postprocess-batch-list')
         for script in self.alwayson_scripts:
             try:
-                if (script.args_to > 0) and (script.args_to >= script.args_from):
+                if hasattr(script, 'args_to') and hasattr(script, 'args_from') and (script.args_to > 0) and (script.args_to >= script.args_from):
                     args = p.per_script_args.get(script.title(), p.script_args[script.args_from:script.args_to])
                     script.postprocess_batch_list(p, pp, *args, **kwargs)
             except Exception as e:
@@ -649,7 +654,7 @@ class ScriptRunner:
         s = ScriptSummary('postprocess-image')
         for script in self.alwayson_scripts:
             try:
-                if (script.args_to > 0) and (script.args_to >= script.args_from):
+                if hasattr(script, 'args_to') and hasattr(script, 'args_from') and (script.args_to > 0) and (script.args_to >= script.args_from):
                     args = p.per_script_args.get(script.title(), p.script_args[script.args_from:script.args_to])
                     script.postprocess_image(p, pp, *args)
             except Exception as e:
@@ -686,20 +691,21 @@ class ScriptRunner:
     def reload_sources(self, cache):
         s = ScriptSummary('reload-sources')
         for si, script in list(enumerate(self.scripts)):
-            args_from = script.args_from
-            args_to = script.args_to
-            filename = script.filename
-            module = cache.get(filename, None)
-            if module is None:
-                module = script_loading.load_module(script.filename)
-                cache[filename] = module
-            for script_class in module.__dict__.values():
-                if type(script_class) == type and issubclass(script_class, Script):
-                    self.scripts[si] = script_class()
-                    self.scripts[si].filename = filename
-                    self.scripts[si].args_from = args_from
-                    self.scripts[si].args_to = args_to
-            s.record(script.title())
+            if hasattr(script, 'args_to') and hasattr(script, 'args_from'):
+                args_from = script.args_from
+                args_to = script.args_to
+                filename = script.filename
+                module = cache.get(filename, None)
+                if module is None:
+                    module = script_loading.load_module(script.filename)
+                    cache[filename] = module
+                for script_class in module.__dict__.values():
+                    if type(script_class) == type and issubclass(script_class, Script):
+                        self.scripts[si] = script_class()
+                        self.scripts[si].filename = filename
+                        self.scripts[si].args_from = args_from
+                        self.scripts[si].args_to = args_to
+                s.record(script.title())
         s.report()
 
 

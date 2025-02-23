@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2025-02-22
+## Update for 2025-02-23
 
 - **Functions**  
   - **Remote Decode**  
@@ -21,7 +21,7 @@
   - log full config path, full log path, system name, extensions path
   - zluda hotfixes  
   - zluda force sync  
-  - openvino with img2img  
+  - fix torch import on compile  
 
 ## Update for 2025-02-18
 
