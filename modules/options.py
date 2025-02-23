@@ -91,9 +91,9 @@ class OptionsCategories:
         self.mapping = {}
 
     def register_category(self, category_id, label):
-        if category_id in self.mapping:
-            return category_id
-        self.mapping[category_id] = OptionsCategory(category_id, label)
+        if category_id not in self.mapping:
+            self.mapping[category_id] = OptionsCategory(category_id, label)
+        return category_id
 
 
 categories = OptionsCategories()
