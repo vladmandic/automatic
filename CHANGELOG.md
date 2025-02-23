@@ -21,6 +21,7 @@
   - log full config path, full log path, system name, extensions path
   - zluda hotfixes  
   - zluda force sync  
+  - openvino with img2img  
 
 ## Update for 2025-02-18
 
