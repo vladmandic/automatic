@@ -2,13 +2,15 @@
 
 ## Update for 2025-02-22
 
-- **Decode**  
-  - final step of image generate, VAE decode, is by far the most memory intensive operation and can easily result in out-of-memory errors  
-    what can be done? Well, *Huggingface* is now providing *free-of-charge* **remote-VAE-decode** service!  
-  - how to use? previous *Full quality* option in UI is replaced with VAE type selector: *Full, Tiny, Remote*  
-    currently supports SD15, SDXL and FLUX.1 with more models expected in the near future  
-    availability is limited (log shows '503 Service Unavailable'),  
-    so if remote processing fails SD.Next will fallback to using normal VAE decode process  
+- **Functions**  
+  - **Remote Decode**  
+    - final step of image generate, VAE decode, is by far the most memory intensive operation and can easily result in out-of-memory errors  
+      what can be done? Well, *Huggingface* is now providing *free-of-charge* **remote-VAE-decode** service!  
+    - how to use? previous *Full quality* option in UI is replaced with VAE type selector: *Full, Tiny, Remote*  
+      currently supports SD15, SDXL and FLUX.1 with more models expected in the near future  
+      availability is limited (log shows '503 Service Unavailable'),  
+      so if remote processing fails SD.Next will fallback to using normal VAE decode process  
+      *note*: only passed item is final latent itself, no user or generate information at all  
 - **Other**  
   - add `--extensions-dir` cli arg and `SD_EXTENSIONSDIR` env variable to specify extensions directory  
   - update `zluda==3.9.0`
@@ -18,6 +20,7 @@
   - remove ui splash screen on auth fail  
   - log full config path, full log path, system name, extensions path
   - zluda hotfixes  
+  - zluda force sync  
 
 ## Update for 2025-02-18
 
