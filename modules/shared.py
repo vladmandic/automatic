@@ -423,6 +423,7 @@ options_templates.update(options_section(('vae_encoder', "Variable Auto Encoder"
     "diffusers_vae_tile_overlap": OptionInfo(0.25, "VAE tile overlap", gr.Slider, {"minimum": 0, "maximum": 0.95, "step": 0.05 }),
     "sd_vae_sliced_encode": OptionInfo(False, "VAE sliced encode", gr.Checkbox, {"visible": not native}),
     "nan_skip": OptionInfo(False, "Skip Generation if NaN found in latents", gr.Checkbox),
+    "remote_vae_type": OptionInfo('raw', "Remote VAE image type", gr.Dropdown, {"choices": ['raw', 'jpg', 'png']}),
     "rollback_vae": OptionInfo(False, "Attempt VAE roll back for NaN values", gr.Checkbox, {"visible": not native}),
 }))
 

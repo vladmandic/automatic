@@ -8,12 +8,13 @@
       what can be done? Well, *Huggingface* is now providing *free-of-charge* **remote-VAE-decode** service!  
     - how to use? previous *Full quality* option in UI is replaced with VAE type selector: *Full, Tiny, Remote*  
       currently supports SD15, SDXL and FLUX.1 with more models expected in the near future  
-      availability is limited (log shows '503 Service Unavailable'),  
-      so if remote processing fails SD.Next will fallback to using normal VAE decode process  
-      *note*: only passed item is final latent itself, no user or generate information at all  
+      depending on your bandwidth select mode in *settings -> vae -> raw/png/jpg*  
+      if remote processing fails SD.Next will fallback to using normal VAE decode process  
+      *privacy note*: only passed item is final latent itself without any user or generate information and latent is not stored in the cloud  
 - **UI**
   - modern ui reorg main tab  
     improve styling, improve scripts/extensions interface and separate ipadapters  
+  - additional ui hints  
 - **Other**  
   - add `--extensions-dir` cli arg and `SD_EXTENSIONSDIR` env variable to specify extensions directory  
   - update `zluda==3.9.0`
