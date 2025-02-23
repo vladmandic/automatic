@@ -2,15 +2,14 @@
 
 ## Update for 2025-02-23
 
-- **Functions**  
-  - **Remote Decode**  
-    - final step of image generate, VAE decode, is by far the most memory intensive operation and can easily result in out-of-memory errors  
-      what can be done? Well, *Huggingface* is now providing *free-of-charge* **remote-VAE-decode** service!  
-    - how to use? previous *Full quality* option in UI is replaced with VAE type selector: *Full, Tiny, Remote*  
-      currently supports SD15, SDXL and FLUX.1 with more models expected in the near future  
-      depending on your bandwidth select mode in *settings -> vae -> raw/png/jpg*  
-      if remote processing fails SD.Next will fallback to using normal VAE decode process  
-      *privacy note*: only passed item is final latent itself without any user or generate information and latent is not stored in the cloud  
+- **Remote Decode**  
+  - final step of image generate, VAE decode, is by far the most memory intensive operation and can easily result in out-of-memory errors  
+    what can be done? Well, *Huggingface* is now providing *free-of-charge* **remote-VAE-decode** service!  
+  - how to use? previous *Full quality* option in UI is replaced with VAE type selector: *Full, Tiny, Remote*  
+    currently supports SD15, SDXL and FLUX.1 with more models expected in the near future  
+    depending on your bandwidth select mode in *settings -> vae -> raw/png/jpg*  
+    if remote processing fails SD.Next will fallback to using normal VAE decode process  
+    *privacy note*: only passed item is final latent itself without any user or generate information and latent is not stored in the cloud  
 - **UI**
   - modern ui reorg main tab  
     improve styling, improve scripts/extensions interface and separate ipadapters  
