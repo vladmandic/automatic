@@ -34,18 +34,6 @@ except Exception:
     pass
 
 
-# Fix "torch is not defined" error on sd 1.5 img2img when torch.compile for vae.encode is enabled
-from dataclasses import dataclass
-from torch.compiler import disable as disable_compile
-import diffusers.models.autoencoders.autoencoder_kl
-
-@dataclass
-@disable_compile
-class AutoencoderKLOutput(diffusers.utils.BaseOutput):
-    latent_dist: "DiagonalGaussianDistribution"  # noqa: F821
-diffusers.models.autoencoders.autoencoder_kl.AutoencoderKLOutput = AutoencoderKLOutput
-
-
 # Set default params
 torch._dynamo.config.cache_size_limit = 64 # pylint: disable=protected-access
 torch._dynamo.eval_frame.check_if_dynamo_supported = lambda: True # pylint: disable=protected-access

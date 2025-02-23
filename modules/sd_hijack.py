@@ -369,3 +369,17 @@ if devices.backend != "ipex":
     torch.fft.fftn = fft_fftn
     torch.fft.ifftn = fft_ifftn
     diffusers.utils.torch_utils.fourier_filter = fourier_filter
+
+
+# Fix "torch is not defined" error on img2img pipelines when torch.compile for vae.encode is enabled:
+# disable_compile for AutoencoderKLOutput is the only change
+if torch.__version__.startswith("2.6"):
+    from dataclasses import dataclass
+    from torch.compiler import disable as disable_compile
+    import diffusers.models.autoencoders.autoencoder_kl
+
+    @dataclass
+    @disable_compile
+    class AutoencoderKLOutput(diffusers.utils.BaseOutput):
+        latent_dist: "DiagonalGaussianDistribution"  # noqa: F821
+    diffusers.models.autoencoders.autoencoder_kl.AutoencoderKLOutput = AutoencoderKLOutput
