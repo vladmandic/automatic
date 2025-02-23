@@ -44,7 +44,7 @@ class Script(scripts.Script):
         return [gr.update(visible=advanced), gr.update(visible=advanced)]
 
     def ui(self, _is_img2img):
-        with gr.Accordion('IP Adapters', open=False, elem_id='ipadapter'):
+        with gr.Accordion('IP Adapters', open=False, elem_id='ipadapter', elem_classes=['ipadapter']):
             units = []
             adapters = []
             scales = []

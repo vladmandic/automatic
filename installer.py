@@ -62,7 +62,7 @@ extensions_commit = { # force specific commit for extensions
     # 'stable-diffusion-webui-images-browser': '27fe4a7',
 }
 control_extensions = [ # 3rd party extensions marked as safe for control ui
-    'NudeNet',
+    'NudeNet', 'IP Adapters',
 ]
 
 

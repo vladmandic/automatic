@@ -11,6 +11,9 @@
       availability is limited (log shows '503 Service Unavailable'),  
       so if remote processing fails SD.Next will fallback to using normal VAE decode process  
       *note*: only passed item is final latent itself, no user or generate information at all  
+- **UI**
+  - modern ui reorg main tab  
+    improve styling, improve scripts/extensions interface and separate ipadapters  
 - **Other**  
   - add `--extensions-dir` cli arg and `SD_EXTENSIONSDIR` env variable to specify extensions directory  
   - update `zluda==3.9.0`

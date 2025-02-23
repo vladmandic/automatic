@@ -34,8 +34,8 @@ class Script:
     parent = None
     name = None
     filename = None
-    args_from = None
-    args_to = None
+    args_from = 0
+    args_to = 0
     alwayson = False
     is_txt2img = False
     is_img2img = False
