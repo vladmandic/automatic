@@ -42,7 +42,7 @@ def return_stats(t: float = None):
         ram = shared.ram_stats()
         if ram['used'] > 0:
             cpu += f"| RAM {ram['used']} GB {round(100.0 * ram['used'] / ram['total'])}%"
-    return f"<div class='performance'><p>Time: {elapsed_text} | {summary} {gpu} {cpu}</p></div>"
+    return f"<div class='performance'><p>{elapsed_text} {summary} {gpu} {cpu}</p></div>"
 
 
 def return_controls(res, t: float = None):

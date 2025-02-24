@@ -89,8 +89,6 @@ def save_files(js_data, files, html_info, index):
 
     class PObject: # pylint: disable=too-few-public-methods
         def __init__(self, d=None):
-            # 'Parser': 'Full parser', 'Model': 'lyriel_v16', 'Model hash': 'ec6f68ea63', 'Backend': 'Diffusers', 'App': 'SD.Next', 'Version': '69d7fef', 'Operations': 'txt2img', 'Sampler options': 'order 2/low order', 'Pipeline': 'StableDiffusionPipeline'
-            # <pre>seq, uuid<br>date, datetime, job_timestamp<br>generation_number, batch_number<br>model, model_shortname<br>model_hash, model_name<br>sampler, seed, steps, cfg<br>clip_skip, denoising<br>hasprompt, prompt, styles<br>prompt_hash, prompt_no_styles<br>prompt_spaces, prompt_words<br>height, width, image_hash<br></pre>
             if d is not None:
                 for k, v in d.items():
                     setattr(self, k, v)

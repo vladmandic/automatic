@@ -52,7 +52,7 @@ class History():
         else:
             current_index = 0
         item = self.latents[current_index]
-        shared.log.debug(f'History get: index={current_index} time={item.ts} shape={item.latent.shape} dtype={item.latent.dtype} count={self.count}')
+        shared.log.debug(f'History get: index={current_index} time={item.ts} shape={list(item.latent.shape)} dtype={item.latent.dtype} count={self.count}')
         return item.latent.to(devices.device), current_index
 
     def find(self, name):
@@ -68,7 +68,6 @@ class History():
         if torch.is_tensor(latent):
             item = Item(latent, preview, info, ops)
             self.latents.appendleft(item)
-            # shared.log.debug(f'History add: shape={latent.shape} dtype={latent.dtype} count={self.count}')
             if self.count >= shared.opts.latent_history:
                 self.latents.pop()
 

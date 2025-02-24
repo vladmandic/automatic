@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2025-02-23
+## Update for 2025-02-24
 
 - **Remote Decode**  
   - final step of image generate, VAE decode, is by far the most memory intensive operation and can easily result in out-of-memory errors  

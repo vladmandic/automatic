@@ -64,9 +64,9 @@ def create_infotext(p: StableDiffusionProcessing, all_prompts=None, all_seeds=No
         # sdnext
         "App": 'SD.Next',
         "Version": git_commit,
-        "Backend": 'Diffusers' if shared.native else 'Original',
-        "Pipeline": 'LDM',
-        "Parser": shared.opts.prompt_attention.split()[0],
+        "Backend": 'Legacy' if not shared.native else None,
+        "Pipeline": 'LDM' if not shared.native else None,
+        "Parser": shared.opts.prompt_attention if shared.opts.prompt_attention != 'native' else None,
         "Comment": comment,
         "Operations": '; '.join(ops).replace('"', '') if len(p.ops) > 0 else 'none',
     }

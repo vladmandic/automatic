@@ -177,7 +177,7 @@ def check_active(p, unit_type, units):
         else:
             if u.process.processor_id is not None:
                 active_process.append(u.process)
-            shared.log.debug(f'Control process unit: i={num_units} process={u.process.processor_id}')
+                shared.log.debug(f'Control process unit: i={num_units} process={u.process.processor_id}')
             active_strength.append(float(u.strength))
     debug_log(f'Control active: process={len(active_process)} model={len(active_model)}')
     return active_process, active_model, active_strength, active_start, active_end

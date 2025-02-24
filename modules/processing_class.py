@@ -594,7 +594,7 @@ class StableDiffusionProcessingControl(StableDiffusionProcessingImg2Img):
             self.hr_upscale_to_x, self.hr_upscale_to_y = self.hr_resize_x, self.hr_resize_y
         # hypertile_set(self, hr=True)
         # shared.state.job_count = 2 * self.n_iter
-        shared.log.debug(f'Control hires: upscaler="{self.hr_upscaler}" scale={scale} fixed={not use_scale} size={self.hr_upscale_to_x}x{self.hr_upscale_to_y}')
+        # shared.log.debug(f'Control refine: upscaler="{self.hr_upscaler}" scale={scale} fixed={not use_scale} size={self.hr_upscale_to_x}x{self.hr_upscale_to_y}')
 
 
 def switch_class(p: StableDiffusionProcessing, new_class: type, dct: dict = None):
