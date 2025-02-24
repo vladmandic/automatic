@@ -143,6 +143,9 @@ class Script(scripts.Script):
             from modules.face.photomaker import photo_maker
             photo_maker(p, app=app, input_images=input_images, model=pm_model, trigger=pm_trigger, strength=pm_strength, start=pm_start)
         elif mode == 'InstantID':
+            if hasattr(p, 'init_images') and p.init_images is not None and len(p.init_images) > 0:
+                shared.log.warning('Face: InstantID with init image not supported')
+                input_images += p.init_images
             from modules.face.insightface import get_app
             app=get_app('antelopev2')
             from modules.face.instantid import instant_id # instantid creates pipeline and triggers original process_images

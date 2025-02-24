@@ -26,6 +26,7 @@
   - zluda force sync  
   - fix torch import on compile  
   - infotext parser force delimiter before params  
+  - handle pipeline class switch errors  
 
 ## Update for 2025-02-18
 
