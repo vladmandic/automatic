@@ -2,6 +2,8 @@
 
 ## Update for 2025-02-24
 
+Primarily a hotfix/service release plus few UI improvements and one exciting new feature: Remote-VAE!
+
 - **Remote Decode**  
   - final step of image generate, VAE decode, is by far the most memory intensive operation and can easily result in out-of-memory errors  
     what can be done? Well, *Huggingface* is now providing *free-of-charge* **remote-VAE-decode** service!  
