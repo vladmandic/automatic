@@ -73,7 +73,9 @@ def check_access():
 
 
 def apply_changes(disable_list, update_list, disable_all):
-    check_access()
+    if shared.cmd_opts.disable_extension_access:
+        shared.log.error('Extension: apply changes disallowed because public access is enabled and insecure is not specified')
+        return
     shared.log.debug(f'Extensions apply: disable={disable_list} update={update_list}')
     disabled = json.loads(disable_list)
     assert type(disabled) == list, f"wrong disable_list data for apply_changes: {disable_list}"
@@ -94,7 +96,9 @@ def apply_changes(disable_list, update_list, disable_all):
 
 
 def check_updates(_id_task, disable_list, search_text, sort_column):
-    check_access()
+    if shared.cmd_opts.disable_extension_access:
+        shared.log.error('Extension: apply changes disallowed because public access is enabled and insecure is not specified')
+        return
     disabled = json.loads(disable_list)
     assert type(disabled) == list, f"wrong disable_list data for apply_and_restart: {disable_list}"
     exts = [ext for ext in extensions.extensions if ext.remote is not None and ext.name not in disabled]
@@ -141,15 +145,21 @@ def normalize_git_url(url):
 
 
 def install_extension_from_url(dirname, url, branch_name, search_text, sort_column):
-    check_access()
-    assert url, 'No URL specified'
+    if shared.cmd_opts.disable_extension_access:
+        shared.log.error('Extension: apply changes disallowed because public access is enabled and insecure is not specified')
+        return ['', '']
+    if url is None or len(url) == 0:
+        shared.log.error('Extension: url is not specified')
+        return ['', '']
     if dirname is None or dirname == "":
         *parts, last_part = url.split('/') # pylint: disable=unused-variable
         last_part = normalize_git_url(last_part)
         dirname = last_part
     target_dir = os.path.join(extensions.extensions_dir, dirname)
     shared.log.info(f'Installing extension: {url} into {target_dir}')
-    assert not os.path.exists(target_dir), f'Extension directory already exists: {target_dir}'
+    if os.path.exists(target_dir):
+        shared.log.error(f'Extension: path="{target_dir}" directory already exists')
+        return ['', '']
     normalized_url = normalize_git_url(url)
     assert len([x for x in extensions.extensions if normalize_git_url(x.remote) == normalized_url]) == 0, 'Extension with this URL is already installed'
     tmpdir = os.path.join(paths.data_path, "tmp", dirname)

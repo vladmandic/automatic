@@ -29,6 +29,7 @@ Primarily a hotfix/service release plus few UI improvements and one exciting new
   - fix torch import on compile  
   - infotext parser force delimiter before params  
   - handle pipeline class switch errors  
+  - improve extensions options compatibility  
 
 ## Update for 2025-02-18
 

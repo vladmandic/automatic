@@ -3,7 +3,23 @@ from installer import log
 
 
 class OptionInfo:
-    def __init__(self, default=None, label="", component=None, component_args=None, onchange=None, section=None, refresh=None, folder=None, submit=None, comment_before='', comment_after=''):
+    def __init__(
+            self,
+            default=None,
+            label="",
+            component=None,
+            component_args=None,
+            onchange=None,
+            section=None,
+            refresh=None,
+            folder=None,
+            submit=None,
+            comment_before='',
+            comment_after='',
+            category_id=None, # pylint: disable=unused-argument
+            *args, # pylint: disable=unused-argument
+            **kwargs, # pylint: disable=unused-argument
+        ): # pylint: disable=keyword-arg-before-vararg
         self.default = default
         self.label = label
         self.component = component
