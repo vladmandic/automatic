@@ -177,7 +177,7 @@ def check_active(p, unit_type, units):
         else:
             if u.process.processor_id is not None:
                 active_process.append(u.process)
-            shared.log.debug(f'Control process unit: i={num_units} process={u.process.processor_id}')
+                shared.log.debug(f'Control process unit: i={num_units} process={u.process.processor_id}')
             active_strength.append(float(u.strength))
     debug_log(f'Control active: process={len(active_process)} model={len(active_model)}')
     return active_process, active_model, active_strength, active_start, active_end
@@ -228,7 +228,7 @@ def control_run(state: str = '',
                 steps: int = 20, sampler_index: int = None,
                 seed: int = -1, subseed: int = -1, subseed_strength: float = 0, seed_resize_from_h: int = -1, seed_resize_from_w: int = -1,
                 cfg_scale: float = 6.0, clip_skip: float = 1.0, image_cfg_scale: float = 6.0, diffusers_guidance_rescale: float = 0.7, pag_scale: float = 0.0, pag_adaptive: float = 0.5, cfg_end: float = 1.0,
-                full_quality: bool = True, tiling: bool = False, hidiffusion: bool = False,
+                vae_type: str = 'Full', tiling: bool = False, hidiffusion: bool = False,
                 detailer_enabled: bool = True, detailer_prompt: str = '', detailer_negative: str = '', detailer_steps: int = 10, detailer_strength: float = 0.3,
                 hdr_mode: int = 0, hdr_brightness: float = 0, hdr_color: float = 0, hdr_sharpen: float = 0, hdr_clamp: bool = False, hdr_boundary: float = 4.0, hdr_threshold: float = 0.95,
                 hdr_maximize: bool = False, hdr_max_center: float = 0.6, hdr_max_boundry: float = 1.0, hdr_color_picker: str = None, hdr_tint_ratio: float = 0,
@@ -292,7 +292,7 @@ def control_run(state: str = '',
         diffusers_guidance_rescale = diffusers_guidance_rescale,
         pag_scale = pag_scale,
         pag_adaptive = pag_adaptive,
-        full_quality = full_quality,
+        vae_type = vae_type,
         tiling = tiling,
         hidiffusion = hidiffusion,
         # detailer

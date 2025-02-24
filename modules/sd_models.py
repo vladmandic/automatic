@@ -760,6 +760,7 @@ def set_diffuser_pipe(pipe, new_pipe_type):
         'StableVideoDiffusionPipeline',
         'PixelSmithXLPipeline',
         'PhotoMakerStableDiffusionXLPipeline',
+        'StableDiffusionXLInstantIDPipeline',
     ]
 
     has_errors = False
@@ -828,9 +829,10 @@ def set_diffuser_pipe(pipe, new_pipe_type):
             except Exception as e: # pylint: disable=unused-variable
                 shared.log.warning(f'Pipeline class set failed: type={new_pipe_type} pipeline={cls} {e}')
                 has_errors = True
+                return pipe
 
-    # if pipe.__class__ == new_pipe.__class__:
-    #    return pipe
+    if new_pipe is None:
+        return pipe
     new_pipe.sd_checkpoint_info = sd_checkpoint_info
     new_pipe.sd_model_checkpoint = sd_model_checkpoint
     new_pipe.embedding_db = embedding_db

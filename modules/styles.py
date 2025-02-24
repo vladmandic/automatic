@@ -262,7 +262,7 @@ class StyleDatabase:
 
         list_folder(self.path)
         t1 = time.time()
-        shared.log.info(f'Available Styles: folder="{self.path}" items={len(self.styles.keys())} time={t1-t0:.2f}')
+        shared.log.info(f'Available Styles: path="{self.path}" items={len(self.styles.keys())} time={t1-t0:.2f}')
 
     def find_style(self, name):
         found = [style for style in self.styles.values() if style.name == name]

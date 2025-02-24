@@ -2,6 +2,10 @@
 
 Main ToDo list can be found at [GitHub projects](https://github.com/users/vladmandic/projects)
 
+## Current
+
+- <https://github.com/KohakuBlueleaf/z-tipo-extension/pull/73>
+
 ## Future Candidates
 
 - Redesign postprocessing  

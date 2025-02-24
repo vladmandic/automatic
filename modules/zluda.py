@@ -34,15 +34,13 @@ def initialize_zluda():
 
     from modules import zluda_installer
     torch.backends.cudnn.enabled = zluda_installer.MIOpen_available
-    torch.backends.cuda.enable_flash_sdp(False)
-    torch.backends.cuda.enable_flash_sdp = do_nothing
-    torch.backends.cuda.enable_math_sdp(True)
-    torch.backends.cuda.enable_math_sdp = do_nothing
-    torch.backends.cuda.enable_mem_efficient_sdp(False)
-    torch.backends.cuda.enable_mem_efficient_sdp = do_nothing
-    if hasattr(torch.backends.cuda, "enable_cudnn_sdp"):
+    if not zluda_installer.MIOpen_available:
         torch.backends.cuda.enable_cudnn_sdp(False)
         torch.backends.cuda.enable_cudnn_sdp = do_nothing
+    torch.backends.cuda.enable_flash_sdp(False)
+    torch.backends.cuda.enable_flash_sdp = torch.backends.cuda.enable_cudnn_sdp
+    torch.backends.cuda.enable_mem_efficient_sdp(False)
+    torch.backends.cuda.enable_mem_efficient_sdp = do_nothing
 
     # ONNX Runtime is not supported
     ort.capi._pybind_state.get_available_providers = lambda: [v for v in available_execution_providers if v != ExecutionProvider.CUDA] # pylint: disable=protected-access

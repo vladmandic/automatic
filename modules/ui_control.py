@@ -42,7 +42,7 @@ def return_stats(t: float = None):
         ram = shared.ram_stats()
         if ram['used'] > 0:
             cpu += f"| RAM {ram['used']} GB {round(100.0 * ram['used'] / ram['total'])}%"
-    return f"<div class='performance'><p>Time: {elapsed_text} | {summary} {gpu} {cpu}</p></div>"
+    return f"<div class='performance'><p>{elapsed_text} {summary} {gpu} {cpu}</p></div>"
 
 
 def return_controls(res, t: float = None):
@@ -161,7 +161,7 @@ def create_ui(_blocks: gr.Blocks=None):
 
                 mask_controls = masking.create_segment_ui()
 
-                full_quality, tiling, hidiffusion, cfg_scale, clip_skip, image_cfg_scale, guidance_rescale, pag_scale, pag_adaptive, cfg_end = ui_sections.create_advanced_inputs('control')
+                vae_type, tiling, hidiffusion, cfg_scale, clip_skip, image_cfg_scale, guidance_rescale, pag_scale, pag_adaptive, cfg_end = ui_sections.create_advanced_inputs('control')
                 hdr_mode, hdr_brightness, hdr_color, hdr_sharpen, hdr_clamp, hdr_boundary, hdr_threshold, hdr_maximize, hdr_max_center, hdr_max_boundry, hdr_color_picker, hdr_tint_ratio = ui_sections.create_correction_inputs('control')
 
                 with gr.Accordion(open=False, label="Video", elem_id="control_video", elem_classes=["small-accordion"]):
@@ -561,7 +561,7 @@ def create_ui(_blocks: gr.Blocks=None):
                 prompt, negative, styles,
                 steps, sampler_index,
                 seed, subseed, subseed_strength, seed_resize_from_h, seed_resize_from_w,
-                cfg_scale, clip_skip, image_cfg_scale, guidance_rescale, pag_scale, pag_adaptive, cfg_end, full_quality, tiling, hidiffusion,
+                cfg_scale, clip_skip, image_cfg_scale, guidance_rescale, pag_scale, pag_adaptive, cfg_end, vae_type, tiling, hidiffusion,
                 detailer_enabled, detailer_prompt, detailer_negative, detailer_steps, detailer_strength,
                 hdr_mode, hdr_brightness, hdr_color, hdr_sharpen, hdr_clamp, hdr_boundary, hdr_threshold, hdr_maximize, hdr_max_center, hdr_max_boundry, hdr_color_picker, hdr_tint_ratio,
                 resize_mode_before, resize_name_before, resize_context_before, width_before, height_before, scale_by_before, selected_scale_tab_before,
@@ -646,7 +646,7 @@ def create_ui(_blocks: gr.Blocks=None):
                 (image_cfg_scale, "Image CFG scale"),
                 (image_cfg_scale, "Hires CFG scale"),
                 (guidance_rescale, "CFG rescale"),
-                (full_quality, "Full quality"),
+                (vae_type, "VAE type"),
                 (tiling, "Tiling"),
                 (hidiffusion, "HiDiffusion"),
                 # detailer

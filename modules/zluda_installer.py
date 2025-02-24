@@ -24,8 +24,10 @@ MIOpen_available = False
 
 path = os.path.abspath(os.environ.get('ZLUDA', '.zluda'))
 default_agent: Union[rocm.Agent, None] = None
-nightly = os.environ.get("ZLUDA_NIGHTLY", "0") == "1"
 hipBLASLt_enabled = False
+
+nightly = os.environ.get("ZLUDA_NIGHTLY", "0") == "1"
+skip_arch_test = os.environ.get("ZLUDA_SKIP_ARCH_TEST", "0") == "1"
 
 
 def set_default_agent(agent: rocm.Agent):
@@ -46,7 +48,7 @@ def set_default_agent(agent: rocm.Agent):
     hipBLASLt_enabled = hipBLASLt_available and ((not os.path.exists(path) and nightly) or os.path.exists(os.path.join(path, 'cublasLt.dll')))
 
     global MIOpen_available # pylint: disable=global-statement
-    MIOpen_available = is_nightly and agent.gfx_version in (0x908, 0x90a, 0x940, 0x941, 0x942, 0x1030, 0x1100, 0x1101, 0x1102,)
+    MIOpen_available = is_nightly and (skip_arch_test or agent.gfx_version in (0x908, 0x90a, 0x940, 0x941, 0x942, 0x1030, 0x1100, 0x1101, 0x1102, 0x1150,))
 
 
 def is_reinstall_needed() -> bool: # ZLUDA<3.8.7
@@ -58,7 +60,7 @@ def install() -> None:
         return
 
     platform = "windows"
-    commit = os.environ.get("ZLUDA_HASH", "32493c9dcb22012a0ba95ee740980231236e909c")
+    commit = os.environ.get("ZLUDA_HASH", "4d14bf95d4c500863e240a0b1fa82793d0da789b")
     if nightly:
         platform = "nightly-" + platform
     urllib.request.urlretrieve(f'https://github.com/lshqqytiger/ZLUDA/releases/download/rel.{commit}/ZLUDA-{platform}-rocm{rocm.version[0]}-amd64.zip', '_zluda')

@@ -68,7 +68,10 @@ def parse(infotext):
     debug(f'Raw: {infotext}')
 
     remaining = infotext.replace('\nSteps:', ' Steps:')
-    params = ['steps:', 'seed:', 'width:', 'height:', 'sampler:', 'size:', 'cfg scale:'] # first param is one of those
+    # TODO infotext: handle using regex instead
+    params = [' steps:', ' seed:', ' width:', ' height:', ' sampler:', ' size:', ' cfg scale:'] # first param is one of those
+    params += ['\nsteps:', '\nseed:', '\nwidth:', '\nheight:', '\nsampler:', '\nsize:', '\ncfg scale:']
+    params += ['.steps:', '.seed:', '.width:', '.height:', '.sampler:', '.size:', '.cfg scale:']
 
     prompt_end = [remaining.lower().find(p) for p in params if p in remaining.lower()]
     prompt_end += [remaining.lower().find('negative prompt:')]
@@ -105,7 +108,7 @@ def parse(infotext):
         elif val == "False":
             params[key] = False
         elif key == 'VAE' and val == 'TAESD':
-            params["Full quality"] = False
+            params["VAE type"] = 'Tiny'
         elif size is not None:
             params[f"{key}-1"] = int(size.group(1))
             params[f"{key}-2"] = int(size.group(2))

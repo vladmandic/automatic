@@ -528,7 +528,6 @@ class StableDiffusionXLInstantIDPipeline(StableDiffusionXLControlNetPipeline):
         else:
             prompt_image_emb = torch.tensor(prompt_image_emb)
 
-        prompt_image_emb = prompt_image_emb.to(device=device, dtype=dtype)
         prompt_image_emb = prompt_image_emb.reshape([1, -1, self.image_proj_model_in_features])
 
         if do_classifier_free_guidance:
@@ -536,6 +535,8 @@ class StableDiffusionXLInstantIDPipeline(StableDiffusionXLControlNetPipeline):
         else:
             prompt_image_emb = torch.cat([prompt_image_emb], dim=0)
 
+        prompt_image_emb = prompt_image_emb.to(device=device, dtype=dtype)
+        self.image_proj_model = self.image_proj_model.to(device=device, dtype=dtype)
         prompt_image_emb = self.image_proj_model(prompt_image_emb)
         return prompt_image_emb
 

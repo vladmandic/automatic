@@ -49,7 +49,7 @@ def process_original(p: processing.StableDiffusionProcessing):
     c = get_conds_with_caching(prompt_parser.get_multicond_learned_conditioning, p.prompts, p.steps * step_multiplier, cached_c)
     with devices.without_autocast() if devices.unet_needs_upcast else devices.autocast():
         samples_ddim = p.sample(conditioning=c, unconditional_conditioning=uc, seeds=p.seeds, subseeds=p.subseeds, subseed_strength=p.subseed_strength, prompts=p.prompts)
-    x_samples_ddim = [processing.decode_first_stage(p.sd_model, samples_ddim[i:i+1].to(dtype=devices.dtype_vae), p.full_quality)[0].cpu() for i in range(samples_ddim.size(0))]
+    x_samples_ddim = [processing.decode_first_stage(p.sd_model, samples_ddim[i:i+1].to(dtype=devices.dtype_vae))[0].cpu() for i in range(samples_ddim.size(0))]
     try:
         for x in x_samples_ddim:
             devices.test_for_nans(x, "vae")
@@ -60,7 +60,7 @@ def process_original(p: processing.StableDiffusionProcessing):
             devices.dtype_vae = torch.bfloat16
             vae_file, vae_source = sd_vae.resolve_vae(p.sd_model.sd_model_checkpoint)
             sd_vae.load_vae(p.sd_model, vae_file, vae_source)
-            x_samples_ddim = [processing.decode_first_stage(p.sd_model, samples_ddim[i:i+1].to(dtype=devices.dtype_vae), p.full_quality)[0].cpu() for i in range(samples_ddim.size(0))]
+            x_samples_ddim = [processing.decode_first_stage(p.sd_model, samples_ddim[i:i+1].to(dtype=devices.dtype_vae))[0].cpu() for i in range(samples_ddim.size(0))]
             for x in x_samples_ddim:
                 devices.test_for_nans(x, "vae")
         else:
@@ -90,7 +90,7 @@ def sample_txt2img(p: processing.StableDiffusionProcessingTxt2Img, conditioning,
         target_height = p.hr_upscale_to_y
         decoded_samples = None
         if shared.opts.samples_save and shared.opts.save_images_before_highres_fix and not p.do_not_save_samples:
-            decoded_samples = decode_first_stage(p.sd_model, samples.to(dtype=devices.dtype_vae), p.full_quality)
+            decoded_samples = decode_first_stage(p.sd_model, samples.to(dtype=devices.dtype_vae))
             decoded_samples = torch.clamp((decoded_samples + 1.0) / 2.0, min=0.0, max=1.0)
             for i, x_sample in enumerate(decoded_samples):
                 x_sample = validate_sample(x_sample)
@@ -107,13 +107,13 @@ def sample_txt2img(p: processing.StableDiffusionProcessingTxt2Img, conditioning,
             shared.state.job = 'Upscale'
             samples = images.resize_image(1, samples, target_width, target_height, upscaler_name=p.hr_upscaler)
             if getattr(p, "inpainting_mask_weight", shared.opts.inpainting_mask_weight) < 1.0:
-                image_conditioning = img2img_image_conditioning(p, decode_first_stage(p.sd_model, samples.to(dtype=devices.dtype_vae), p.full_quality), samples)
+                image_conditioning = img2img_image_conditioning(p, decode_first_stage(p.sd_model, samples.to(dtype=devices.dtype_vae)), samples)
             else:
                 image_conditioning = txt2img_image_conditioning(p, samples.to(dtype=devices.dtype_vae))
         else:
             shared.state.job = 'Upscale'
             if decoded_samples is None:
-                decoded_samples = decode_first_stage(p.sd_model, samples.to(dtype=devices.dtype_vae), p.full_quality)
+                decoded_samples = decode_first_stage(p.sd_model, samples.to(dtype=devices.dtype_vae))
                 decoded_samples = torch.clamp((decoded_samples + 1.0) / 2.0, min=0.0, max=1.0)
             batch_images = []
             for _i, x_sample in enumerate(decoded_samples):

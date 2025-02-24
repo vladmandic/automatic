@@ -159,6 +159,7 @@ async function setHints(analyze = false) {
   if (Object.keys(opts).length === 0) return;
   const elements = [
     ...Array.from(gradioApp().querySelectorAll('button')),
+    ...Array.from(gradioApp().querySelectorAll('h2')),
     ...Array.from(gradioApp().querySelectorAll('label > span')),
     ...Array.from(gradioApp().querySelectorAll('.label-wrap > span')),
   ];

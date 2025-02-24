@@ -17,9 +17,9 @@ def create_latents(image, p, dtype=None, device=None):
     if image is None:
         return image
     elif isinstance(image, Image.Image):
-        latents = vae_encode(image, model=shared.sd_model, full_quality=p.full_quality)
+        latents = vae_encode(image, model=shared.sd_model, vae_type=p.vae_type)
     elif isinstance(image, list):
-        latents = [vae_encode(i, model=shared.sd_model, full_quality=p.full_quality).squeeze(dim=0) for i in image]
+        latents = [vae_encode(i, model=shared.sd_model, vae_type=p.vae_type).squeeze(dim=0) for i in image]
         latents = torch.stack(latents, dim=0).to(shared.device)
     else:
         shared.log.warning(f'Latents: input type: {type(image)} {image}')
@@ -173,7 +173,7 @@ def full_vae_decode(latents, model):
     if debug:
         log_debug(f'VAE memory: {shared.mem_mon.read()}')
     vae_name = os.path.splitext(os.path.basename(sd_vae.loaded_vae_file))[0] if sd_vae.loaded_vae_file is not None else "default"
-    shared.log.debug(f'Decode: vae="{vae_name}" upcast={upcast} slicing={getattr(model.vae, "use_slicing", None)} tiling={getattr(model.vae, "use_tiling", None)} latents={latents.shape}:{latents.device}:{latents.dtype} time={t1-t0:.3f}')
+    shared.log.debug(f'Decode: vae="{vae_name}" upcast={upcast} slicing={getattr(model.vae, "use_slicing", None)} tiling={getattr(model.vae, "use_tiling", None)} latents={list(latents.shape)}:{latents.device}:{latents.dtype} time={t1-t0:.3f}')
     return decoded
 
 
@@ -230,7 +230,35 @@ def taesd_vae_encode(image):
     return encoded
 
 
-def vae_decode(latents, model, output_type='np', full_quality=True, width=None, height=None, frames=None):
+def vae_postprocess(tensor, model, output_type='np'):
+    images = []
+    try:
+        if isinstance(tensor, list) and len(tensor) > 0 and torch.is_tensor(tensor[0]):
+            tensor = torch.stack(tensor)
+        if torch.is_tensor(tensor):
+            if len(tensor.shape) == 3 and tensor.shape[0] == 3:
+                tensor = tensor.unsqueeze(0)
+            if hasattr(model, 'video_processor'):
+                images = model.video_processor.postprocess_video(tensor, output_type='pil')
+            elif hasattr(model, 'image_processor'):
+                images = model.image_processor.postprocess(tensor, output_type=output_type)
+            elif hasattr(model, "vqgan"):
+                images = tensor.permute(0, 2, 3, 1).cpu().float().numpy()
+                if output_type == "pil":
+                    images = model.numpy_to_pil(images)
+            else:
+                import diffusers
+                model.image_processor = diffusers.image_processor.VaeImageProcessor()
+                images = model.image_processor.postprocess(tensor, output_type=output_type)
+        else:
+            images = tensor if isinstance(tensor, list) or isinstance(tensor, np.ndarray) else [tensor]
+    except Exception as e:
+        shared.log.error(f'VAE postprocess: {e}')
+        errors.display(e, 'VAE')
+    return images
+
+
+def vae_decode(latents, model, output_type='np', vae_type='Full', width=None, height=None, frames=None):
     t0 = time.time()
     model = model or shared.sd_model
     if not hasattr(model, 'vae') and hasattr(model, 'pipe'):
@@ -238,6 +266,15 @@ def vae_decode(latents, model, output_type='np', full_quality=True, width=None, 
     if latents is None or not torch.is_tensor(latents): # already decoded
         return latents
     prev_job = shared.state.job
+
+    if vae_type == 'Remote':
+        shared.state.job = 'Remote VAE'
+        from modules.sd_vae_remote import remote_decode
+        tensors = remote_decode(latents=latents, width=width, height=height)
+        shared.state.job = prev_job
+        if tensors is not None and len(tensors) > 0:
+            return vae_postprocess(tensors, model, output_type)
+
     shared.state.job = 'VAE'
     if latents.shape[0] == 0:
         shared.log.error(f'VAE nothing to decode: {latents.shape}')
@@ -261,7 +298,7 @@ def vae_decode(latents, model, output_type='np', full_quality=True, width=None, 
 
     if latents.shape[-1] <= 4: # not a latent, likely an image
         decoded = latents.float().cpu().numpy()
-    elif full_quality and hasattr(model, "vae"):
+    elif vae_type == 'Full' and hasattr(model, "vae"):
         decoded = full_vae_decode(latents=latents, model=model)
     elif hasattr(model, "vqgan"):
         decoded = full_vqgan_decode(latents=latents, model=model)
@@ -270,33 +307,16 @@ def vae_decode(latents, model, output_type='np', full_quality=True, width=None, 
         if torch.is_tensor(decoded):
             decoded = 2.0 * decoded - 1.0 # typical normalized range
 
-    if torch.is_tensor(decoded):
-        if len(decoded.shape) == 3 and decoded.shape[0] == 3:
-            decoded = decoded.unsqueeze(0)
-        if hasattr(model, 'video_processor'):
-            imgs = model.video_processor.postprocess_video(decoded, output_type='pil')
-        elif hasattr(model, 'image_processor'):
-            imgs = model.image_processor.postprocess(decoded, output_type=output_type)
-        elif hasattr(model, "vqgan"):
-            imgs = decoded.permute(0, 2, 3, 1).cpu().float().numpy()
-            if output_type == "pil":
-                imgs = model.numpy_to_pil(imgs)
-        else:
-            import diffusers
-            model.image_processor = diffusers.image_processor.VaeImageProcessor()
-            imgs = model.image_processor.postprocess(decoded, output_type=output_type)
-    else:
-        imgs = decoded if isinstance(decoded, list) or isinstance(decoded, np.ndarray) else [decoded]
-
+    images = vae_postprocess(decoded, model, output_type)
     shared.state.job = prev_job
     if shared.cmd_opts.profile or debug:
         t1 = time.time()
         shared.log.debug(f'Profile: VAE decode: {t1-t0:.2f}')
     devices.torch_gc()
-    return imgs
+    return images
 
 
-def vae_encode(image, model, full_quality=True): # pylint: disable=unused-variable
+def vae_encode(image, model, vae_type='Full'): # pylint: disable=unused-variable
     if shared.state.interrupted or shared.state.skipped:
         return []
     if not hasattr(model, 'vae') and hasattr(model, 'pipe'):
@@ -305,7 +325,7 @@ def vae_encode(image, model, full_quality=True): # pylint: disable=unused-variab
         shared.log.error('VAE not found in model')
         return []
     tensor = TF.to_tensor(image.convert("RGB")).unsqueeze(0).to(devices.device, devices.dtype_vae)
-    if full_quality:
+    if vae_type == 'Full':
         tensor = tensor * 2 - 1
         latents = full_vae_encode(image=tensor, model=shared.sd_model)
     else:
@@ -321,7 +341,7 @@ def reprocess(gallery):
     if latent is None or gallery is None:
         return None
     shared.log.info(f'Reprocessing: latent={latent.shape}')
-    reprocessed = vae_decode(latent, shared.sd_model, output_type='pil', full_quality=True)
+    reprocessed = vae_decode(latent, shared.sd_model, output_type='pil')
     outputs = []
     for i0, i1 in zip(gallery, reprocessed):
         if isinstance(i1, np.ndarray):

@@ -1,14 +1,32 @@
 # Change Log for SD.Next
 
-## Update for 2025-02-20
+## Update for 2025-02-24
 
-Quick release refresh:
-- remove ui splash screen on auth fail  
-- add `--extensions-dir` cli arg and `SD_EXTENSIONSDIR` env variable to specify extensions directory  
-- log full path when reading/saving `config.json`  
-- log full path to `sdnext.log`  
-- log system hostname in `sdnext.log`  
-- log extensions path in `sdnext.log`  
+- **Remote Decode**  
+  - final step of image generate, VAE decode, is by far the most memory intensive operation and can easily result in out-of-memory errors  
+    what can be done? Well, *Huggingface* is now providing *free-of-charge* **remote-VAE-decode** service!  
+  - how to use? previous *Full quality* option in UI is replaced with VAE type selector: *Full, Tiny, Remote*  
+    currently supports SD15, SDXL and FLUX.1 with more models expected in the near future  
+    depending on your bandwidth select mode in *settings -> vae -> raw/png/jpg*  
+    if remote processing fails SD.Next will fallback to using normal VAE decode process  
+    *privacy note*: only passed item is final latent itself without any user or generate information and latent is not stored in the cloud  
+- **UI**
+  - modern ui reorg main tab  
+    improve styling, improve scripts/extensions interface and separate ipadapters  
+  - additional ui hints  
+- **Other**  
+  - add `--extensions-dir` cli arg and `SD_EXTENSIONSDIR` env variable to specify extensions directory  
+  - update `zluda==3.9.0`
+- **Fixes**  
+  - skip trying to register legacy/incompatibile extensions in control ui  
+  - add additional scripts/extensions callbacks  
+  - remove ui splash screen on auth fail  
+  - log full config path, full log path, system name, extensions path
+  - zluda hotfixes  
+  - zluda force sync  
+  - fix torch import on compile  
+  - infotext parser force delimiter before params  
+  - handle pipeline class switch errors  
 
 ## Update for 2025-02-18
 

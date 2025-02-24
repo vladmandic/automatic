@@ -197,10 +197,10 @@ def process_hires(p: processing.StableDiffusionProcessing, output):
         if p.hr_force:
             shared.sd_model = sd_models.set_diffuser_pipe(shared.sd_model, sd_models.DiffusersTaskType.IMAGE_2_IMAGE)
             if 'Upscale' in shared.sd_model.__class__.__name__ or 'Flux' in shared.sd_model.__class__.__name__ or 'Kandinsky' in shared.sd_model.__class__.__name__:
-                output.images = processing_vae.vae_decode(latents=output.images, model=shared.sd_model, full_quality=p.full_quality, output_type='pil', width=p.width, height=p.height)
+                output.images = processing_vae.vae_decode(latents=output.images, model=shared.sd_model, vae_type=p.vae_type, output_type='pil', width=p.width, height=p.height)
             if p.is_control and hasattr(p, 'task_args') and p.task_args.get('image', None) is not None:
                 if hasattr(shared.sd_model, "vae") and output.images is not None and len(output.images) > 0:
-                    output.images = processing_vae.vae_decode(latents=output.images, model=shared.sd_model, full_quality=p.full_quality, output_type='pil', width=p.hr_upscale_to_x, height=p.hr_upscale_to_y) # controlnet cannnot deal with latent input
+                    output.images = processing_vae.vae_decode(latents=output.images, model=shared.sd_model, vae_type=p.vae_type, output_type='pil', width=p.hr_upscale_to_x, height=p.hr_upscale_to_y) # controlnet cannnot deal with latent input
             update_sampler(p, shared.sd_model, second_pass=True)
             orig_denoise = p.denoising_strength
             p.denoising_strength = strength
@@ -289,7 +289,7 @@ def process_refine(p: processing.StableDiffusionProcessing, output):
             noise_level = round(350 * p.denoising_strength)
             output_type='latent'
             if 'Upscale' in shared.sd_refiner.__class__.__name__ or 'Flux' in shared.sd_refiner.__class__.__name__ or 'Kandinsky' in shared.sd_refiner.__class__.__name__:
-                image = processing_vae.vae_decode(latents=image, model=shared.sd_model, full_quality=p.full_quality, output_type='pil', width=p.width, height=p.height)
+                image = processing_vae.vae_decode(latents=image, model=shared.sd_model, vae_type=p.vae_type, output_type='pil', width=p.width, height=p.height)
                 p.extra_generation_params['Noise level'] = noise_level
                 output_type = 'np'
             update_sampler(p, shared.sd_refiner, second_pass=True)
@@ -370,7 +370,7 @@ def process_decode(p: processing.StableDiffusionProcessing, output):
                     result_batch = processing_vae.vae_decode(
                         latents = output.images[i],
                         model = model,
-                        full_quality = p.full_quality,
+                        vae_type = p.vae_type,
                         width = width,
                         height = height,
                         frames = frames,
@@ -381,7 +381,7 @@ def process_decode(p: processing.StableDiffusionProcessing, output):
                 results = processing_vae.vae_decode(
                     latents = output.images,
                     model = model,
-                    full_quality = p.full_quality,
+                    vae_type = p.vae_type,
                     width = width,
                     height = height,
                     frames = frames,
