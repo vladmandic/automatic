@@ -319,7 +319,9 @@ def start_ui():
     shared.log.info(f'Local URL: {local_url}')
     if shared.cmd_opts.listen:
         if not gradio_auth_creds:
-            shared.log.warning('Public interface enabled without authentication')
+            shared.log.warning('Public URL: enabled without authentication')
+        if shared.cmd_opts.insecure:
+            shared.log.warning('Public URL: enabled with insecure flag')
         proto = 'https' if shared.cmd_opts.tls_keyfile is not None else 'http'
         external_ip = get_external_ip()
         if external_ip is not None:
