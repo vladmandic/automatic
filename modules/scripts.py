@@ -397,6 +397,7 @@ class ScriptRunner:
     def setup_ui(self, parent='unknown', accordion=True):
         import modules.api.models as api_models
         self.titles = [wrap_call(script.title, script.filename, "title") or f"{script.filename} [error]" for script in self.selectable_scripts]
+
         inputs = []
         inputs_alwayson = [True]
 
@@ -493,7 +494,7 @@ class ScriptRunner:
             self.selectable_scripts[script_index].group.visible = True
 
         dropdown.init_field = init_field
-        dropdown.change(fn=select_script, inputs=[dropdown], outputs=[script.group for script in self.selectable_scripts])
+        dropdown.change(fn=select_script, inputs=[dropdown], outputs=[script.group for script in self.selectable_scripts if script.group is not None])
 
         def onload_script_visibility(params):
             title = params.get('Script', None)
@@ -505,8 +506,8 @@ class ScriptRunner:
             else:
                 return gr.update(visible=False)
 
-        self.infotext_fields.append( (dropdown, lambda x: gr.update(value=x.get('Script', 'None'))) )
-        self.infotext_fields.extend( [(script.group, onload_script_visibility) for script in self.selectable_scripts] )
+        self.infotext_fields.append((dropdown, lambda x: gr.update(value=x.get('Script', 'None'))))
+        self.infotext_fields.extend([(script.group, onload_script_visibility) for script in self.selectable_scripts if script.group is not None])
         return inputs
 
     def run(self, p, *args):
