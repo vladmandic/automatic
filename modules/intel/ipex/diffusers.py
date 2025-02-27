@@ -46,3 +46,5 @@ def ipex_diffusers(device_supports_fp64=False, can_allocate_plus_4gb=False):
     diffusers.utils.torch_utils.fourier_filter = fourier_filter
     if not device_supports_fp64:
         diffusers.models.embeddings.FluxPosEmbed = FluxPosEmbed
+        diffusers.models.transformers.transformer_flux.FluxPosEmbed = FluxPosEmbed
+        diffusers.models.controlnets.controlnet_flux.FluxPosEmbed = FluxPosEmbed
