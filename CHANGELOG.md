@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2025-02-24
+## Update for 2025-02-27
 
 Primarily a hotfix/service release plus few UI improvements and one exciting new feature: Remote-VAE!
 
@@ -30,6 +30,7 @@ Primarily a hotfix/service release plus few UI improvements and one exciting new
   - infotext parser force delimiter before params  
   - handle pipeline class switch errors  
   - improve extensions options compatibility  
+  - fix flux on ipex  
 
 ## Update for 2025-02-18
 
