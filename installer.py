@@ -715,20 +715,25 @@ def install_ipex(torch_command):
 
     if os.environ.get("NEOReadDebugKeys", None) is None:
         os.environ.setdefault('NEOReadDebugKeys', '1')
+
     if os.environ.get("ClDeviceGlobalMemSizeAvailablePercent", None) is None:
         os.environ.setdefault('ClDeviceGlobalMemSizeAvailablePercent', '100')
+
     if os.environ.get("SYCL_CACHE_PERSISTENT", None) is None:
         os.environ.setdefault('SYCL_CACHE_PERSISTENT', '1') # Jit cache
 
     if os.environ.get("PYTORCH_ENABLE_XPU_FALLBACK", None) is None:
         os.environ.setdefault('PYTORCH_ENABLE_XPU_FALLBACK', '1') # CPU fallback for unsupported ops
-    if os.environ.get("OverrideDefaultFP64Settings", None) is None:
-        os.environ.setdefault('OverrideDefaultFP64Settings', '1')
-    if os.environ.get("IGC_EnableDPEmulation", None) is None:
-        os.environ.setdefault('IGC_EnableDPEmulation', '1') # FP64 Emulation
+
     if os.environ.get('IPEX_FORCE_ATTENTION_SLICE', None) is None:
         # XPU PyTorch doesn't support Flash Atten or Memory Atten yet so Battlemage goes OOM without this
         os.environ.setdefault('IPEX_FORCE_ATTENTION_SLICE', '1')
+
+    # FP64 emulation causes random UR Errors
+    #if os.environ.get("OverrideDefaultFP64Settings", None) is None:
+    #    os.environ.setdefault('OverrideDefaultFP64Settings', '1')
+    #if os.environ.get("IGC_EnableDPEmulation", None) is None:
+    #    os.environ.setdefault('IGC_EnableDPEmulation', '1') # FP64 Emulation
 
     if args.use_nightly:
         torch_command = os.environ.get('TORCH_COMMAND', '--pre torch torchvision --index-url https://download.pytorch.org/whl/nightly/xpu')
