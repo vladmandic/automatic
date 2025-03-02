@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2025-02-27
+## Update for 2025-02-28
 
 Primarily a hotfix/service release plus few UI improvements and one exciting new feature: Remote-VAE!
 
@@ -31,6 +31,7 @@ Primarily a hotfix/service release plus few UI improvements and one exciting new
   - handle pipeline class switch errors  
   - improve extensions options compatibility  
   - fix flux on ipex  
+  - disable fp64 emulation on ipex  
 
 ## Update for 2025-02-18
 
