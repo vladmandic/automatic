@@ -30,7 +30,7 @@ Primarily a hotfix/service release plus few UI improvements and one exciting new
   - infotext parser force delimiter before params  
   - handle pipeline class switch errors  
   - improve extensions options compatibility  
-  - fix flux on ipex
+  - fix flux on ipex  
   - disable fp64 emulation on ipex  
 
 ## Update for 2025-02-18
